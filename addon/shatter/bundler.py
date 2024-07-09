@@ -253,6 +253,18 @@ class Bundle:
 		
 		bf.close()
 	
+	def uninstall(self):
+		"""
+		Uninstall the executable from the bundle, if it's installed
+		"""
+		
+		install_dir = get_install_dir()
+		
+		if (not self.installed()):
+			return
+		
+		os.remove(f"{install_dir}/{self.entries[Platform.current()].path}")
+	
 	def installed(self):
 		"""
 		Check if the given bundle is installed

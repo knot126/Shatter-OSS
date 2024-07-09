@@ -386,15 +386,17 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	if (sh_type == "BOX"):
 		if (not obj.sh_properties.sh_visible and not obj.sh_properties.sh_template):
 			properties["visible"] = "0"
+		else:
+			properties["visible"] = "1"
 	
 	# Set tile info for boxes if visible
-	# This basically overrides any point to having a template
+	# # This basically overrides any point to having a template
 	if (sh_type == "BOX"):
 		# Chose colour string depending on if multitint is enabled
 		if (not obj.sh_properties.sh_use_multitint):
 			# Export if not default
 			if (obj.sh_properties.sh_tint[0] != 1.0 or obj.sh_properties.sh_tint[1] != 1.0 or obj.sh_properties.sh_tint[2] != 1.0):
-				properties["color"] = exportList(obj.sh_properties.sh_tint)
+				properties["color"] = exportList(obj.sh_properties.sh_tint[:3])
 		else:
 			properties["color"] = str(obj.sh_properties.sh_tint1[0]) + " " + str(obj.sh_properties.sh_tint1[1]) + " " + str(obj.sh_properties.sh_tint1[2]) + " " + str(obj.sh_properties.sh_tint2[0]) + " " + str(obj.sh_properties.sh_tint2[1]) + " " + str(obj.sh_properties.sh_tint2[2]) + " " + str(obj.sh_properties.sh_tint3[0]) + " " + str(obj.sh_properties.sh_tint3[1]) + " " + str(obj.sh_properties.sh_tint3[2])
 		
@@ -559,7 +561,7 @@ def createSegmentText(scene, params):
 		params["warnings"].add("there are no boxes which causes the segment to load improperly")
 	
 	# Add file header with version
-	file_header = "<!-- Exporter: Shatter for Blender " + str(common.BL_INFO["version"][0]) + "." + str(common.BL_INFO["version"][1]) + "." + str(common.BL_INFO["version"][2]) + " -->\n"
+	file_header = "<!-- Exporter: Shatter OSS " + str(common.BL_INFO["version"][0]) + "." + str(common.BL_INFO["version"][1]) + "." + str(common.BL_INFO["version"][2]) + " -->\n"
 	
 	# Get final string
 	content = file_header + et.tostring(level_root, encoding = "unicode")

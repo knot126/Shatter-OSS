@@ -75,7 +75,7 @@ def cb_yorshex(fin, fout, templates, params):
 	args = [fin, fout]
 	
 	if templates: args.append(templates)
-	if params.get("ABMIENT_OCCLUSION_ENABLED", True): args.append("-A")
+	if not params.get("ABMIENT_OCCLUSION_ENABLED", True): args.append("-A")
 	if params.get("BAKE_UNSEEN_FACES", False): args.append("-C")
 	
 	return bundle.run(args)
