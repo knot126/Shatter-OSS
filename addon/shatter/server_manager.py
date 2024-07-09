@@ -71,10 +71,6 @@ def cb_builtin():
 	
 	script_path = str(Path(__file__).parent) + "/quick_test.py"
 	
-	if (not util.check_file_hash(script_path, "c140a45b9f6574f07693442f475d84a6c82ac56dc5124124b6004a1ecd764a74")):
-		util.log("Error: quick_test.py file hash does not match expected hash!")
-		os._exit(0)
-	
 	quick_test = util.load_module(script_path)
 	quick_test.runServer()
 
@@ -89,11 +85,6 @@ def cb_yorshex(asset_dir, level):
 	should_exit = False
 	python_path = os.path.realpath(sys.executable)
 	script_path = str(Path(__file__).parent) + "/asset_server.py"
-	
-	# Check file hash
-	if (not util.check_file_hash(script_path, "2f13f8748c801193c663074ac09092c019df47b62bc045969d383d0f13bf2c82")):
-		util.log("Error: asset_server.py file hash does not match expected hash!")
-		os._exit(0)
 	
 	# Open the process
 	proc = Popen([python_path, script_path, asset_dir, "-l", level, "-o"])
