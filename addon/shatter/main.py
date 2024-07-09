@@ -963,10 +963,11 @@ class ShatterPreferences(AddonPreferences):
 		name = "Mesh baker",
 		description = "Selects which mesh baker to use",
 		items = [
-			('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely fucks up tile rotations, but supports some extras like gradients"),
+			('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended for Windows and Linux. Not compiled for MacOS yet; please use BakeMesh."),
+			('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients"),
 			('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
 		],
-		default = "bakemesh",
+		default = "yorshex",
 	)
 	
 	mesh_command: StringProperty(
@@ -1024,7 +1025,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.region("INFO", "About Shatter")
 		
 		ui.label("Shatter OSS is copyright (C) Knot126 2020 - 2024")
-		ui.label("This software is released into the public domain.")
+		ui.label("This software is released under the MIT license.")
 		
 		ui.end()
 

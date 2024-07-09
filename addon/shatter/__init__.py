@@ -1,6 +1,5 @@
 """
 The Shatter Smash Hit Level Editor Addon for Blender
-Copyright (C) 2020 - 2023 Knot126, licenced under a modified MIT licence
 
 ====================================================
 
