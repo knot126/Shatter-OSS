@@ -36,12 +36,15 @@ def build_yorshex_meshbake_bundle():
 	run(['python', 'addon/shatter/bundler.py', 'make', 'bundlers/yorshex_mesh_baker.json', 'addon/shatter/bundles/yorshex_mesh_baker.bundle'])
 
 def read_bl_info():
-	BL_INFO = pathlib.Path("addon/shatter/__init__.py").read_text()
+	BL_INFO = Path("addon/shatter/__init__.py").read_text()
 	
 	# NOTE Breaks if we ever have { or } in bl_info
 	BL_INFO = eval(BL_INFO[BL_INFO.index("{"):BL_INFO.index("}") + 1])
 	
 	return BL_INFO
+
+def read_version():
+	return '.'.join([str(x) for x in read_bl_info()['version']])
 
 def main():
 	ap = argparse.ArgumentParser()
@@ -62,7 +65,7 @@ def main():
 	shutil.rmtree("addon/shatter/bin", True)
 	
 	# Make archive
-	shutil.make_archive(f"build/Shatter-OSS-{'.'.join(read_bl_info()['version'])}", "zip", "addon", "addon/shatter")
+	shutil.make_archive(f"build/Shatter-OSS-{read_version()}", "zip", "addon", "shatter")
 
 if (__name__ == "__main__"):
 	main()
