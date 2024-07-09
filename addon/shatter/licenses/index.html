@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8">
+    <title>Shatter OSS component licenses index</title>
+    <style>
+      * {
+        font-family: sans-serif, monospace, serif;
+      }
+      
+      body {
+        background: #eee;
+      }
+      
+      .main {
+        max-width: 1000px;
+        margin: auto;
+      }
+      
+      .license-window {
+        border: 1px solid #888;
+        width: 100%;
+        height: 500px;
+        background: #f8f8f8;
+        box-shadow: 0 1px 3px #bbb;
+        border-radius: 3px;
+      }
+      
+      summary {
+        font-size: 140%;
+        font-weight: bold;
+      }
+      
+      details {
+        padding: 10px 0 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+    <h1>Shatter OSS release component licenses</h1>
+    <p>Shatter OSS makes use of or includes the following projects, which are copyright their authors. Click on the name of a project to reveal its license.</p>
+    <details>
+      <summary>Yorshex's asset server</summary>
+      <div>
+        <object class="license-window" data="./yorshex_asset_server_license.txt"></object>
+      </div>
+    </details>
+    <details>
+      <summary>Yorshex's mesh bake</summary>
+      <div>
+        <object class="license-window" data="./yorshex_mesh_bake_license.txt"></object>
+      </div>
+    </details>
+    <p>You can also view the main Shatter license below:</p>
+    <details>
+      <summary>Shatter license</summary>
+      <div>
+        <object class="license-window" data="./shatter_license.txt"></object>
+      </div>
+    </details>
+    </div>
+  </body>
+</html>
