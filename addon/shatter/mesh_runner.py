@@ -69,8 +69,13 @@ def cb_yorshex(fin, fout, templates, params):
 	
 	bundle = Bundle(f"{SHATTER_PATH}/bundles/yorshex_mesh_baker.bundle")
 	
-	if (not bundle.installed()):
-		bundle.install()
+	#if (not bundle.installed()):
+	#	bundle.install()
+	# HACK: There's no actual traking for bundle installs ATM so we can't tell
+	# if one should be upgraded e.g. after an update to shatter. So I will just
+	# install every time until we have a new bundle + format that supports
+	# getting install info and proper upgrade support.
+	bundle.install()
 	
 	args = [fin, fout]
 	
