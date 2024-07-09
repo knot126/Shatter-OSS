@@ -1012,20 +1012,27 @@ class ShatterPreferences(AddonPreferences):
 		ui.region("AUTO", "Quick test")
 		
 		if (ui.prop("quick_test_server") == "yorshex"):
-			ui.warn("To use asset server you should agree with the zlib licence.")
+			ui.warn("Yorshex's asset server is Copyright (c) 2023 yorshex and is zlib licensed.")
+			ui.warn("Please make sure to view licenses in the Credits tab.")
 		
 		ui.region("UV_DATA", "Mesh baking")
 		
 		if (ui.prop("mesh_baker") == "command"):
 			ui.prop("mesh_command")
+		elif (ui.get("mesh_baker") == "yorshex"):
+			ui.warn("Yorshex's bakemesh is Copyright (c) 2024 yorshex and is MIT licensed.")
+			ui.warn("Please make sure to view licenses in the Credits tab.")
 		
 		ui.end()
 	
 	def draw_about(self, ui):
 		ui.region("INFO", "About Shatter")
 		
-		ui.label("Shatter OSS is copyright (C) Knot126 2020 - 2024")
+		ui.label("Shatter OSS core is copyright (C) Knot126 2020 - 2024")
 		ui.label("This software is released under the MIT license.")
+		ui.label("Open source components from many developers are used in Shatter OSS.")
+		ui.label("You can view them and their licenses below.")
+		ui.op("shatter.licenses_index")
 		
 		ui.end()
 
@@ -1312,39 +1319,12 @@ class CreateWater(Operator):
 # Misc. operators related to opening pages
 ################################################################################
 
-class OpenShatterCreditsPage(Operator):
-	"""Open Shatter's credits web page"""
-	
-	bl_idname = "shatter.open_credits_page"
-	bl_label = "Credits and Third Party Libraries"
+class OpenLicensesIndex(Operator):
+	bl_idname = "shatter.licenses_index"
+	bl_label = "Show all licenses"
 	
 	def execute(self, context):
-		if (secrets.randbelow(150) == 0):
-			global g_got_ricked
-			webbrowser.open(f"https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-			g_got_ricked = True
-		else:
-			webbrowser.open(f"https://github.com/Shatter-Team/Shatter/blob/trunk/CREDITS.md")
-		return {"FINISHED"}
-
-class OpenShatterPrivacyPage(Operator):
-	"""Open Shatter's statement about privacy and security"""
-	
-	bl_idname = "shatter.open_privacy_page"
-	bl_label = "Privacy and Security Statement"
-	
-	def execute(self, context):
-		webbrowser.open(f"https://github.com/Shatter-Team/Shatter/blob/trunk/PRIVACY.md")
-		return {"FINISHED"}
-
-class OpenShatterDiscord(Operator):
-	"""Get a join link for the Smash Hit Lab discord"""
-	
-	bl_idname = "shatter.open_discord"
-	bl_label = "Join the Smash Hit Lab Discord"
-	
-	def execute(self, context):
-		webbrowser.open(f"https://discord.gg/7kra7Z3UNn")
+		webbrowser.open(f"file://{common.SHATTER_PATH}licenses/index.html")
 		return {"FINISHED"}
 
 class OpenObstaclesTextFile(Operator):
@@ -1439,9 +1419,7 @@ classes = (
 	CreateDecal,
 	CreatePowerup,
 	CreateWater,
-	OpenShatterCreditsPage,
-	OpenShatterPrivacyPage,
-	OpenShatterDiscord,
+	OpenLicensesIndex,
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
 	autogen_ui.AutogenProperties,
