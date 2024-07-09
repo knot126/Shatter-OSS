@@ -9,10 +9,10 @@ and calls the register and ungregister functions.
 """
 
 bl_info = {
-	"name": "Shatter",
+	"name": "Shatter OSS",
 	"description": "Blender-based tools for editing, saving and loading Smash Hit segments.",
 	"author": "Shatter Team",
-	"version": (2024, 3, 14),
+	"version": (1, 0, 0),
 	"blender": (3, 0, 0),
 	"location": "File > Import/Export and 3D View > Tools",
 	"warning": "",

@@ -12,8 +12,6 @@ import time
 import json
 import datetime
 import hashlib
-import requests as requests
-import rsa as rsa # TODO Don't use RSA anymore
 import gzip
 import shutil
 import sys
@@ -238,84 +236,6 @@ def start_async_task(func, args):
 	p.start()
 	
 	return p
-
-def http_get_signed(url, sigurl = None):
-	"""
-	Get the file at the given url and verify its signature, then return it's
-	contents. Returns None if there is an error, like not found or invalid
-	signature.
-	
-	Right now this is mostly copied from the updater downloading function and
-	isn't used anywhere, but in the future it will replace any place where we
-	need to download signed files.
-	
-	The key should be the same as the one used for updates.
-	
-	TODO Actually use this
-	TODO Look into something that isn't RSA in 2023
-	"""
-	
-	import common
-	
-	# This is needed
-	PublicKey = rsa.PublicKey
-	
-	# Download data and signature
-	data = None
-	signature = None
-	
-	try:
-		data = requests.get(url)
-		signature = requests.get(url + ".sig" if not sigurl else sigurl)
-	except:
-		return None
-	
-	if (data.status_code != 200 or signature.status_code != 200):
-		return None
-	else:
-		data = data.content
-		signature = signature.content
-	
-	# Load the public key
-	public = eval(pathlib.Path(common.SHATTER_PATH + "/data/public.key").read_text())
-	
-	# Verify the signature
-	try:
-		result = rsa.verify(data, signature, public)
-	except:
-		return None
-	
-	# Return the content of the file
-	return data
-
-def http_get_with_expected_hash(url, hash):
-	"""
-	Get the file at the given url and verify that the hash matches a given one.
-	If the download fails or the hash does not match this function returns None.
-	"""
-	
-	# Download data
-	data = None
-	
-	try:
-		data = requests.get(url)
-	except:
-		return None
-	
-	if (data.status_code != 200):
-		return None
-	else:
-		data = data.content
-	
-	# Verify that the hashes match
-	if (type(hash) != str or len(hash) != 64):
-		return None
-	
-	if (sha256(data) != hash):
-		return None
-	
-	# Return the content of the file if the hashes match
-	return data
 
 def load_module(path):
 	"""
