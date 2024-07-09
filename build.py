@@ -58,9 +58,7 @@ def build_yorshex_meshbake_bundle():
 	run(['cc', '-o', 'meshbake.elf', 'meshbake.c', '-lm', '-lz', '-lexpat'])
 	# windows one here ...
 	print("BUILD: Windows")
-	os.chdir("Expat/Source")
-	run(['cmake', '.', '-D', 'CMAKE_C_COMPILER=x86_64-w64-mingw32-gcc', '-D', 'CMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++'])
-	os.chdir("../..")
+	run(['cp', '../../payloads/expat_config.h', 'Expat/Source/expat_config.h'])
 	run(['x86_64-w64-mingw32-gcc', '-o', 'meshbake.exe', '-Izlib-1.3.1', '-IExpat/Source', '-IExpat/Source/lib', 'meshbake.c'] + ["zlib-1.3.1/" + x for x in ZLIB_SRC_FILES] + ['Expat/Source/lib/' + x for x in EXPAT_SRC_FILES])
 	os.chdir("../..")
 	
