@@ -1,0 +1,4 @@
+addon/shatter/bundles/
+addon/shatter/bin/
+build/
+__pycache__

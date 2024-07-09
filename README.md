@@ -1,6 +1,6 @@
 # Shatter OSS
 
-**Shatter** is an addon for Blender that allows the creation of segments (parts of levels) for the mobile game *Smash Hit*. Currently, it can handle boxes, obstacles, decals and water to the degree that it should be possible to create segments which look official.
+**Shatter** is an addon for Blender that allows the creation of segments (parts of levels) for the mobile game *Smash Hit*. It provides many features and can be used to make high quality segments that look nearly-official.
 
 ## Usage and help
 

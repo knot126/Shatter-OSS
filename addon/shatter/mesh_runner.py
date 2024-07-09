@@ -61,6 +61,25 @@ def cb_bakemesh(fin, fout, templates, params):
 	
 	return 0
 
+def cb_yorshex(fin, fout, templates, params):
+	from common import SHATTER_PATH
+	from bundler import Bundle, set_install_dir
+	
+	set_install_dir(f"{SHATTER_PATH}/bin")
+	
+	bundle = Bundle(f"{SHATTER_PATH}/bundles/yorshex_mesh_baker.bundle")
+	
+	if (not bundle.installed()):
+		bundle.install()
+	
+	args = [fin, fout]
+	
+	if templates: args.append(templates)
+	if params.get("ABMIENT_OCCLUSION_ENABLED", True): args.append("-A")
+	if params.get("BAKE_UNSEEN_FACES", False): args.append("-C")
+	
+	return bundle.run(args)
+
 def cb_command(fin, fout, templates, params):
 	cmdline = params["cmd"]
 	cmdline = cmdline.replace("$INPUT", shlex.quote(fin))
@@ -77,5 +96,6 @@ def cb_command(fin, fout, templates, params):
 
 MESH_BAKE_CALLBACKS = {
 	"bakemesh": cb_bakemesh,
+	"yorshex": cb_yorshex,
 	"command": cb_command,
 }
