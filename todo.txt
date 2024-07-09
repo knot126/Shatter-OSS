@@ -1,0 +1,9 @@
+* Quick test: rotation settings
+* Building types:
+  * columns
+  * archs
+  * 2d bumps
+  * wall bumps
+  * hangoffs
+* Maybe improve how ambient occlusion works, make sure its accurate
+* Mass template changer
