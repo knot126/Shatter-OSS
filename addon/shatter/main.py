@@ -15,7 +15,6 @@ import obstacle_db
 import segment_export
 import segment_import
 import room_export
-import updater
 import autogen_ui
 import util
 import butil
@@ -931,31 +930,6 @@ class ShatterPreferences(AddonPreferences):
 		default = False,
 	)
 	
-	enable_auto_update: BoolProperty(
-		name = "Enable automatic updates",
-		description = "Automatically downloads and installs the newest version of the addon",
-		default = True,
-	)
-	
-	update_check_frequency: IntProperty(
-		name = "Updater checking frequency (hours)",
-		description = "This controls how frequently the updater will check for new updates, in hours",
-		min = 4,
-		max = 720,
-		default = 12,
-	)
-	
-	updater_channel: EnumProperty(
-		name = "Channel",
-		description = "This controls how frequently you will recieve updates, tweaks and new features. Faster updates might be buggier and break your workflow but contain better features, while slower updates will give a better exprience without newer features",
-		items = [
-			('stable', "Normal", "Contains new updates and features as soon as they are available, but might also break sometimes."),
-			None,
-			('updatertest', "Updater test", "A testing channel. This doesn't get real updates."),
-		],
-		default = "stable",
-	)
-	
 	quick_test_server: EnumProperty(
 		name = "Level test server",
 		description = "Selects which, if any, level test server will be used. This will create a local HTTP server on port 8000, which might pose a security risk",
@@ -1031,13 +1005,6 @@ class ShatterPreferences(AddonPreferences):
 		ui.prop("show_deprecated_advanced_lights")
 		ui.end()
 		
-		ui.region("WORLD", "Automatic updates")
-		ui.prop("enable_auto_update")
-		
-		if (self.enable_auto_update):
-			ui.prop("update_check_frequency")
-			ui.prop("updater_channel")
-		
 		ui.end()
 	
 	def draw_features(self, ui):
@@ -1055,16 +1022,9 @@ class ShatterPreferences(AddonPreferences):
 	
 	def draw_about(self, ui):
 		ui.region("INFO", "About Shatter")
-		ui.op("shatter.open_discord")
-		ui.op("shatter.open_credits_page")
-		ui.op("shatter.open_privacy_page")
 		
-		if (g_got_ricked):
-			ui.region("INFO", "Trolled !!!", new = False)
-			import getpass
-			ui.label(f"Anyway, I hope you are doing well in life {getpass.getuser().capitalize()}. :)")
-			ui.label("-- Knot126")
-			ui.end()
+		ui.label("Shatter OSS is copyright (C) Knot126 2020 - 2024")
+		ui.label("This software is released into the public domain.")
 		
 		ui.end()
 
@@ -1455,33 +1415,6 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.operator("shatter.open_obstacles_txt")
 		self.layout.operator("shatter.open_current_asset_folder")
 
-################################################################################
-# UTILITIES AND STUFF
-################################################################################
-
-def run_updater():
-	try:
-		# Blender seems fucking stupid and isn't writing the update time
-		# properly so i just have to use a file for that :/
-		last_update_time = util.get_file(common.TOOLS_HOME_FOLDER + "/udcheck.txt")
-		last_update_time = int(last_update_time) if last_update_time != None else 0
-		
-		util.log(f"Last checked for updates at {last_update_time} (unix time)")
-		
-		# Check if we've recently checked for updates
-		next_update_time = last_update_time + 60 * 60 * get_prefs().update_check_frequency
-		should_check = util.get_time() >= next_update_time
-		
-		if (should_check):
-			updater.run_updater(common.BL_INFO["version"], get_prefs().updater_channel, bpy.app.version)
-			util.set_file(common.TOOLS_HOME_FOLDER + "/udcheck.txt", str(int(util.get_time())))
-		else:
-			util.log(f"Updates checked for recently, will check for update in at least {next_update_time - util.get_time()} seconds")
-	except Exception as e:
-		import traceback
-		util.log(f"Shatter for Blender: Had an exception whilst checking for updates:")
-		util.log(traceback.format_exc())
-
 ###############################################################################
 
 # Also WHY THE FUCK DO I HAVE TO DO THIS???
@@ -1540,7 +1473,7 @@ keymaps = {
 keymaps_registered = []
 
 def register():
-	util.log(f"Shatter version {common.BL_INFO['version'][0]}.{common.BL_INFO['version'][1]}.{common.BL_INFO['version'][2]} starting up!")
+	util.log(f"Shatter OSS {common.BL_INFO['version'][0]}.{common.BL_INFO['version'][1]}.{common.BL_INFO['version'][2]} starting up!")
 	util.log("""**************************************************************
 * \x1b[1;32m"With the power of the prism, there's nothing I can't do."\x1b[0m *
 *         - \x1b[33mTails Nine\x1b[0m, \x1b[35m2024\x1b[0m                                 *
@@ -1583,10 +1516,6 @@ def register():
 	global gServerManager
 	gServerManager = server_manager.LevelServerManager()
 	server_manager_update()
-	
-	# Check for updates
-	if (get_prefs().enable_auto_update):
-		run_updater()
 
 def unregister():
 	from bpy.utils import unregister_class
