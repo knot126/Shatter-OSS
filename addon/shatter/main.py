@@ -915,7 +915,7 @@ class ShatterPreferences(AddonPreferences):
 	purist_mode: BoolProperty(
 		name = "Limit UI to classic Smash Hit features",
 		description = "Removes shatter extended features from the UI, for example gradients and advanced lighting",
-		default = False,
+		default = True,
 	)
 	
 	compact_ui: BoolProperty(
@@ -1003,7 +1003,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.region("DESKTOP", "Interface")
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
-		ui.prop("show_deprecated_advanced_lights")
+		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
 		ui.end()
 		
 		ui.end()
