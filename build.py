@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Build a Shatter zip file for installation
 """
@@ -9,6 +10,7 @@ import shutil
 import subprocess
 from pathlib import Path
 import json
+import urllib.request
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)
@@ -16,6 +18,7 @@ def run(cmd):
 YORSHEX_MESHBAKE_GIT_URL = 'https://codeberg.org/yorshex/sh-meshbake'
 EXPAT_TAR_GZ = 'https://github.com/libexpat/libexpat/releases/download/R_2_6_2/expat-win32bin-2.6.2.zip'
 ZLIB_TAR_GZ = 'https://zlib.net/zlib-1.3.1.tar.gz'
+ASSET_SERVER_URL = 'https://raw.githubusercontent.com/yorshex/sh-asset-server/main/asset_server.py'
 
 # taken from CMakeLists.txt
 ZLIB_SRC_FILES = """adler32.c
@@ -66,6 +69,15 @@ def build_yorshex_meshbake_bundle():
 	os.makedirs("addon/shatter/bundles", exist_ok = True)
 	run(['python', 'addon/shatter/bundler.py', 'make', 'bundlers/yorshex_mesh_baker.json', 'addon/shatter/bundles/yorshex_mesh_baker.bundle'])
 
+def download_file(url):
+	req = urllib.request.urlopen(url)
+	data = req.read()
+	req.close()
+	return data
+
+def update_asset_server():
+	Path("addon/shatter/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
+
 def read_bl_info():
 	BL_INFO = Path("addon/shatter/__init__.py").read_text()
 	
@@ -81,6 +93,7 @@ def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--install-deps", help = "Install build depends (arch linux only)", action = "store_true")
 	ap.add_argument("--build-yorshex-meshbake-bundle", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
+	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
 	ap = ap.parse_args()
 	
 	os.makedirs("build", exist_ok = True)
@@ -90,6 +103,9 @@ def main():
 	
 	if (ap.build_yorshex_meshbake_bundle):
 		build_yorshex_meshbake_bundle()
+	
+	if (ap.update_asset_server):
+		update_asset_server()
 	
 	# Cleanup bin and __pycache__ dirs before packing
 	shutil.rmtree("addon/shatter/__pycache__", True)
