@@ -6,6 +6,7 @@ Manages the level server(s) that are being run in the background.
 
 import util
 from pathlib import Path
+from subprocess import Popen
 import os
 import sys
 
@@ -41,7 +42,11 @@ class LevelServerManager():
 				util.log(f"{self.server_type} is not a supported server type")
 				return
 			
-			self.server_process = util.start_async_task(SERVER_CALLBACKS[self.server_type], self.params)
+			# Since Shatter OSS 1.0.5 the callback has changed to just returning
+			# the Popen object.
+			self.server_process = SERVER_CALLBACKS[self.server_type](*self.params)
+			
+			util.log(f"Server started with pid {self.server_process.pid}")
 	
 	def stop(self):
 		"""
@@ -50,8 +55,8 @@ class LevelServerManager():
 		
 		if (self.server_process):
 			self.server_process.terminate()
-			self.server_process.join(3)
-			self.server_process.close()
+			
+			util.log(f"Terminated server with pid {self.server_process.pid}")
 		
 		self.server_process = None
 	
@@ -69,41 +74,24 @@ def cb_builtin():
 	Run the builtin level server
 	"""
 	
+	python_path = os.path.realpath(sys.executable)
 	script_path = str(Path(__file__).parent) + "/quick_test.py"
 	
-	quick_test = util.load_module(script_path)
-	quick_test.runServer()
+	proc = Popen([python_path, script_path])
+	
+	return proc
 
 def cb_yorshex(asset_dir, level):
 	"""
 	Run yorshex's level server
 	"""
 	
-	from subprocess import Popen
-	import signal, time
-	
-	should_exit = False
 	python_path = os.path.realpath(sys.executable)
 	script_path = str(Path(__file__).parent) + "/asset_server.py"
 	
-	# Open the process
 	proc = Popen([python_path, script_path, asset_dir, "-l", level, "-o"])
 	
-	# Set signal to wait for terminate()
-	def setshouldexit(_a, _b):
-		nonlocal should_exit
-		nonlocal proc
-		
-		proc.terminate()
-		should_exit = True
-	
-	signal.signal(signal.SIGTERM, setshouldexit)
-	
-	# Busy loop
-	while (not should_exit):
-		time.sleep(0.1)
-	
-	os._exit(0)
+	return proc
 
 SERVER_CALLBACKS = {
 	"none": None,
