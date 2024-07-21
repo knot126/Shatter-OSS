@@ -11,6 +11,7 @@ import subprocess
 from pathlib import Path
 import json
 import urllib.request
+import tomllib
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)
@@ -19,24 +20,12 @@ YORSHEX_MESHBAKE_GIT_URL = 'https://codeberg.org/yorshex/sh-meshbake'
 EXPAT_TAR_GZ = 'https://github.com/libexpat/libexpat/releases/download/R_2_6_2/expat-win32bin-2.6.2.zip'
 ZLIB_TAR_GZ = 'https://zlib.net/zlib-1.3.1.tar.gz'
 ASSET_SERVER_URL = 'https://raw.githubusercontent.com/yorshex/sh-asset-server/main/asset_server.py'
+
 SHATTER_BINDIR = "addon/bin"
+BLENDER = "/home/dragon/Downloads/blender-4.2.0-linux-x64/blender"
 
 # taken from CMakeLists.txt
-ZLIB_SRC_FILES = """adler32.c
-    compress.c
-    crc32.c
-    deflate.c
-    gzclose.c
-    gzlib.c
-    gzread.c
-    gzwrite.c
-    inflate.c
-    infback.c
-    inftrees.c
-    inffast.c
-    trees.c
-    uncompr.c
-    zutil.c""".split()
+ZLIB_SRC_FILES = "adler32.c compress.c crc32.c deflate.c gzclose.c gzlib.c gzread.c gzwrite.c inflate.c infback.c inftrees.c inffast.c trees.c uncompr.c zutil.c".split()
 
 EXPAT_SRC_FILES = "xmlparse.c  xmlrole.c  xmltok.c  xmltok_impl.c  xmltok_ns.c".split()
 
@@ -79,18 +68,7 @@ def download_file(url):
 	return data
 
 def update_asset_server():
-	Path("addon/shatter/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
-
-def read_bl_info():
-	BL_INFO = Path("addon/shatter/__init__.py").read_text()
-	
-	# NOTE Breaks if we ever have { or } in bl_info
-	BL_INFO = eval(BL_INFO[BL_INFO.index("{"):BL_INFO.index("}") + 1])
-	
-	return BL_INFO
-
-def read_version():
-	return '.'.join([str(x) for x in read_bl_info()['version']])
+	Path("addon/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
 
 def main():
 	ap = argparse.ArgumentParser()
@@ -110,11 +88,8 @@ def main():
 	if (ap.update_asset_server):
 		update_asset_server()
 	
-	# Cleanup __pycache__ dirs before packing
-	shutil.rmtree("addon/shatter/__pycache__", True)
-	
-	# Make archive
-	shutil.make_archive(f"build/Shatter-OSS-{read_version()}", "zip", "addon", "shatter")
+	# Build the blender extension
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-dir', './build', '--verbose'])
 
 if (__name__ == "__main__"):
 	main()

@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 id = "shatter"
 version = "1.0.6"
 name = "Shatter OSS"
-tagline = "Shattter allows easily creating and exporting Smash Hit segments from Blender."
+tagline = "Shatter allows easily creating and exporting Smash Hit segments"
 maintainer = "Knot <cddepppp256@gmail.com>"
 type = "add-on"
 website = "https://codeberg.org/knot126/Shatter-OSS/wiki"
@@ -54,12 +54,10 @@ copyright = [
 [permissions]
 network = "Run the Quick Test server"
 files = "Various read and write operations with segments"
-# clipboard = "Copy and paste bone transforms"
 
 # Optional: build settings.
 # https://docs.blender.org/manual/en/dev/advanced/extensions/command_line_arguments.html#command-line-args-extension-build
-# [build]
+[build]
 paths_exclude_pattern = [
   "__pycache__/",
-  "/*.zip",
 ] 
