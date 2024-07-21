@@ -198,7 +198,7 @@ def find_assets_paths(*, search_default = True, search_apk = True):
 	paths = []
 	
 	# Search for the default (that is, manually picked) path
-	override = bpy.context.preferences.addons["shatter"].preferences.default_assets_path
+	override = bpy.context.preferences.addons[__package__].preferences.default_assets_path
 	
 	if (search_default and override and ospath.exists(override)):
 		paths.append(override)
@@ -243,7 +243,7 @@ def prefs():
 	Get a reference to the addon preferences
 	"""
 	
-	return bpy.context.preferences.addons["shatter"].preferences
+	return bpy.context.preferences.addons[__package__].preferences
 
 def add_box(pos, size):
 	"""
@@ -308,7 +308,7 @@ def ui_region(layout, label = None, icon = None):
 	
 	sub = layout
 	
-	if (not bpy.context.preferences.addons["shatter"].preferences.compact_ui):
+	if (not bpy.context.preferences.addons[__package__].preferences.compact_ui):
 		sub = layout.box()
 		sub.label(text = label, icon = icon)
 	

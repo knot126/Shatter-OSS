@@ -19,6 +19,7 @@ YORSHEX_MESHBAKE_GIT_URL = 'https://codeberg.org/yorshex/sh-meshbake'
 EXPAT_TAR_GZ = 'https://github.com/libexpat/libexpat/releases/download/R_2_6_2/expat-win32bin-2.6.2.zip'
 ZLIB_TAR_GZ = 'https://zlib.net/zlib-1.3.1.tar.gz'
 ASSET_SERVER_URL = 'https://raw.githubusercontent.com/yorshex/sh-asset-server/main/asset_server.py'
+SHATTER_BINDIR = "addon/bin"
 
 # taken from CMakeLists.txt
 ZLIB_SRC_FILES = """adler32.c
@@ -66,10 +67,10 @@ def build_yorshex_meshbake_bundle():
 	os.chdir("../..")
 	
 	# build the bundle file
-	shutil.rmtree("addon/shatter/bin", True)
-	os.makedirs("addon/shatter/bin")
-	run(['cp', 'build/sh-meshbake/meshbake.elf', 'addon/shatter/bin/yorshex_mesh_baker.linux.x86_64'])
-	run(['cp', 'build/sh-meshbake/meshbake.exe', 'addon/shatter/bin/yorshex_mesh_baker.win32.amd64.exe'])
+	shutil.rmtree(SHATTER_BINDIR, True)
+	os.makedirs(SHATTER_BINDIR)
+	run(['cp', 'build/sh-meshbake/meshbake.elf', f'{SHATTER_BINDIR}/yorshex_mesh_baker.linux.x86_64'])
+	run(['cp', 'build/sh-meshbake/meshbake.exe', f'{SHATTER_BINDIR}/yorshex_mesh_baker.win32.amd64.exe'])
 
 def download_file(url):
 	req = urllib.request.urlopen(url)

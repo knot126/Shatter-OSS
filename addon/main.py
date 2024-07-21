@@ -874,7 +874,7 @@ class EntityProperties(PropertyGroup):
 ################################################################################
 
 class ShatterPreferences(AddonPreferences):
-	bl_idname = "shatter"
+	bl_idname = __package__
 	
 	tab: EnumProperty(
 		name = "",
@@ -1127,7 +1127,7 @@ class SegmentPanel(Panel):
 			sub.label(text = f"Your IP: {util.get_local_ip()}")
 		
 		# DRM
-		if (not bpy.context.preferences.addons["shatter"].preferences.force_disallow_import):
+		if (not bpy.context.preferences.addons[__package__].preferences.force_disallow_import):
 			sub = layout.box()
 			sub.label(text = "Protection", icon = "LOCKED")
 			sub.prop(sh_properties, "sh_drm_disallow_import")

@@ -1,5 +1,5 @@
-addon/shatter/bundles/
-addon/shatter/bin/
-addon/shatter/asset_server.py
+addon/bundles/
+addon/bin/
+addon/asset_server.py
 build/
 __pycache__
