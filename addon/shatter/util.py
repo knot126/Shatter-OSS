@@ -18,6 +18,8 @@ import sys
 import importlib.util
 import secrets
 import xml.etree.ElementTree as et
+import subprocess
+import platform
 
 def log(msg, newline = True):
 	"""
@@ -319,3 +321,19 @@ def solve_templates(segment_text, templates = {}):
 	
 	# Back to a string!
 	return et.tostring(root).decode('utf-8')
+
+def run_native(cmd, args):
+	"""
+	Run the correct native binary from the bin directory.
+	
+	TODO: Find a better place to put this function. It's only here because mesh
+	baking is the only thing that needs run_native() atm.
+	"""
+	
+	from common import SHATTER_PATH
+	
+	cmd = f"{SHATTER_PATH}/bin/{cmd}.{sys.platform}.{platform.machine().lower()}" + (".exe" if sys.platform == "win32" else "")
+	
+	log(f"Running command: {cmd}")
+	
+	return subprocess.run([cmd] + args).returncode
