@@ -1,7 +1,0 @@
-{
-	"name": "yorshex_mesh_baker",
-	"files": {
-		"linux": "build/sh-meshbake/meshbake.elf",
-		"win32": "build/sh-meshbake/meshbake.exe"
-	}
-}
