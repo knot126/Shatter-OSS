@@ -4,8 +4,8 @@ Autogen UI stuff
 
 import bpy
 import random
-import autogen
-import butil
+from . import autogen
+from . import butil
 
 from bpy.props import (
 	StringProperty,

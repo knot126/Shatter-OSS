@@ -1,8 +1,8 @@
 import bpy
 import bpy_extras.io_utils
 import os
-import butil
-import patcher
+from . import butil
+from . import patcher
 
 from bpy.props import (
 	StringProperty,

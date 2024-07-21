@@ -1,8 +1,8 @@
 import bpy
 import bpy_extras.io_utils
 import os
-import butil
-import level_pack
+from . import butil
+from . import level_pack
 
 from bpy.props import (
 	StringProperty,

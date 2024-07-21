@@ -1,5 +1,5 @@
-import common as common
-import util
+from . import common
+from . import util
 
 # For obstacle picker
 OBSTACLES = [

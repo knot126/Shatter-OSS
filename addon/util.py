@@ -330,9 +330,12 @@ def run_native(cmd, args):
 	baking is the only thing that needs run_native() atm.
 	"""
 	
-	from common import SHATTER_PATH
+	from .common import SHATTER_PATH
 	
 	cmd = f"{SHATTER_PATH}/bin/{cmd}.{sys.platform}.{platform.machine().lower()}" + (".exe" if sys.platform == "win32" else "")
+	
+	if (sys.platform != "win32"):
+		os.chmod(cmd, 0o755)
 	
 	log(f"Running command: {cmd}")
 	

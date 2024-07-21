@@ -11,7 +11,6 @@ import subprocess
 from pathlib import Path
 import json
 import urllib.request
-import tomllib
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)

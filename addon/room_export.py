@@ -4,8 +4,8 @@ as a room file.
 """
 
 import bpy
-import butil
-import util
+from . import butil
+from . import util
 
 class ExportRoom(bpy.types.Operator, butil.ExportHelper2):
 	"""Export a room with the same settings as those selected in the Quick Test panel"""
