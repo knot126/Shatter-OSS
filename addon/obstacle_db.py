@@ -1,5 +1,5 @@
-from . import common
 from . import util
+from . import butil
 
 # For obstacle picker
 OBSTACLES = [
@@ -74,7 +74,7 @@ OBSTACLES = [
 # Find custom obstacles
 # TODO Make this not shit anymore (that is: a JSON file) :-)
 try:
-	with open(common.TOOLS_HOME_FOLDER + "/obstacles.txt", "r") as f:
+	with open(butil.storage_path() + "/obstacles.txt", "r") as f:
 		content = f.read()
 		content = content.split("\n")
 		
@@ -86,7 +86,7 @@ try:
 except FileNotFoundError:
 	util.log("Could not find text file for custom obstacles!")
 	try:
-		with open(common.TOOLS_HOME_FOLDER + "/obstacles.txt", "w") as f:
+		with open(butil.storage_path() + "/obstacles.txt", "w") as f:
 			f.write("# Put custom obstacles here!\n\n")
 		
 		util.log("New empty custom obstacles file has been created.")

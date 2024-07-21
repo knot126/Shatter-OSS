@@ -322,21 +322,31 @@ def solve_templates(segment_text, templates = {}):
 	# Back to a string!
 	return et.tostring(root).decode('utf-8')
 
+def codedir():
+	"""
+	Get the location where Shatter code is stored.
+	"""
+	
+	return str(pathlib.Path(__file__).parent)
+
 def run_native(cmd, args):
 	"""
 	Run the correct native binary from the bin directory.
-	
-	TODO: Find a better place to put this function. It's only here because mesh
-	baking is the only thing that needs run_native() atm.
 	"""
 	
-	from .common import SHATTER_PATH
+	cmd = f"{codedir()}/bin/{cmd}.{sys.platform}.{platform.machine().lower()}" + (".exe" if sys.platform == "win32" else "")
 	
-	cmd = f"{SHATTER_PATH}/bin/{cmd}.{sys.platform}.{platform.machine().lower()}" + (".exe" if sys.platform == "win32" else "")
-	
-	if (sys.platform != "win32"):
-		os.chmod(cmd, 0o755)
+	# On Linux we might need to changes permissions so it's executable.
+	# If it failed we should just try anyway though.
+	try:
+		if (sys.platform != "win32"):
+			os.chmod(cmd, 0o755)
+	except:
+		pass
 	
 	log(f"Running command: {cmd}")
 	
 	return subprocess.run([cmd] + args).returncode
+
+def get_homedir():
+	return str(pathlib.Path.home())

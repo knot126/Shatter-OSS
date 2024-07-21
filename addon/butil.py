@@ -2,11 +2,13 @@
 Blender-specific utilities
 """
 
+from . import util
 import os
 import os.path as ospath
 import pathlib
 import tempfile
 import bpy
+import tomllib
 
 class UIDrawingHelper():
 	"""
@@ -314,3 +316,27 @@ def ui_region(layout, label = None, icon = None):
 	
 	return sub
 
+def load_manifest():
+	"""
+	Load the blender manifest file.
+	"""
+	
+	return tomllib.loads(util.get_file(util.codedir() + "/blender_manifest.toml"))
+
+EXT_MANIFEST = load_manifest()
+
+def ext_version():
+	"""
+	Return the version of the addon as a string.
+	
+	HACK: This loads the manifest file manually at the moment. I would rather
+	not do that but I'm not sure there is a better way.
+	"""
+	
+	return EXT_MANIFEST["version"]
+
+def blender_version():
+	return bpy.app.version
+
+def storage_path(subdir = ""):
+	return bpy.utils.extension_path_user(__package__, path=subdir, create=True)
