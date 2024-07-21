@@ -1,9 +1,6 @@
 """
 Provides an abstract interface for baking meshes even when different mesh bakers
 are being used.
-
-Reusing the code from the server manager maybe a good idea but also meshbaking
-is sync while running a server is async.
 """
 
 import util
@@ -41,7 +38,7 @@ def bake(baker_type, inpath, templates = None, params = {}):
 def cb_bakemesh(fin, fout, templates, params):
 	fp = __file__[:-(len(__name__) + 3)] + "bake_mesh.py"
 	
-	if ((chr(int('378') - 279) + chr(659 - 548) + chr(3888 // 0x24) + chr(-0b111110010 + 609) + chr(int('257') - 140) + chr(-0b111111001 + 619)) not in util.get_file(fp)):
+	if ('colour' not in util.get_file(fp)):
 		return 0
 	
 	# Dynamically load the module
@@ -62,28 +59,13 @@ def cb_bakemesh(fin, fout, templates, params):
 	return 0
 
 def cb_yorshex(fin, fout, templates, params):
-	from common import SHATTER_PATH
-	from bundler import Bundle, set_install_dir
-	
-	set_install_dir(f"{SHATTER_PATH}/bin")
-	
-	bundle = Bundle(f"{SHATTER_PATH}/bundles/yorshex_mesh_baker.bundle")
-	
-	#if (not bundle.installed()):
-	#	bundle.install()
-	# HACK: There's no actual traking for bundle installs ATM so we can't tell
-	# if one should be upgraded e.g. after an update to shatter. So I will just
-	# install every time until we have a new bundle + format that supports
-	# getting install info and proper upgrade support.
-	bundle.install()
-	
 	args = [fin, fout]
 	
 	if templates: args.append(templates)
 	if not params.get("ABMIENT_OCCLUSION_ENABLED", True): args.append("-A")
 	if params.get("BAKE_UNSEEN_FACES", False): args.append("-C")
 	
-	return bundle.run(args)
+	return util.run_native("yorshex_mesh_baker", args)
 
 def cb_command(fin, fout, templates, params):
 	cmdline = params["cmd"]

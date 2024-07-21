@@ -66,8 +66,10 @@ def build_yorshex_meshbake_bundle():
 	os.chdir("../..")
 	
 	# build the bundle file
-	os.makedirs("addon/shatter/bundles", exist_ok = True)
-	run(['python', 'addon/shatter/bundler.py', 'make', 'bundlers/yorshex_mesh_baker.json', 'addon/shatter/bundles/yorshex_mesh_baker.bundle'])
+	shutil.rmtree("addon/shatter/bin", True)
+	os.makedirs("addon/shatter/bin")
+	run(['cp', 'build/sh-meshbake/meshbake.elf', 'addon/shatter/bin/yorshex_mesh_baker.linux.x86_64'])
+	run(['cp', 'build/sh-meshbake/meshbake.exe', 'addon/shatter/bin/yorshex_mesh_baker.win32.amd64.exe'])
 
 def download_file(url):
 	req = urllib.request.urlopen(url)
@@ -107,9 +109,8 @@ def main():
 	if (ap.update_asset_server):
 		update_asset_server()
 	
-	# Cleanup bin and __pycache__ dirs before packing
+	# Cleanup __pycache__ dirs before packing
 	shutil.rmtree("addon/shatter/__pycache__", True)
-	shutil.rmtree("addon/shatter/bin", True)
 	
 	# Make archive
 	shutil.make_archive(f"build/Shatter-OSS-{read_version()}", "zip", "addon", "shatter")

@@ -1,13 +1,6 @@
 #!/usr/bin/python3
 """
 Tool for baking a Smash Hit mesh
-
-Problems:
-
- - CP2 segments are 100% fucked becuase:
-   - tileRot isn't respected correctly
-   - shatter does not export tileSize when there is a template
-   - tileSize rotation might be wrong as well, hell if I know
 """
 
 import struct
@@ -22,7 +15,7 @@ import gzip
 VERSION = (0, 15, 6)
 
 # If the mesh baker version and bake info should be appended to the end of the
-# mesh data
+# mesh data. Crashes menu segments.
 INCLUDE_VERSION_AND_INFO = False
 
 # The number of rows and columns in the tiles.mtx.png file. Change this if you
