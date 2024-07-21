@@ -13,7 +13,6 @@ import pathlib
 import tempfile
 import json
 import pathlib
-from . import common
 from . import mesh_runner
 from . import obstacle_db
 from . import util
@@ -99,7 +98,7 @@ def tryTemplatesPath():
 	## Templates file from home directory
 	##
 	
-	homedir_templates = [common.TOOLS_HOME_FOLDER + "/templates.xml", common.HOME_FOLDER + "/smash-hit-templates.xml"]
+	homedir_templates = [butil.storage_path() + "/templates.xml", util.get_homedir() + "/smash-hit-templates.xml"]
 	
 	for f in homedir_templates:
 		if (not path and ospath.exists(f)):
@@ -561,7 +560,7 @@ def createSegmentText(scene, params):
 		params["warnings"].add("there are no boxes which causes the segment to load improperly")
 	
 	# Add file header with version
-	file_header = "<!-- Exporter: Shatter OSS " + str(common.BL_INFO["version"][0]) + "." + str(common.BL_INFO["version"][1]) + "." + str(common.BL_INFO["version"][2]) + " -->\n"
+	file_header = f"<!-- Exporter: Shatter OSS {butil.ext_version()} -->\n"
 	
 	# Get final string
 	content = file_header + et.tostring(level_root, encoding = "unicode")

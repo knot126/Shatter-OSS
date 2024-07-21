@@ -4,4 +4,5 @@
 * Reorganise preferences screen
 * Consider removing some less-used featueres
 * Remove "piracy" patch from Blender Extensions builds
+* Remove "autogen" from BE builds (crashes too much)
 * Support yorshex's mesh baker for only supported platforms

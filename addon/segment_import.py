@@ -7,7 +7,6 @@ import bpy
 import gzip
 from . import util
 from . import butil
-from . import common
 
 def sh_import_modes(s):
 	"""

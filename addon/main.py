@@ -2,10 +2,6 @@
 Main file for Shatter tools
 """
 
-from . import common
-
-SH_MAX_STR_LEN = common.MAX_STRING_LENGTH
-
 import bpy
 import os
 import webbrowser
@@ -47,9 +43,6 @@ from bpy_extras.io_utils import ImportHelper
 
 # The level test server manager
 gServerManager = None
-
-# :-3
-g_got_ricked = False
 
 ExportHelper2 = butil.ExportHelper2
 get_prefs = butil.prefs
@@ -1324,7 +1317,7 @@ class OpenLicensesIndex(Operator):
 	bl_label = "Show all licenses"
 	
 	def execute(self, context):
-		webbrowser.open(f"file://{common.SHATTER_PATH}licenses/index.html")
+		webbrowser.open(f"file://{util.codedir()}/licenses/index.html")
 		return {"FINISHED"}
 
 class OpenObstaclesTextFile(Operator):
@@ -1334,7 +1327,7 @@ class OpenObstaclesTextFile(Operator):
 	bl_label = "Edit custom obstacles"
 	
 	def execute(self, context):
-		util.user_edit_file(common.TOOLS_HOME_FOLDER + "/obstacles.txt")
+		util.user_edit_file(butil.storage_path() + "/obstacles.txt")
 		return {"FINISHED"}
 
 class OpenCurrentAssetFolder(Operator):
@@ -1452,15 +1445,9 @@ keymaps = {
 keymaps_registered = []
 
 def register():
-	util.log(f"Shatter OSS {common.BL_INFO['version'][0]}.{common.BL_INFO['version'][1]}.{common.BL_INFO['version'][2]} starting up!")
-	util.log("""**************************************************************
-* \x1b[1;32m"With the power of the prism, there's nothing I can't do."\x1b[0m *
-*         - \x1b[33mTails Nine\x1b[0m, \x1b[35m2024\x1b[0m                                 *
-**************************************************************""")
-	
-	for num in common.BL_INFO['version']:
-		if (type(num) != int):
-			util.log(f"Warning: Non-integer value detected in Shatter version ({repr(num)})! This will cause issues when packaging Shatter for automatic updates.")
+	util.log(f"Shatter OSS {butil.ext_version()} starting up!")
+	util.log("""    "With the power of the prism, there's nothing I can't do."
+         - Tails Nine 2024""")
 	
 	from bpy.utils import register_class
 	
