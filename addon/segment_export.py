@@ -13,12 +13,12 @@ import pathlib
 import tempfile
 import json
 import pathlib
-import common
-import mesh_runner
-import obstacle_db
-import util
-import butil
-import assets
+from . import common
+from . import mesh_runner
+from . import obstacle_db
+from . import util
+from . import butil
+from . import assets
 
 from bpy.props import (
 	StringProperty,

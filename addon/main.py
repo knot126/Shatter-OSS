@@ -2,7 +2,7 @@
 Main file for Shatter tools
 """
 
-import common as common
+from . import common
 
 SH_MAX_STR_LEN = common.MAX_STRING_LENGTH
 
@@ -11,18 +11,18 @@ import os
 import webbrowser
 import traceback
 import secrets
-import obstacle_db
-import segment_export
-import segment_import
-import room_export
-import autogen_ui
-import util
-import butil
-import level_pack_ui
-import patcher_ui
-import progression_crypto_ui
-import server_manager
-import assets
+from . import obstacle_db
+from . import segment_export
+from . import segment_import
+from . import room_export
+from . import autogen_ui
+from . import util
+from . import butil
+from . import level_pack_ui
+from . import patcher_ui
+from . import progression_crypto_ui
+from . import server_manager
+from . import assets
 
 from bpy.props import (
 	StringProperty,

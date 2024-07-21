@@ -1,10 +1,10 @@
 schema_version = "1.0.0"
 
 id = "shatter"
-version = "1.0.6"
+version = "1.0.7"
 name = "Shatter OSS"
 tagline = "Shatter allows easily creating and exporting Smash Hit segments"
-maintainer = "Knot <cddepppp256@gmail.com>"
+maintainer = "Knot126 <cddepppp256@gmail.com>"
 type = "add-on"
 website = "https://codeberg.org/knot126/Shatter-OSS/wiki"
 tags = ["Import-Export", "Scene", "User Interface"]
@@ -27,16 +27,8 @@ copyright = [
   "2023-2024 Yorshex",
 ]
 
-# Optional list of supported platforms. If omitted, the extension will be available in all operating systems.
 # platforms = ["windows-x64", "macos-arm64", "linux-x64"]
 # Other supported platforms: "windows-arm64", "macos-x64"
-
-# Optional: bundle 3rd party Python modules.
-# https://docs.blender.org/manual/en/dev/advanced/extensions/python_wheels.html
-# wheels = [
-#   "./wheels/hexdump-3.3-py3-none-any.whl",
-#   "./wheels/jsmin-3.0.1-py3-none-any.whl",
-# ]
 
 # # Optional: add-ons can list which resources they will require:
 # # * files (for access of any filesystem operations)

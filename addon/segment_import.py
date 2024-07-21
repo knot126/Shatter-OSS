@@ -5,9 +5,9 @@ Smash Hit Blender Tools segment import
 import xml.etree.ElementTree as et
 import bpy
 import gzip
-import util as util
-import butil as butil
-import common as common
+from . import util
+from . import butil
+from . import common
 
 def sh_import_modes(s):
 	"""

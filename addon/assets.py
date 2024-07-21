@@ -2,8 +2,8 @@
 Some stuff related to managing the assets folder.
 """
 
-import butil
-import util
+from . import butil
+from . import util
 import os
 
 def list_levels(cache = None):

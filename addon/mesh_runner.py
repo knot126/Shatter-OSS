@@ -3,7 +3,7 @@ Provides an abstract interface for baking meshes even when different mesh bakers
 are being used.
 """
 
-import util
+from . import util
 import sys
 import os
 import shlex

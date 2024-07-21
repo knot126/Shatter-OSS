@@ -1,8 +1,8 @@
 import bpy
 import bpy_extras.io_utils
 import os
-import butil
-import progression_crypto
+from . import butil
+from . import progression_crypto
 
 from bpy.props import (
 	StringProperty,

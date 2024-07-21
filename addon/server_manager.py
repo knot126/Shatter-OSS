@@ -4,7 +4,7 @@ Level test server manager
 Manages the level server(s) that are being run in the background.
 """
 
-import util
+from . import util
 from pathlib import Path
 from subprocess import Popen
 import os
