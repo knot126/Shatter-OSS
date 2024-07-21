@@ -258,35 +258,12 @@ class AdServer(BaseHTTPRequestHandler):
 		self.end_headers()
 		self.wfile.write(data)
 
-def makeTestFiles():
-	"""
-	Create test files
-	"""
-	
-	print("SegServ: Creating test files...")
-	
-	# Make the folder itself
-	os.makedirs(TEMPDIR, exist_ok = True)
-	
-	# Make test segment
-	pathlib.Path(TEMPDIR + "segment.xml").write_text('<segment size="12 10 16"><box pos="0 -0.5 -8" size="1.0 0.5 1.0" visible="1" color="0.3 0.9 0.3" tile="20"/><obstacle type="scoretop" pos="0 0.5 -8"/></segment>')
-	
-	# Cook mesh for it
-	r = os.system(f"python3 ./bake_mesh.py {TEMPDIR + 'segment.xml'} {TEMPDIR + 'segment.mesh'}")
-	
-	# windows
-	if (r):
-		os.system(f"py ./bake_mesh.py {TEMPDIR + 'segment.xml'} {TEMPDIR + 'segment.mesh'}")
-
-def runServer(no_blender = False):
+def runServer():
 	"""
 	Run the server
 	"""
 	
 	server = HTTPServer(("0.0.0.0", 8000), AdServer)
-	
-	if (no_blender):
-		makeTestFiles()
 	
 	print("** SegServ v1.0 - Smash Hit Quick Test Server **")
 	
@@ -307,4 +284,4 @@ def runServerProcess():
 	return p
 
 if (__name__ == "__main__"):
-	runServer(no_blender = True)
+	runServer()
