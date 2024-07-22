@@ -67,18 +67,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = 25,
 	)
 	
-	do_smashhitlabads: BoolProperty(
-		name = "SHL mod services: ads",
-		description = "Enables the use of SHL mod services adverts",
-		default = False,
-	)
-	
-	smashhitlabads: StringProperty(
-		name = "Services ID",
-		description = "",
-		default = "",
-	)
-	
 	do_savekey: BoolProperty(
 		name = "Change save key",
 		description = "Change the encryption key used with save files. Make you you've not also disabled them",
@@ -167,7 +155,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		self.drawItem(ui, "encryption", pl)
 		self.drawItem(ui, "lualib", pl)
 		self.drawItem(ui, "balls", pl)
-		self.drawItem(ui, "smashhitlabads", pl)
 		self.drawItem(ui, "savekey", pl)
 		self.drawItem(ui, "fov", pl)
 		self.drawItem(ui, "dropballs", pl)
@@ -194,9 +181,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		
 		if (self.do_balls):
 			patches["balls"] = [self.balls]
-		
-		if (self.do_smashhitlabads):
-			patches["smashhitlabads"] = [self.smashhitlabads]
 		
 		if (self.do_savekey):
 			patches["savekey"] = [self.savekey]

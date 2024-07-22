@@ -139,21 +139,6 @@ def _patch_v142_v143_arm64_balls(patcher, params):
 	patcher.patch(0x57cf4, struct.pack(">I", _patch_const_mov_instruction_arm64(d, value)))
 	patcher.patch(0x57ff8, struct.pack("<I", value))
 
-def _patch_v142_v143_arm64_smashhitlabads(patcher, params):
-	"""
-	Enable the Smash Hit Lab Ads mod service
-	"""
-	
-	value = params[0] if len(params) > 0 else ""
-	
-	if (len(value) != 5):
-		return ["The mod ID should be five base64 characters."]
-	
-	value = value.encode('utf-8')
-	
-	patcher.patch(0x2129a0, b"http://smashhitlab.000webhostapp.com/\x00")
-	patcher.patch(0x2129c8, b"ads.php?id=" + value + b"&x=\x00")
-
 def _patch_v142_v143_arm64_savekey(patcher, params):
 	"""
 	Change the encryption key used to obfuscate savegames
@@ -261,7 +246,6 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"lualib": _patch_v142_v143_arm64_lualib,
 	"encryption": _patch_v142_v143_arm64_encryption,
 	"balls": _patch_v142_v143_arm64_balls,
-	"smashhitlabads": _patch_v142_v143_arm64_smashhitlabads,
 	"savekey": _patch_v142_v143_arm64_savekey,
 	"vertical": _patch_v142_v143_arm64_vertical,
 	"fov": _patch_v142_v143_arm64_fov,
