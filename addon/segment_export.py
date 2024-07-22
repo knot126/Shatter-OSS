@@ -677,7 +677,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 			content = util.solve_templates(content, util.load_templates(templates))
 		
 		# Make dirs
-		tempdir = tempfile.gettempdir() + "/shbt-testserver"
+		tempdir = butil.storage_path("testserver")
 		os.makedirs(tempdir, exist_ok = True)
 		
 		# Delete old mesh file
