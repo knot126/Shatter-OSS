@@ -191,6 +191,8 @@ def server_manager_update(_self = None, _context = None):
 			level_name = level_name if level_name != "/" else (bpy.context.scene.sh_properties.sh_level if _context else "")
 			
 			gServerManager.set_params((butil.find_apk(), level_name))
+		if (server_type == "builtin"):
+			gServerManager.set_params((butil.storage_path("testserver"),))
 		else:
 			gServerManager.set_params(tuple())
 		

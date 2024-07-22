@@ -16,6 +16,7 @@ import pathlib
 import os
 import os.path
 import json
+import sys
 
 CONTENT_LEVEL = """<level>
 	<room type="http://{}:8000/room?ignore=" distance="1000" start="true" end="true" />
@@ -262,6 +263,10 @@ def runServer():
 	"""
 	Run the server
 	"""
+	
+	if len(sys.argv) > 1:
+		global TEMPDIR
+		TEMPDIR = sys.argv[1] + "/"
 	
 	server = HTTPServer(("0.0.0.0", 8000), AdServer)
 	

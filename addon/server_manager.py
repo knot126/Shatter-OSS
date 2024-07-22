@@ -69,7 +69,7 @@ class LevelServerManager():
 		self.start()
 
 
-def cb_builtin():
+def cb_builtin(tempdir):
 	"""
 	Run the builtin level server
 	"""
@@ -77,7 +77,7 @@ def cb_builtin():
 	python_path = os.path.realpath(sys.executable)
 	script_path = str(Path(__file__).parent) + "/quick_test.py"
 	
-	proc = Popen([python_path, script_path])
+	proc = Popen([python_path, script_path, tempdir])
 	
 	return proc
 
