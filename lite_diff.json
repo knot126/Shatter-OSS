@@ -22,6 +22,8 @@
 		]
 	},
 	"delete_files": [
+		"bin/yorshex_mesh_baker.linux.x86_64",
+		"bin/yorshex_mesh_baker.win32.amd64.exe",
 		"autogen.py",
 		"autogen_ui.py",
 		"patcher.py",

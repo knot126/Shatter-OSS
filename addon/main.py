@@ -878,7 +878,7 @@ def list_mesh_bakers(self, context):
 		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
 	]
 	
-	if sys.platform in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS:
+	if sys.platform in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS and BUILD_VARIANT != "Lite":
 		mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
 	
 	return mesh_bakers
