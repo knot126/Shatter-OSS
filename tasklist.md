@@ -5,4 +5,6 @@
 * Consider removing some less-used featueres
 * [DONE] Remove "piracy" patch from Blender Extensions builds
 * [DONE] Remove "autogen" from BE builds (crashes too much)
-* Support yorshex's mesh baker for only supported platforms
+* [DONE] Only show yorshex's mesh baker when actually available
+* Replace "fuck" with "hug"
+* Update messages in the UI to be more allowable (e.g. no saying fuck)
