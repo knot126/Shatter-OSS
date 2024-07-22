@@ -47,6 +47,10 @@ gServerManager = None
 ExportHelper2 = butil.ExportHelper2
 get_prefs = butil.prefs
 
+# HACK: the string `"Full"#@@BUILD_VARIANT@@` is replaced with `"Lite"` for lite builds
+# so the "ugly" comment is needed.
+BUILD_VARIANT = "Full"#@@BUILD_VARIANT@@
+
 class ShatterExportCommon(bpy.types.Operator, ExportHelper2):
 	"""
 	Common code and values between export types
@@ -1393,7 +1397,6 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 
 ###############################################################################
 
-# Also WHY THE FUCK DO I HAVE TO DO THIS???
 classes = (
 	SegmentProperties,
 	EntityProperties,
@@ -1447,7 +1450,7 @@ keymaps = {
 keymaps_registered = []
 
 def register():
-	util.log(f"Shatter OSS {butil.ext_version()} starting up!")
+	util.log(f"Shatter OSS {butil.ext_version()} {BUILD_VARIANT} starting up!")
 	util.log("""    "With the power of the prism, there's nothing I can't do."
          - Tails Nine 2024""")
 	

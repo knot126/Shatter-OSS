@@ -1,0 +1,32 @@
+{
+	"replacements": {
+		"main.py": {
+			"\"Full\"#@@BUILD_VARIANT@@": "\"Lite\""
+		}
+	},
+	"delete_lines": {
+		"main.py": [
+			"from . import autogen_ui\n",
+			"from . import patcher_ui\n",
+			"from . import progression_crypto_ui\n",
+			"\tautogen_ui.AutogenProperties,\n",
+			"\tautogen_ui.AutogenPanel,\n",
+			"\tautogen_ui.RunRandomiseSeedAction,\n",
+			"\tautogen_ui.RunAutogenAction,\n",
+			"\tpatcher_ui.PatchLibsmashhit,\n",
+			"\tprogression_crypto_ui.ProgressionCrypto,\n",
+			"\t\tself.layout.label(text = \"Common\")\n\t\tself.layout.operator(\"shatter.patch_libsmashhit\")\n\t\tself.layout.separator()\n",
+			"\t\tself.layout.operator(\"shatter.progression_crypto\")\n",
+			"\tbpy.types.Scene.shatter_autogen = PointerProperty(type=autogen_ui.AutogenProperties)\n",
+			"\tdel bpy.types.Scene.shatter_autogen\n"
+		]
+	},
+	"delete_files": [
+		"autogen.py",
+		"autogen_ui.py",
+		"patcher.py",
+		"patcher_ui.py",
+		"progression_crypto.py",
+		"progression_crypto_ui.py"
+	]
+}
