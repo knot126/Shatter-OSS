@@ -875,17 +875,6 @@ class EntityProperties(PropertyGroup):
 class ShatterPreferences(AddonPreferences):
 	bl_idname = __package__
 	
-	tab: EnumProperty(
-		name = "",
-		description = "",
-		items = [
-			('General', "General", ""),
-			('Features', "Features", ""),
-			('About', "About", ""),
-		],
-		default = "General",
-	)
-	
 	default_assets_path: StringProperty(
 		name = "Default assets path",
 		description = "The path to your Smash Hit assets folder, if you want to override the default automatic APK finding",
@@ -980,17 +969,6 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui = butil.UIDrawingHelper(context, self.layout, self)
 		
-		# tab = ui.prop("tab", use_tabs = True)
-		# HACK Make this part of the generic thing
-		r = self.layout.row(align = True)
-		r.prop_enum(self, "tab", "General")
-		r.prop_enum(self, "tab", "Features")
-		r.prop_enum(self, "tab", "About")
-		tab = self.tab
-		
-		getattr(self, f"draw_{tab.lower()}")(ui)
-	
-	def draw_general(self, ui):
 		ui.region("EXPORT", "Export and import")
 		ui.prop("default_assets_path")
 		ui.prop("enable_segment_warnings")
@@ -1005,14 +983,13 @@ class ShatterPreferences(AddonPreferences):
 		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
 		ui.end()
 		
-		ui.end()
-	
-	def draw_features(self, ui):
 		ui.region("AUTO", "Quick test")
 		
 		if (ui.prop("quick_test_server") == "yorshex"):
 			ui.warn("Yorshex's asset server is Copyright (c) 2023 yorshex and is zlib licensed.")
 			ui.warn("Please make sure to view licenses in the Credits tab.")
+		
+		ui.end()
 		
 		ui.region("UV_DATA", "Mesh baking")
 		
@@ -1023,14 +1000,11 @@ class ShatterPreferences(AddonPreferences):
 			ui.warn("Please make sure to view licenses in the Credits tab.")
 		
 		ui.end()
-	
-	def draw_about(self, ui):
-		ui.region("INFO", "About Shatter")
 		
-		ui.label("Shatter OSS core is copyright (C) Knot126 2020 - 2024")
-		ui.label("This software is released under the MIT license.")
-		ui.label("Open source components from many developers are used in Shatter OSS.")
-		ui.label("You can view them and their licenses below.")
+		ui.region("INFO", "Other information")
+		
+		ui.label(f"Current Shatter build variant: {BUILD_VARIANT}")
+		ui.label("You can view the license for open source components used in Shatter.")
 		ui.op("shatter.licenses_index")
 		
 		ui.end()
