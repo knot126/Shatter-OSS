@@ -7,6 +7,7 @@ import os
 import webbrowser
 import traceback
 import secrets
+import sys
 from . import obstacle_db
 from . import segment_export
 from . import segment_import
@@ -195,7 +196,7 @@ def server_manager_update(_self = None, _context = None):
 			level_name = level_name if level_name != "/" else (bpy.context.scene.sh_properties.sh_level if _context else "")
 			
 			gServerManager.set_params((butil.find_apk(), level_name))
-		if (server_type == "builtin"):
+		elif (server_type == "builtin"):
 			gServerManager.set_params((butil.storage_path("testserver"),))
 		else:
 			gServerManager.set_params(tuple())
@@ -872,6 +873,19 @@ class EntityProperties(PropertyGroup):
 # Addon, item and scene panels
 ################################################################################
 
+YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS = ["win32", "linux"]
+
+def list_mesh_bakers(self, context):
+	mesh_bakers = [
+		('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients. Kept for compatibility with older segments"),
+		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
+	]
+	
+	if sys.platform in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS:
+		mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
+	
+	return mesh_bakers
+
 class ShatterPreferences(AddonPreferences):
 	bl_idname = __package__
 	
@@ -950,12 +964,8 @@ class ShatterPreferences(AddonPreferences):
 	mesh_baker: EnumProperty(
 		name = "Mesh baker",
 		description = "Selects which mesh baker to use",
-		items = [
-			('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended for Windows and Linux. Not compiled for MacOS yet; please use BakeMesh."),
-			('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients"),
-			('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
-		],
-		default = "yorshex",
+		items = list_mesh_bakers,
+		default = 0,
 	)
 	
 	mesh_command: StringProperty(
