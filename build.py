@@ -11,6 +11,7 @@ import subprocess
 from pathlib import Path
 import json
 import urllib.request
+import tomllib
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)
@@ -69,11 +70,54 @@ def download_file(url):
 def update_asset_server():
 	Path("addon/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
 
+def make_full_package():
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-dir', './build', '--verbose'])
+
+def make_lite_package():
+	diff = json.loads(Path("lite_diff.json").read_text())
+	
+	shutil.rmtree("build/lite", True)
+	shutil.copytree("addon", "build/lite")
+	os.chdir("build/lite")
+	
+	# Delete files that should be deleted
+	for f in diff["delete_files"]:
+		os.remove(f)
+	
+	# Delete lines that should be deleted
+	for f in diff["delete_lines"]:
+		data = Path(f).read_text()
+		
+		for deletion in diff["delete_lines"][f]:
+			data = data.replace(deletion, "")
+		
+		Path(f).write_text(data)
+	
+	# Replace replacements
+	for f in diff["replacements"]:
+		data = Path(f).read_text()
+		
+		for rep in diff["replacements"][f]:
+			data = data.replace(rep, diff["replacements"][f][rep])
+		
+		Path(f).write_text(data)
+	
+	os.chdir("../..")
+	
+	# HACK: Parse id and version from toml since Blender can't do that when
+	# passing in a filename.
+	man = tomllib.loads(Path("./build/lite/blender_manifest.toml").read_text())
+	id = man["id"]
+	version = man["version"]
+	
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/lite', '--output-filepath', f'./build/{id}-{version}-store.zip', '--verbose'])
+
 def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--install-deps", help = "Install build depends (arch linux only)", action = "store_true")
 	ap.add_argument("--build-yorshex-meshbake-bundle", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
+	ap.add_argument("--make-lite", help = "Build a zip for Shatter \"Lite\" (the blender store version i.e. with some features removed)", action = "store_true")
 	ap = ap.parse_args()
 	
 	os.makedirs("build", exist_ok = True)
@@ -88,7 +132,10 @@ def main():
 		update_asset_server()
 	
 	# Build the blender extension
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-dir', './build', '--verbose'])
+	make_full_package()
+	
+	if (ap.make_lite):
+		make_lite_package()
 
 if (__name__ == "__main__"):
 	main()
