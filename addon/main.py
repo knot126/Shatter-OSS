@@ -183,6 +183,9 @@ def server_manager_update(_self = None, _context = None):
 	Note: self and context can be none
 	"""
 	
+	if butil.stay_offline():
+		return
+	
 	server_type = get_prefs().quick_test_server
 	
 	try:
@@ -995,9 +998,14 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui.region("AUTO", "Quick test")
 		
-		if (ui.prop("quick_test_server") == "yorshex"):
-			ui.warn("Yorshex's asset server is Copyright (c) 2023 yorshex and is zlib licensed.")
-			ui.warn("Please make sure to view licenses in the Credits tab.")
+		if not butil.stay_offline():
+			ui.prop("quick_test_server")
+			
+			#if (ui.get("quick_test_server") == "yorshex"):
+			#	ui.warn("Yorshex's asset server is Copyright (c) 2023 yorshex and is zlib licensed.")
+			#	ui.warn("Please make sure to view licenses in the Credits tab.")
+		else:
+			ui.warn("Networking is currently disabled in Blender. To use this feature, enable networking.")
 		
 		ui.end()
 		
@@ -1005,9 +1013,9 @@ class ShatterPreferences(AddonPreferences):
 		
 		if (ui.prop("mesh_baker") == "command"):
 			ui.prop("mesh_command")
-		elif (ui.get("mesh_baker") == "yorshex"):
-			ui.warn("Yorshex's bakemesh is Copyright (c) 2024 yorshex and is MIT licensed.")
-			ui.warn("Please make sure to view licenses in the Credits tab.")
+		#elif (ui.get("mesh_baker") == "yorshex"):
+		#	ui.warn("Yorshex's bakemesh is Copyright (c) 2024 yorshex and is MIT licensed.")
+		#	ui.warn("Please make sure to view licenses in the Credits tab.")
 		
 		ui.end()
 		
@@ -1086,7 +1094,7 @@ class SegmentPanel(Panel):
 				sub.prop(sh_properties, "sh_legacy_colour_default")
 		
 		# Quick test
-		server_type = get_prefs().quick_test_server
+		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
 		
 		if (server_type == "builtin"):
 			sub = layout.box()

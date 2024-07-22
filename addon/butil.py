@@ -340,3 +340,6 @@ def blender_version():
 
 def storage_path(subdir = ""):
 	return bpy.utils.extension_path_user(__package__, path=subdir, create=True)
+
+def stay_offline():
+	return not bpy.app.online_access
