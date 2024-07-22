@@ -98,16 +98,30 @@ def sh_import_segment(fp, context, compressed = False):
 	
 	root = None
 	
-	if (not compressed):
-		with open(fp, "r") as f:
-			root = f.read()
-	else:
-		with gzip.open(fp, "rb") as f:
-			root = f.read().decode()
+	try:
+		if (not compressed):
+			with open(fp, "r") as f:
+				root = f.read()
+		else:
+			with gzip.open(fp, "rb") as f:
+				root = f.read().decode()
+	except FileNotFoundError:
+		show_message("Import error", f"The file at \"{fp}\" wasn't found. Make sure to check your spelling and try again.")
+		return {"FINISHED"}
+	except gzip.BadGzipFile:
+		show_message("Import error", f"The file at \"{fp}\" is not a valid compressed file. Maybe try importing as an uncompressed segment?")
+		return {"FINISHED"}
+	except UnicodeDecodeError:
+		show_message("Import error", f"The file at \"{fp}\" contains non-UTF-8 data. Maybe try importing as a compressed segment?")
+		return {"FINISHED"}
 	
-	root = et.fromstring(root)
+	try:
+		root = et.fromstring(root)
+	except:
+		show_message("Import error", "This is not a valid segment file: not a valid XML document.")
+		return {"FINISHED"}
 	
-	# Validate we have a proper segment (why tf didn't we do this until 2023 :|)
+	# Validate we have a proper segment
 	if (root.tag != "segment"):
 		show_message("Import error", "This is not a valid segment file: root tag is not 'segment'.")
 		return {"FINISHED"}
@@ -117,23 +131,6 @@ def sh_import_segment(fp, context, compressed = False):
 	
 	# For keeping track if there were any warnings
 	warnings = set()
-	
-	# Check segment protection and enforce it
-	# 
-	# These are not designed to stop someone really dedicated from stealing
-	# segments, but it should stop someone from casually copying segments.
-	drm = segattr.get("drm", None)
-	
-	if (drm):
-		drm = drm.split()
-		
-		for d in drm:
-			if (d == "NoImport" or d == "no_import"):
-				show_message("Import error", "The creator of this segment has requested that it not be imported. While you could bypass this, we encourage you to respect this request.")
-				return {"FINISHED"}
-			
-			else:
-				warnings.add(f"an unknown type of drm '{d}' is being used")
 	
 	# Segment length
 	seg_size = segattr.get("size", "20 5 20").split()

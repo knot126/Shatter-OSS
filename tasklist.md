@@ -9,4 +9,5 @@
 * Replace "fuck" with "hug"
 * Update messages in the UI to be more allowable (e.g. no saying fuck)
 * Show message when no assets dir with yorshex server
-* Remove DRM
+* [DONE] Remove DRM
+* Look into adding more stuff in the Blender Manifest
