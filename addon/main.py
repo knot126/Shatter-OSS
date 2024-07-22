@@ -367,12 +367,6 @@ class SegmentProperties(PropertyGroup):
 		default = False
 	)
 	
-	sh_drm_disallow_import: BoolProperty(
-		name = "Disallow import",
-		description = "This will disallow importing the exported segment. It can very easily be bypassed, but might prevent a casual user from editing your segment without asking. Please use this feature wisely and consider providing Blender files for people who ask nicely",
-		default = False
-	)
-	
 	sh_lighting_ambient: FloatVectorProperty(
 		name = "Ambient",
 		description = "Colour and intensity of the ambient light",
@@ -955,12 +949,6 @@ class ShatterPreferences(AddonPreferences):
 		default = 0,
 	)
 	
-	force_disallow_import: BoolProperty(
-		name = "Always disallow import",
-		description = "Enabling this option will force every segment to have the \"disallow import\" flag set, even if you did not configure it via the obstacle panel. Please note that marking segments with this flag does not prevent someone bypassing it",
-		default = False,
-	)
-	
 	####################
 	## Advanced settings
 	####################
@@ -987,7 +975,6 @@ class ShatterPreferences(AddonPreferences):
 		ui.prop("enable_segment_warnings")
 		ui.prop("auto_export_compressed")
 		ui.prop("resolve_templates")
-		ui.prop("force_disallow_import")
 		ui.end()
 		
 		ui.region("DESKTOP", "Interface")
@@ -1117,12 +1104,6 @@ class SegmentPanel(Panel):
 			sub.prop(get_prefs(), "test_level")
 			sub.label(text = f"Your IP: {util.get_local_ip()}")
 		
-		# DRM
-		if (not bpy.context.preferences.addons[__package__].preferences.force_disallow_import):
-			sub = layout.box()
-			sub.label(text = "Protection", icon = "LOCKED")
-			sub.prop(sh_properties, "sh_drm_disallow_import")
-		
 		layout.separator()
 
 class EntityPanel(Panel):
@@ -1213,7 +1194,7 @@ class EntityPanel(Panel):
 			
 			ui.region("SETTINGS", "Parameters", force = True)
 			for i in range(12):
-				ui.prop(f"sh_param{i}", text = "", disabled = (i == 0) and (ui.get("sh_template") != ""))
+				ui.prop(f"sh_param{i}", text = "", disabled = (i == 0) and (ui.get("sh_template") != "") and (not ui.get(f"sh_param{i}")))
 			ui.end()
 		elif (t == "DEC"):
 			ui.region("TEXTURE", "Sprite")
