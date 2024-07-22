@@ -36,13 +36,7 @@ def bake(baker_type, inpath, templates = None, params = {}):
 ################################################################################
 
 def cb_bakemesh(fin, fout, templates, params):
-	fp = __file__[:-(len(__name__) + 3)] + "bake_mesh.py"
-	
-	if ('colour' not in util.get_file(fp)):
-		return 0
-	
-	# Dynamically load the module
-	bake_mesh = util.load_module(fp)
+	from . import bake_mesh
 	
 	# Setup
 	bake_mesh.BAKE_UNSEEN_FACES = params.get("BAKE_UNSEEN_FACES", False)
