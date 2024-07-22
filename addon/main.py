@@ -1492,7 +1492,7 @@ def unregister():
 		try:
 			unregister_class(cls)
 		except RuntimeError as e:
-			util.log(f"Blender is being a little shit while unregistering class {cls}:\n\n{e}")
+			util.log(f"Exception while unregistering {cls}:\n\n{e}")
 	
 	# Shutdown server
 	global gServerManager

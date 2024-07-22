@@ -486,7 +486,7 @@ class Box:
 			Test a single aabb axis returning the midpoint and half-difference
 			of two values
 			
-			2023-08-30: I forget what the fuck "half-difference" means, I think
+			2023-08-30: I forget what the #### "half-difference" means, I think
 			I meant "half of the length of the intersection"
 			"""
 			
@@ -530,7 +530,7 @@ class Box:
 			Test a single aabb axis returning the midpoint and half-difference
 			of two values
 			
-			2023-08-30: I forget what the fuck "half-difference" means, I think
+			2023-08-30: I forget what the #### "half-difference" means, I think
 			I meant "half of the length of the intersection"
 			
 			optimised version is regular diff
@@ -922,8 +922,8 @@ def doComputeLinearGradient(x, y, z, r, g, b, gradient):
 	ra = Vector3(x, y, z) - pa
 	
 	# Dot product between them to find how far along the vector is when project
-	# against the other i fucking hate this shit i dont understand it anymore
-	# and im tired as FUCK aaaaaauhghghghghghh FUCK FUCK FUCK
+	# against the other i ####ing hate this #### i dont understand it anymore
+	# and im tired as #### aaaaaauhghghghghghh #### #### ####
 	alongness = ((max(rv * ra, 0.0) * rv) / rv.lengthSquared()).length() / rv.length()
 	
 	# Now we lerp which is much nicer :3
