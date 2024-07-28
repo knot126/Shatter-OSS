@@ -142,6 +142,36 @@ class UIDrawingHelper():
 		self.region("ERROR", message, new = False)
 		self.end()
 
+class ExportImportWarnings():
+	"""
+	Keep track of export warnings
+	"""
+	
+	def __init__(self):
+		self.warnings = set()
+	
+	def add(self, text):
+		"""
+		Add an export warning
+		"""
+		
+		self.warnings.add(text)
+	
+	def display(self):
+		"""
+		Display a message with warnings
+		"""
+		
+		if (len(self.warnings) and prefs().enable_segment_warnings):
+			warnlist = []
+			
+			for warn in self.warnings:
+				warnlist.append(warn)
+			
+			warnlist = ", ".join(warnlist)
+			
+			butil.show_message("Export warnings", f"The segment exported successfully, but some possible issues were noticed: {warnlist}.")
+
 class ExportHelper2:
 	"""
 	Extended from blender's default ExportHelper to fix some bugs.
@@ -215,7 +245,7 @@ def find_assets_paths(*, search_default = True, search_apk = True):
 			dirs = os.listdir(search_path)
 			
 			for d in dirs:
-				cand = str(os.path.abspath(search_path + "/" + d + "/assets/templates.xml.mp3"))
+				cand = str(os.path.abspath(search_path + "/" + d + "/assets/game.xml.mp3"))
 				
 				if ospath.exists(cand):
 					paths.append(str(pathlib.Path(cand).parent))

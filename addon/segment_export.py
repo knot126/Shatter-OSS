@@ -38,36 +38,7 @@ from bpy.types import (
 )
 
 prefs = butil.prefs
-
-class ExportWarnings():
-	"""
-	Keep track of export warnings
-	"""
-	
-	def __init__(self):
-		self.warnings = set()
-	
-	def add(self, text):
-		"""
-		Add an export warning
-		"""
-		
-		self.warnings.add(text)
-	
-	def display(self):
-		"""
-		Display a message with warnings
-		"""
-		
-		if (len(self.warnings) and prefs().enable_segment_warnings):
-			warnlist = []
-			
-			for warn in self.warnings:
-				warnlist.append(warn)
-			
-			warnlist = ", ".join(warnlist)
-			
-			butil.show_message("Export warnings", f"The segment exported successfully, but some possible issues were noticed: {warnlist}.")
+ExportWarnings = butil.ExportImportWarnings
 
 class ExportCounter():
 	"""
@@ -83,7 +54,7 @@ class ExportCounter():
 	def has_any(self):
 		return self.count > 0
 
-def tryTemplatesPath():
+def find_templates_file():
 	"""
 	Try to get the path of the templates.xml file automatically
 	"""
@@ -91,27 +62,17 @@ def tryTemplatesPath():
 	# Try to find templates.xml using util.find_apk() first
 	path = butil.find_apk()
 	
-	if (path):
+	if path:
 		path += "/templates.xml.mp3"
-	
-	##
-	## Templates file from home directory
-	##
-	
-	homedir_templates = [butil.storage_path() + "/templates.xml", util.get_homedir() + "/smash-hit-templates.xml"]
-	
-	for f in homedir_templates:
-		if (not path and ospath.exists(f)):
-			path = f
 	
 	util.log(f"Got templates file: \"{path}\"")
 	
 	return path
 
-def exportList(lst):
+def export_list(lst):
 	return " ".join([str(x) for x in lst])
 
-def exportPointList(lst):
+def export_blender_point_list(lst):
 	return f"{lst[1]} {lst[2]} {lst[0]}"
 
 def isIndexableEqual(a, b):
@@ -134,13 +95,50 @@ def isIndexableEqual(a, b):
 	
 	return True
 
-## Segment Export
-## All of the following is related to exporting segments.
+class Entity:
+	"""
+	An entity in the smash hit xml
+	"""
+	
+	def __init__(self, tag):
+		self.tag = tag
+		self.attr = {}
+		self.sub = []
+		self.text = ""
+	
+	def __setitem__(self, key, value):
+		self.attr[str(key)] = str(value)
+	
+	def __getitem__(self, key):
+		return self.attr[str(key)]
+	
+	def __contains__(self, key):
+		return str(key) in self.attr
+	
+	def append(self, ent):
+		self.sub.append(ent)
+	
+	def set_text(self, text):
+		self.text = text
+	
+	def to_element(self):
+		el = et.Element(self.tag, self.attr)
+		el.text = self.text
+		
+		for sub in self.sub:
+			el.append(sub.to_element())
+		
+		return el
+	
+	def to_string(self):
+		return et.tostring(self.to_element(), 'unicode')
 
-def sh_create_root(scene, params):
+def create_root_element(scene, params):
 	"""
 	Creates the main root and returns it
 	"""
+	
+	ent = Entity("segment")
 	
 	size = [scene.sh_len[0], scene.sh_len[1], scene.sh_len[2]]
 	
@@ -171,44 +169,41 @@ def sh_create_root(scene, params):
 		params["warnings"].add("the segment length is zero or less which may behave weirdly")
 	
 	# Initial segment properties, like size
-	seg_props = {
-		"size": exportList(size)
-	}
+	ent["size"] = export_list(size)
 	
 	# Check for the template attrib and set
 	if (scene.sh_template):
-		seg_props["template"] = scene.sh_template
+		ent["template"] = scene.sh_template
 	elif (scene.sh_default_template):
-		seg_props["template"] = f"{scene.sh_default_template}_s"
+		ent["template"] = f"{scene.sh_default_template}_s"
 	
 	# Default template
 	if (scene.sh_default_template):
-		seg_props["shbt-default-template"] = scene.sh_default_template
+		ent["shbt-default-template"] = scene.sh_default_template
 	
 	# Lighting
 	# We no longer export lighting info if the template is present since that should
 	# be taken care of there.
 	if (not scene.sh_template):
-		if (scene.sh_light_left != 1.0):   seg_props["lightLeft"] = str(scene.sh_light_left)
-		if (scene.sh_light_right != 1.0):  seg_props["lightRight"] = str(scene.sh_light_right)
-		if (scene.sh_light_top != 1.0):    seg_props["lightTop"] = str(scene.sh_light_top)
-		if (scene.sh_light_bottom != 1.0): seg_props["lightBottom"] = str(scene.sh_light_bottom)
-		if (scene.sh_light_front != 1.0):  seg_props["lightFront"] = str(scene.sh_light_front)
-		if (scene.sh_light_back != 1.0):   seg_props["lightBack"] = str(scene.sh_light_back)
+		if (scene.sh_light_left != 1.0):   ent["lightLeft"] = str(scene.sh_light_left)
+		if (scene.sh_light_right != 1.0):  ent["lightRight"] = str(scene.sh_light_right)
+		if (scene.sh_light_top != 1.0):    ent["lightTop"] = str(scene.sh_light_top)
+		if (scene.sh_light_bottom != 1.0): ent["lightBottom"] = str(scene.sh_light_bottom)
+		if (scene.sh_light_front != 1.0):  ent["lightFront"] = str(scene.sh_light_front)
+		if (scene.sh_light_back != 1.0):   ent["lightBack"] = str(scene.sh_light_back)
 	
 	# Check for softshadow attrib and set
 	if (not (0.59999 < scene.sh_softshadow < 0.60001)):
-		seg_props["softshadow"] = str(scene.sh_softshadow)
+		ent["softshadow"] = str(scene.sh_softshadow)
 	
 	# Add ambient lighting if enabled
 	if (scene.sh_lighting):
-		seg_props["ambient"] = exportList(scene.sh_lighting_ambient)
+		ent["ambient"] = export_list(scene.sh_lighting_ambient)
 	
-	# Create main root and return it
-	level_root = et.Element("segment", seg_props)
-	level_root.text = "\n\t"
+	# Set element text
+	ent.set_text("\n\t")
 	
-	return level_root
+	return ent.to_element()
 
 def list_to_str(List):
 	return " ".join([str(x) for x in List])
@@ -256,10 +251,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		properties["type"] = obj.sh_properties.sh_powerup
 		
 	# Hidden for all types
-	if (not obj.visible_get()):
-		properties["hidden"] = "1"
-	else:
-		properties["hidden"] = "0"
+	properties["hidden"] = "1" if obj.visible_get() else "0"
 	
 	# Again, swapped becuase of Smash Hit's demensions
 	size = {"X": obj.dimensions[1] / 2, "Y": obj.dimensions[2] / 2, "Z": obj.dimensions[0] / 2}
@@ -278,7 +270,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	# Add rotation paramater if any rotation has been done
 	if (sh_type == "OBS" or sh_type == "DEC"):
 		if (obj.rotation_euler[1] != 0.0 or obj.rotation_euler[2] != 0.0 or obj.rotation_euler[0] != 0.0):
-			properties["rot"] = exportPointList(obj.rotation_euler)
+			properties["rot"] = export_blender_point_list(obj.rotation_euler)
 	
 	# Add template
 	if (obj.sh_properties.sh_template):
@@ -325,7 +317,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		
 		# Only export if it's not default of (0.0, 1.0)
 		if (diffic[0] != 0.0 or diffic[1] != 1.0):
-			properties["difficulty"] = exportList(diffic)
+			properties["difficulty"] = export_list(diffic)
 	
 	# Add reflection property for boxes if not default
 	if (sh_type == "BOX" and obj.sh_properties.sh_reflective):
@@ -343,7 +335,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	# Based on sh_size if its not some kind of plane
 	if (sh_type == "DEC"):
 		if (obj.dimensions[1] == 0.0 and obj.dimensions[2] == 0.0):
-			properties["size"] = exportList(obj.sh_properties.sh_size)
+			properties["size"] = export_list(obj.sh_properties.sh_size)
 		else:
 			size = {"X": obj.dimensions[1] / 2, "Y": obj.dimensions[2] / 2}
 			properties["size"] = str(size["X"]) + " " + str(size["Y"])
@@ -356,7 +348,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		properties["size"] = str(size["X"]) + " " + str(size["Z"] * sh_vrmultiply)
 		
 		if (not isIndexableEqual(obj.sh_properties.sh_resolution, [32.0, 32.0])):
-			properties["resolution"] = exportList(obj.sh_properties.sh_resolution)
+			properties["resolution"] = export_list(obj.sh_properties.sh_resolution)
 	
 	# Set each of the tweleve paramaters if they are needed.
 	if (sh_type == "OBS"):
@@ -372,7 +364,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	
 	# Set tint for decals
 	if (sh_type == "DEC" and obj.sh_properties.sh_havetint):
-		properties["color"] = exportList(obj.sh_properties.sh_tint)
+		properties["color"] = export_list(obj.sh_properties.sh_tint)
 	
 	# Set blend for decals
 	if (sh_type == "DEC" and obj.sh_properties.sh_blend != 1.0):
@@ -391,7 +383,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		if (not obj.sh_properties.sh_use_multitint):
 			# Export if not default
 			if (obj.sh_properties.sh_tint[0] != 1.0 or obj.sh_properties.sh_tint[1] != 1.0 or obj.sh_properties.sh_tint[2] != 1.0):
-				properties["color"] = exportList(obj.sh_properties.sh_tint[:3])
+				properties["color"] = export_list(obj.sh_properties.sh_tint[:3])
 		else:
 			properties["color"] = str(obj.sh_properties.sh_tint1[0]) + " " + str(obj.sh_properties.sh_tint1[1]) + " " + str(obj.sh_properties.sh_tint1[2]) + " " + str(obj.sh_properties.sh_tint2[0]) + " " + str(obj.sh_properties.sh_tint2[1]) + " " + str(obj.sh_properties.sh_tint2[2]) + " " + str(obj.sh_properties.sh_tint3[0]) + " " + str(obj.sh_properties.sh_tint3[1]) + " " + str(obj.sh_properties.sh_tint3[2])
 		
@@ -404,11 +396,11 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		
 		# Tile size for boxes
 		if (obj.sh_properties.sh_tilesize[0] != 1.0 or obj.sh_properties.sh_tilesize[1] != 1.0 or obj.sh_properties.sh_tilesize[2] != 1.0):
-			properties["tileSize"] = exportList(obj.sh_properties.sh_tilesize)
+			properties["tileSize"] = export_list(obj.sh_properties.sh_tilesize)
 		
 		# Tile rotation
 		if (obj.sh_properties.sh_tilerot[1] > 0.0 or obj.sh_properties.sh_tilerot[2] > 0.0 or obj.sh_properties.sh_tilerot[0] > 0.0):
-			properties["tileRot"] = exportList(obj.sh_properties.sh_tilerot)
+			properties["tileRot"] = export_list(obj.sh_properties.sh_tilerot)
 		
 		# Box gradients
 		v = obj.sh_properties.sh_graddir
@@ -509,7 +501,7 @@ def createSegmentText(scene, params):
 	Export the XML part of a segment to a string
 	"""
 	
-	level_root = sh_create_root(scene.sh_properties, params)
+	level_root = create_root_element(scene.sh_properties, params)
 	
 	# Set some params
 	params["stone_type"] = scene.sh_properties.sh_stone_obstacle_name
@@ -733,7 +725,7 @@ def sh_export_all_segments(context, compress = True):
 		sh_export_segment_ext(None, context, s, compress, params = {
 				"sh_vrmultiply": sh_properties.sh_vrmultiply,
 				"sh_box_bake_mode": sh_properties.sh_box_bake_mode,
-				"sh_meshbake_template": tryTemplatesPath(),
+				"sh_meshbake_template": find_templates_file(),
 				"bake_menu_segment": sh_properties.sh_menu_segment,
 				"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 				"lighting_enabled": sh_properties.sh_lighting,
@@ -750,7 +742,7 @@ def sh_export_segment(filepath, context, integ, compress = False, testserver = F
 		"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 		"lighting_enabled": sh_properties.sh_lighting,
 		"sh_test_server": testserver,
-		"sh_meshbake_template": tryTemplatesPath(),
+		"sh_meshbake_template": find_templates_file(),
 		"auto_find_filepath": not testserver, # HACK to make this work
 	}
 	
