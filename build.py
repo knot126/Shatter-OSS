@@ -34,6 +34,7 @@ def build_yorshex_meshbake_bundle():
 	
 	# update meshbake git repo
 	if (not os.path.exists("sh-meshbake")):
+		print("PREBUILD: Clone meshbake repo and download deps")
 		run(['git', 'clone', YORSHEX_MESHBAKE_GIT_URL])
 		os.chdir("sh-meshbake")
 		run(['wget', EXPAT_TAR_GZ])
@@ -42,13 +43,21 @@ def build_yorshex_meshbake_bundle():
 		run(['unzip', 'expat-win32bin-2.6.2.zip', '-d', 'Expat'])
 		run(['tar', '-xvzf', 'zlib-1.3.1.tar.gz'])
 	else:
+		print("PREBUILD: Pull latest meshbake")
 		os.chdir("sh-meshbake")
 		run(['git', 'pull'])
+	
+	# Generate hemisphere.h file
+	print("PREBUILD: Generate hemisphere.h")
+	run(['cc', '-o', 'gen_hemi.elf', 'gen_hemi.c', '-lm'])
+	p = subprocess.run(['./gen_hemi.elf'], capture_output=True)
+	Path("./hemisphere.h").write_bytes(p.stdout)
 	
 	# build for linux; we can just use shared libs that will pretty much
 	# always be available
 	print("BUILD: Linux")
 	run(['cc', '-o', 'meshbake.elf', 'meshbake.c', '-lm', '-lz', '-lexpat'])
+	
 	# windows one here ...
 	print("BUILD: Windows")
 	run(['cp', '../../payloads/expat_config.h', 'Expat/Source/expat_config.h'])
@@ -56,6 +65,7 @@ def build_yorshex_meshbake_bundle():
 	os.chdir("../..")
 	
 	# build the bundle file
+	print("POSTBUILD: Copy meshbake binaries")
 	shutil.rmtree(SHATTER_BINDIR, True)
 	os.makedirs(SHATTER_BINDIR)
 	run(['cp', 'build/sh-meshbake/meshbake.elf', f'{SHATTER_BINDIR}/yorshex_mesh_baker.linux.x86_64'])
