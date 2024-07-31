@@ -98,11 +98,8 @@ def tryTemplatesPath():
 	## Templates file from home directory
 	##
 	
-	homedir_templates = [butil.storage_path() + "/templates.xml", util.get_homedir() + "/smash-hit-templates.xml"]
-	
-	for f in homedir_templates:
-		if (not path and ospath.exists(f)):
-			path = f
+	if not path:
+		path = util.codedir() + "/data/templates.xml"
 	
 	util.log(f"Got templates file: \"{path}\"")
 	
@@ -614,6 +611,7 @@ def bake_mesh(input_file, templates, params):
 		"BAKE_UNSEEN_FACES": params.get("bake_menu_segment", False),
 		"ABMIENT_OCCLUSION_ENABLED": params.get("bake_vertex_light", True),
 		"LIGHTING_ENABLED": params.get("lighting_enabled", False),
+		"ymb_ao": params.get("ymb_ao", "1"),
 		
 		"cmd": prefs().mesh_command,
 	}
@@ -633,6 +631,10 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	# Warnings related
 	params["warnings"] = ExportWarnings()
 	params["box_counter"] = ExportCounter()
+	
+	# AO quality
+	if (prefs().mesh_baker == "yorshex" and scene.sh_properties.ambient_occlusion_quality != "-1"):
+		params["ymb_ao"] = scene.sh_properties.ambient_occlusion_quality
 	
 	# If the filepath is None, then find it from the apk, force enable
 	# compression.
@@ -724,7 +726,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	context.window_manager.progress_end()
 	context.window.cursor_set('DEFAULT')
 
-def sh_export_all_segments(context, compress = True):
+def sh_export_all_segments(context, compress = True, aotype = '1'):
 	for s in bpy.data.scenes:
 		util.log(f"Exporting a scene: {s} ...")
 		
@@ -738,9 +740,10 @@ def sh_export_all_segments(context, compress = True):
 				"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 				"lighting_enabled": sh_properties.sh_lighting,
 				"auto_find_filepath": True,
+				"ymb_ao": aotype,
 			})
 
-def sh_export_segment(filepath, context, integ, compress = False, testserver = False):
+def sh_export_segment(filepath, context, integ, compress = False, testserver = False, aotype = '1'):
 	sh_properties = context.scene.sh_properties
 	
 	params = {
@@ -752,9 +755,10 @@ def sh_export_segment(filepath, context, integ, compress = False, testserver = F
 		"sh_test_server": testserver,
 		"sh_meshbake_template": tryTemplatesPath(),
 		"auto_find_filepath": not testserver, # HACK to make this work
+		"ymb_ao": aotype,
 	}
 	
-	util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}")
+	util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}\n\tparams = {params}")
 	
 	import secrets
 	

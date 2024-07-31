@@ -12,9 +12,21 @@ from pathlib import Path
 import json
 import urllib.request
 import tomllib
+from time import time
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)
+
+def buildnum():
+	return (int(time()) - 1722450362) // 5
+
+def zippath(build_type = "full"):
+	# HACK: Parse id and version from toml since Blender can't do that when
+	# passing in a filename.
+	man = tomllib.loads(Path("./build/lite/blender_manifest.toml").read_text())
+	id = man["id"]
+	version = man["version"]
+	return f'./build/{id}-{version}-{buildnum()}-{build_type}.zip'
 
 YORSHEX_MESHBAKE_GIT_URL = 'https://codeberg.org/yorshex/sh-meshbake'
 EXPAT_TAR_GZ = 'https://github.com/libexpat/libexpat/releases/download/R_2_6_2/expat-win32bin-2.6.2.zip'
@@ -81,7 +93,7 @@ def update_asset_server():
 	Path("addon/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
 
 def make_full_package():
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-dir', './build', '--verbose'])
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', zippath(), '--verbose'])
 
 def make_lite_package():
 	diff = json.loads(Path("lite_diff.json").read_text())
@@ -114,13 +126,7 @@ def make_lite_package():
 	
 	os.chdir("../..")
 	
-	# HACK: Parse id and version from toml since Blender can't do that when
-	# passing in a filename.
-	man = tomllib.loads(Path("./build/lite/blender_manifest.toml").read_text())
-	id = man["id"]
-	version = man["version"]
-	
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/lite', '--output-filepath', f'./build/{id}-{version}-store.zip', '--verbose'])
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/lite', '--output-filepath', zippath('lite'), '--verbose'])
 
 def main():
 	ap = argparse.ArgumentParser()
