@@ -52,6 +52,15 @@ get_prefs = butil.prefs
 # so the "ugly" comment is needed.
 BUILD_VARIANT = "Full"#@@BUILD_VARIANT@@
 
+YORSHEX_MESHBAKER_AO_TYPES = [
+	('0', "Disabled", "Disable ambient occlusion entirely"),
+	('1', "Fast", "Faster to export but more rough looking"),
+	('2', "Precise", "Nicer looking but slower to export"),
+]
+
+YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL = YORSHEX_MESHBAKER_AO_TYPES.copy()
+YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL.insert(0, ('-1', 'No override', "Does not override the export type's ambient occlusion quality"))
+
 class ShatterExportCommon(bpy.types.Operator, ExportHelper2):
 	"""
 	Common code and values between export types
@@ -82,7 +91,7 @@ class SegmentExport(ShatterExportCommon):
 	filter_glob = bpy.props.StringProperty(default='*.xml.mp3', options={'HIDDEN'}, maxlen=255)
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(self.filepath, context, globals())
+		segment_export.sh_export_segment(self.filepath, context, globals(), aotype=get_prefs().ymb_ao_manual)
 		
 		return {"FINISHED"}
 
@@ -99,7 +108,7 @@ class SegmentExportGz(ShatterExportCommon):
 	filter_glob = bpy.props.StringProperty(default='*.xml.gz.mp3', options={'HIDDEN'}, maxlen=255)
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(self.filepath, context, globals(), True)
+		segment_export.sh_export_segment(self.filepath, context, globals(), True, aotype=get_prefs().ymb_ao_manual)
 		
 		return {"FINISHED"}
 
@@ -113,7 +122,7 @@ class SegmentExportAuto(bpy.types.Operator):
 	bl_label = "Export to Assets"
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(None, context, globals(), get_prefs().auto_export_compressed)
+		segment_export.sh_export_segment(None, context, globals(), get_prefs().auto_export_compressed, aotype=get_prefs().ymb_ao_auto_export)
 		
 		return {"FINISHED"}
 
@@ -124,7 +133,7 @@ class SegmentExportAllAuto(bpy.types.Operator):
 	bl_label = "Export all to APK"
 	
 	def execute(self, context):
-		segment_export.sh_export_all_segments(context, get_prefs().auto_export_compressed)
+		segment_export.sh_export_all_segments(context, get_prefs().auto_export_compressed, aotype=get_prefs().ymb_ao_auto_export)
 		
 		return {"FINISHED"}
 
@@ -136,7 +145,7 @@ class SegmentExportTest(Operator):
 	
 	def execute(self, context):
 		if (get_prefs().quick_test_server == "builtin"):
-			segment_export.sh_export_segment(None, context, globals(), False, True)
+			segment_export.sh_export_segment(None, context, globals(), False, True, aotype=get_prefs().ymb_ao_quick_test)
 		else:
 			butil.show_message("Quick test not running", "The quick test server is not running right now. If you're using Yorshex's asset server, use auto export (Alt + Shift + R by default) instead.")
 		
@@ -273,6 +282,13 @@ class SegmentProperties(PropertyGroup):
 			('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
 		],
 		default = "Mesh"
+	)
+	
+	ambient_occlusion_quality: EnumProperty(
+		name = "Ambient occlusion quality",
+		description = "Controls the quality of ambient occlusion (shadows near corners) in this segment's mesh",
+		items = YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL,
+		default = "-1",
 	)
 	
 	sh_template: StringProperty(
@@ -959,6 +975,27 @@ class ShatterPreferences(AddonPreferences):
 		default = 0,
 	)
 	
+	ymb_ao_quick_test: EnumProperty(
+		name = "Quick test",
+		description = "Selects the default ambient occlusion bake quality for quick test",
+		items = YORSHEX_MESHBAKER_AO_TYPES,
+		default = "1",
+	)
+	
+	ymb_ao_auto_export: EnumProperty(
+		name = "Auto export",
+		description = "Selects the default ambient occlusion bake quality for automatic export",
+		items = YORSHEX_MESHBAKER_AO_TYPES,
+		default = "2",
+	)
+	
+	ymb_ao_manual: EnumProperty(
+		name = "Manual export",
+		description = "Selects the default ambient occlusion bake quality for manual export",
+		items = YORSHEX_MESHBAKER_AO_TYPES,
+		default = "2",
+	)
+	
 	mesh_command: StringProperty(
 		name = "External mesh bake command",
 		description = "If specified, this command is run instead of the built-in mesh baker",
@@ -987,10 +1024,6 @@ class ShatterPreferences(AddonPreferences):
 		
 		if not butil.stay_offline():
 			ui.prop("quick_test_server")
-			
-			#if (ui.get("quick_test_server") == "yorshex"):
-			#	ui.warn("Yorshex's asset server is Copyright (c) 2023 yorshex and is zlib licensed.")
-			#	ui.warn("Please make sure to view licenses in the Credits tab.")
 		else:
 			ui.warn("Networking is currently disabled in Blender. To use this feature, enable networking.")
 		
@@ -998,11 +1031,15 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui.region("UV_DATA", "Mesh baking")
 		
-		if (ui.prop("mesh_baker") == "command"):
+		mb = ui.prop("mesh_baker")
+		
+		if (mb == "command"):
 			ui.prop("mesh_command")
-		#elif (ui.get("mesh_baker") == "yorshex"):
-		#	ui.warn("Yorshex's bakemesh is Copyright (c) 2024 yorshex and is MIT licensed.")
-		#	ui.warn("Please make sure to view licenses in the Credits tab.")
+		elif (mb == "yorshex"):
+			ui.label("Ambient occlusion quality")
+			ui.prop("ymb_ao_quick_test")
+			ui.prop("ymb_ao_auto_export")
+			ui.prop("ymb_ao_manual")
 		
 		ui.end()
 		
@@ -1069,6 +1106,8 @@ class SegmentPanel(Panel):
 			# Mesh settings
 			sub = layout.box()
 			sub.label(text = "Meshes", icon = "MESH_DATA")
+			if (get_prefs().mesh_baker == "yorshex"):
+				sub.prop(sh_properties, "ambient_occlusion_quality")
 			sub.prop(sh_properties, "sh_menu_segment")
 			sub.prop(sh_properties, "sh_ambient_occlusion")
 		

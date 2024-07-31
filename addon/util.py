@@ -344,7 +344,7 @@ def run_native(cmd, args):
 	except:
 		pass
 	
-	log(f"Running command: {cmd}")
+	log(f"Running command: {cmd} {' '.join(args)}")
 	
 	return subprocess.run([cmd] + args).returncode
 
