@@ -34,13 +34,13 @@ def save_file(url, path):
 def read_manifest():
 	return tomllib.loads(Path(f"addon/blender_manifest.toml").read_text())
 
-def get_zip_path(build_type = "ext"):
+def get_zip_path(build_type = "ext", ext = ".zip"):
 	# HACK: Parse id and version from toml since Blender can't do that when
 	# passing in a filename.
 	man = read_manifest()
 	id = man["id"]
 	version = man["version"]
-	return f'./build/{id}-{version}-{build_type}.zip'
+	return f'./build/{id}-{version}-{build_type}{ext}'
 
 def update_meshbake():
 	print("Update meshbake binaries")
@@ -60,18 +60,51 @@ def make_full_package():
 	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', get_zip_path(), '--verbose'])
 
 def make_legacy_package():
+	print("build legacy zip...")
+	manifest = read_manifest()
+	
 	shutil.rmtree("build/legacy", True)
-	shutil.copytree("addon", "build/legacy")
-	os.chdir("build/legacy")
+	shutil.copytree("addon", f"build/legacy/{manifest['id']}")
+	os.chdir(f"build/legacy/{manifest['id']}")
+	
 	# do modifications needed for legacy zip
-	os.chdir("../..")
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/legacy', '--output-filepath', get_zip_path('legacy'), '--verbose'])
+	# first: bl_info
+	bl_info = f"bl_info = {repr({
+		'name': manifest['name'],
+		'author': manifest['maintainer'].split()[0],
+		'version': tuple([int(x) for x in manifest['version'].split('.')]),
+		'blender': tuple([int(x) for x in manifest['blender_version_min'].split('.')]),
+		'location': '3DView',
+		'description': manifest['tagline'],
+		'warning': '',
+		'support': 'COMMUNITY',
+		'wiki_url': manifest['website'],
+		'tracker_url': '',
+		'category': manifest['tags'][0],
+	})}\n\n"
+	
+	Path("__init__.py").write_text(bl_info + Path("__init__.py").read_text())
+	
+	# second: update `from . import` to `from shatter import`
+	for f in os.listdir():
+		if (os.path.isfile(f)):
+			Path(f).write_text(Path(f).read_text().replace("from . import ", f"from {manifest['id']} import "))
+	
+	# third: make blender manifest as a json
+	Path("blender_manifest.json").write_text(json.dumps(manifest))
+	
+	os.chdir("../../..")
+	# run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/legacy', '--output-filepath', get_zip_path('legacy'), '--verbose'])
+	path = get_zip_path('legacy', '')
+	shutil.make_archive(path, 'zip', 'build/legacy', manifest['id'])
+	print(f"Built legacy zip to {path}.zip")
 
 def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--install-deps", help = "Install build depends (arch linux only)", action = "store_true")
 	ap.add_argument("--update-meshbake", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
+	ap.add_argument("--build-legacy", help = "Build a legacy addon package", action = "store_true")
 	ap = ap.parse_args()
 	
 	os.makedirs("build", exist_ok = True)
@@ -87,6 +120,9 @@ def main():
 	
 	# Build the blender extension
 	make_full_package()
+	
+	if (ap.build_legacy):
+		make_legacy_package()
 
 if (__name__ == "__main__"):
 	main()
