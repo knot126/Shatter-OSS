@@ -12,76 +12,15 @@ from pathlib import Path
 import json
 import urllib.request
 import tomllib
-from time import time
 
-def run(cmd):
-	assert(subprocess.run(cmd).returncode == 0)
-
-def buildnum():
-	return (int(time()) - 1722450362) // 5
-
-def zippath(build_type = "full"):
-	# HACK: Parse id and version from toml since Blender can't do that when
-	# passing in a filename.
-	man = tomllib.loads(Path("./build/lite/blender_manifest.toml").read_text())
-	id = man["id"]
-	version = man["version"]
-	return f'./build/{id}-{version}-{buildnum()}-{build_type}.zip'
-
-YORSHEX_MESHBAKE_GIT_URL = 'https://codeberg.org/yorshex/sh-meshbake'
-EXPAT_TAR_GZ = 'https://github.com/libexpat/libexpat/releases/download/R_2_6_2/expat-win32bin-2.6.2.zip'
-ZLIB_TAR_GZ = 'https://zlib.net/zlib-1.3.1.tar.gz'
+YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.0.0/"
 ASSET_SERVER_URL = 'https://raw.githubusercontent.com/yorshex/sh-asset-server/main/asset_server.py'
 
 SHATTER_BINDIR = "addon/bin"
 BLENDER = "/home/dragon/Downloads/blender-4.2.0-linux-x64/blender"
 
-# taken from CMakeLists.txt
-ZLIB_SRC_FILES = "adler32.c compress.c crc32.c deflate.c gzclose.c gzlib.c gzread.c gzwrite.c inflate.c infback.c inftrees.c inffast.c trees.c uncompr.c zutil.c".split()
-
-EXPAT_SRC_FILES = "xmlparse.c  xmlrole.c  xmltok.c  xmltok_impl.c  xmltok_ns.c".split()
-
-def build_yorshex_meshbake_bundle():
-	os.chdir("build")
-	
-	# update meshbake git repo
-	if (not os.path.exists("sh-meshbake")):
-		print("PREBUILD: Clone meshbake repo and download deps")
-		run(['git', 'clone', YORSHEX_MESHBAKE_GIT_URL])
-		os.chdir("sh-meshbake")
-		run(['wget', EXPAT_TAR_GZ])
-		run(['wget', ZLIB_TAR_GZ])
-		os.makedirs("Expat", exist_ok = True)
-		run(['unzip', 'expat-win32bin-2.6.2.zip', '-d', 'Expat'])
-		run(['tar', '-xvzf', 'zlib-1.3.1.tar.gz'])
-	else:
-		print("PREBUILD: Pull latest meshbake")
-		os.chdir("sh-meshbake")
-		run(['git', 'pull'])
-	
-	# Generate hemisphere.h file
-	print("PREBUILD: Generate hemisphere.h")
-	run(['cc', '-o', 'gen_hemi.elf', 'gen_hemi.c', '-lm'])
-	p = subprocess.run(['./gen_hemi.elf'], capture_output=True)
-	Path("./hemisphere.h").write_bytes(p.stdout)
-	
-	# build for linux; we can just use shared libs that will pretty much
-	# always be available
-	print("BUILD: Linux")
-	run(['cc', '-o', 'meshbake.elf', 'meshbake.c', '-lm', '-lz', '-lexpat'])
-	
-	# windows one here ...
-	print("BUILD: Windows")
-	run(['cp', '../../payloads/expat_config.h', 'Expat/Source/expat_config.h'])
-	run(['x86_64-w64-mingw32-gcc', '-o', 'meshbake.exe', '-Izlib-1.3.1', '-IExpat/Source', '-IExpat/Source/lib', 'meshbake.c'] + ["zlib-1.3.1/" + x for x in ZLIB_SRC_FILES] + ['Expat/Source/lib/' + x for x in EXPAT_SRC_FILES])
-	os.chdir("../..")
-	
-	# build the bundle file
-	print("POSTBUILD: Copy meshbake binaries")
-	shutil.rmtree(SHATTER_BINDIR, True)
-	os.makedirs(SHATTER_BINDIR)
-	run(['cp', 'build/sh-meshbake/meshbake.elf', f'{SHATTER_BINDIR}/yorshex_mesh_baker.linux.x86_64'])
-	run(['cp', 'build/sh-meshbake/meshbake.exe', f'{SHATTER_BINDIR}/yorshex_mesh_baker.win32.amd64.exe'])
+def run(cmd):
+	assert(subprocess.run(cmd).returncode == 0)
 
 def download_file(url):
 	req = urllib.request.urlopen(url)
@@ -89,51 +28,50 @@ def download_file(url):
 	req.close()
 	return data
 
+def save_file(url, path):
+	Path(path).write_bytes(download_file(url))
+
+def read_manifest():
+	return tomllib.loads(Path(f"addon/blender_manifest.toml").read_text())
+
+def get_zip_path(build_type = "ext"):
+	# HACK: Parse id and version from toml since Blender can't do that when
+	# passing in a filename.
+	man = read_manifest()
+	id = man["id"]
+	version = man["version"]
+	return f'./build/{id}-{version}-{build_type}.zip'
+
+def update_meshbake():
+	print("Update meshbake binaries")
+	
+	# Remove old bin folder if there is one, make new one
+	shutil.rmtree(SHATTER_BINDIR, True)
+	os.makedirs(SHATTER_BINDIR)
+	
+	# Download mesh bake
+	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-linux-amd64", f'{SHATTER_BINDIR}/yorshex_mesh_baker.linux.x86_64')
+	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-win32-amd64.exe", f'{SHATTER_BINDIR}/yorshex_mesh_baker.win32.amd64.exe')
+
 def update_asset_server():
-	Path("addon/asset_server.py").write_bytes(download_file(ASSET_SERVER_URL))
+	save_file(ASSET_SERVER_URL, "addon/asset_server.py")
 
 def make_full_package():
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', zippath(), '--verbose'])
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', get_zip_path(), '--verbose'])
 
-def make_lite_package():
-	diff = json.loads(Path("lite_diff.json").read_text())
-	
-	shutil.rmtree("build/lite", True)
-	shutil.copytree("addon", "build/lite")
-	os.chdir("build/lite")
-	
-	# Delete files that should be deleted
-	for f in diff["delete_files"]:
-		os.remove(f)
-	
-	# Delete lines that should be deleted
-	for f in diff["delete_lines"]:
-		data = Path(f).read_text()
-		
-		for deletion in diff["delete_lines"][f]:
-			data = data.replace(deletion, "")
-		
-		Path(f).write_text(data)
-	
-	# Replace replacements
-	for f in diff["replacements"]:
-		data = Path(f).read_text()
-		
-		for rep in diff["replacements"][f]:
-			data = data.replace(rep, diff["replacements"][f][rep])
-		
-		Path(f).write_text(data)
-	
+def make_legacy_package():
+	shutil.rmtree("build/legacy", True)
+	shutil.copytree("addon", "build/legacy")
+	os.chdir("build/legacy")
+	# do modifications needed for legacy zip
 	os.chdir("../..")
-	
-	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/lite', '--output-filepath', zippath('lite'), '--verbose'])
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/legacy', '--output-filepath', get_zip_path('legacy'), '--verbose'])
 
 def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--install-deps", help = "Install build depends (arch linux only)", action = "store_true")
-	ap.add_argument("--build-yorshex-meshbake-bundle", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
+	ap.add_argument("--update-meshbake", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
-	ap.add_argument("--make-lite", help = "Build a zip for Shatter \"Lite\" (the blender store version i.e. with some features removed)", action = "store_true")
 	ap = ap.parse_args()
 	
 	os.makedirs("build", exist_ok = True)
@@ -141,17 +79,14 @@ def main():
 	if (ap.install_deps):
 		run(['sudo', 'pacman', '-Syu', 'zlib', 'expat', 'mingw-w64-gcc', 'unzip', 'cmake'])
 	
-	if (ap.build_yorshex_meshbake_bundle):
-		build_yorshex_meshbake_bundle()
+	if (ap.update_meshbake):
+		update_meshbake()
 	
 	if (ap.update_asset_server):
 		update_asset_server()
 	
 	# Build the blender extension
 	make_full_package()
-	
-	if (ap.make_lite):
-		make_lite_package()
 
 if (__name__ == "__main__"):
 	main()
