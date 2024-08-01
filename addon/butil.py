@@ -5,10 +5,15 @@ Blender-specific utilities
 from . import util
 import os
 import os.path as ospath
+import sys
 import pathlib
 import tempfile
 import bpy
-import tomllib
+
+try:
+	import tomllib
+except ModuleNotFoundError:
+	import json
 
 class UIDrawingHelper():
 	"""
@@ -321,6 +326,12 @@ def load_manifest():
 	Load the blender manifest file.
 	"""
 	
+	# Load JSON as a fallback for not having TOML module (I hope it exists!)
+	# This is for legacy blender with python 3.10 and no tomllib
+	if ('tomllib' not in globals()):
+		util.log("Loading JSON instead of TOML file")
+		return json.loads(util.get_file(util.codedir() + "/blender_manifest.json"))
+	
 	return tomllib.loads(util.get_file(util.codedir() + "/blender_manifest.toml"))
 
 EXT_MANIFEST = load_manifest()
@@ -339,7 +350,13 @@ def blender_version():
 	return bpy.app.version
 
 def storage_path(subdir = ""):
+	# Needed for legacy addon
+	if (not hasattr(bpy.utils, "extension_path_user")):
+		data_folder = (os.environ["APPDATA"] + "/Shatter Team/Shatter") if sys.platform == "win32" else (str(pathlib.Path.home()) + "/.shatter")
+		return f"{data_folder}/{subdir}" if subdir else data_folder
+	
 	return bpy.utils.extension_path_user(__package__, path=subdir, create=True)
 
 def stay_offline():
-	return not bpy.app.online_access
+	# hasattr() needed for legacy addon
+	return hasattr(bpy.app, "online_access") and not bpy.app.online_access
