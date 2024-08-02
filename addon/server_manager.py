@@ -55,6 +55,7 @@ class LevelServerManager():
 		
 		if (self.server_process):
 			self.server_process.terminate()
+			self.server_process.wait(3)
 			
 			util.log(f"Terminated server with pid {self.server_process.pid}")
 		
@@ -67,6 +68,16 @@ class LevelServerManager():
 		
 		self.stop()
 		self.start()
+	
+	def running(self):
+		"""
+		Check if the server is currently running
+		"""
+		
+		if (self.server_process == None):
+			return False
+		
+		return self.server_process.poll() == None
 
 
 def cb_builtin(tempdir):

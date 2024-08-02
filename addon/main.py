@@ -8,6 +8,7 @@ import webbrowser
 import traceback
 import secrets
 import sys
+import socket
 from . import obstacle_db
 from . import segment_export
 from . import segment_import
@@ -48,9 +49,7 @@ gServerManager = None
 ExportHelper2 = butil.ExportHelper2
 get_prefs = butil.prefs
 
-# HACK: the string `"Full"#@@BUILD_VARIANT@@` is replaced with `"Lite"` for lite builds
-# so the "ugly" comment is needed.
-BUILD_VARIANT = "Full"#@@BUILD_VARIANT@@
+gQuickPortTest = None
 
 YORSHEX_MESHBAKER_AO_TYPES = [
 	('0', "Disabled", "Disable ambient occlusion entirely"),
@@ -894,8 +893,7 @@ def list_mesh_bakers(self, context):
 		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
 	]
 	
-	if sys.platform in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS and BUILD_VARIANT != "Lite":
-		mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
+	mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
 	
 	return mesh_bakers
 
@@ -1023,7 +1021,20 @@ class ShatterPreferences(AddonPreferences):
 		ui.region("AUTO", "Quick test")
 		
 		if not butil.stay_offline():
-			ui.prop("quick_test_server")
+			server_type = ui.prop("quick_test_server")
+			if server_type != 'none':
+				if (gServerManager.running()):
+					ui.label("The server is currently running", "CHECKMARK")
+				else:
+					ui.label("The server is not running", "CANCEL")
+			
+			ui.region("SHADERFX", "Quick test checkup", new=False)
+			if (gQuickPortTest == False):
+				ui.label("Could not open port 8000", "CANCEL")
+			elif (gQuickPortTest == True):
+				ui.label("Port 8000 can be opened", "CHECKMARK")
+			ui.op("shatter.quick_test_checkup")
+			ui.end()
 		else:
 			ui.warn("Networking is currently disabled in Blender. To use this feature, enable networking.")
 		
@@ -1045,7 +1056,6 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui.region("INFO", "Other information")
 		
-		ui.label(f"Current Shatter build variant: {BUILD_VARIANT}")
 		ui.label("You can view the license for open source components used in Shatter.")
 		ui.op("shatter.licenses_index")
 		
@@ -1364,6 +1374,37 @@ class OpenCurrentAssetFolder(Operator):
 		
 		return {"FINISHED"}
 
+class QuickTestCheckup(Operator):
+	"""Check for possible quick test problems"""
+	
+	bl_idname = "shatter.quick_test_checkup"
+	bl_label = "Check for possible quick test problems"
+	
+	def execute(self, context):
+		global gQuickPortTest
+		
+		# Server needs to be offline while we check
+		gServerManager.stop()
+		
+		# Check that we can open port 8000 as a server
+		try:
+			sock = socket.socket()
+			sock.bind(("0.0.0.0", 8000))
+			sock.listen()
+			sock.close()
+			
+			gQuickPortTest = True
+		except Exception as e:
+			util.log(f"*** Exception during quick test checkup ***")
+			util.log(traceback.format_exc())
+			
+			gQuickPortTest = False
+		
+		# We can start the server again
+		gServerManager.start()
+		
+		return {"FINISHED"}
+
 ################################################################################
 # Shatter menu
 ################################################################################
@@ -1432,6 +1473,7 @@ classes = (
 	OpenLicensesIndex,
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
+	QuickTestCheckup,
 	autogen_ui.AutogenProperties,
 	autogen_ui.AutogenPanel,
 	autogen_ui.RunRandomiseSeedAction,
@@ -1462,7 +1504,7 @@ keymaps = {
 keymaps_registered = []
 
 def register():
-	util.log(f"Shatter OSS {butil.ext_version()} {BUILD_VARIANT} starting up!")
+	util.log(f"Shatter OSS {butil.ext_version()} starting up!")
 	util.log("""    "With the power of the prism, there's nothing I can't do."
          - Tails Nine 2024""")
 	

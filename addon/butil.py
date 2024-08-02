@@ -92,12 +92,12 @@ class UIDrawingHelper():
 		
 		self.layout[-1].label(text = title, icon = icon)
 	
-	def label(self, text):
+	def label(self, text, icon = "NONE"):
 		"""
 		Draw a basic label
 		"""
 		
-		self.layout[-1].label(text = text)
+		self.layout[-1].label(text = text, icon = icon)
 	
 	def prop(self, symbol, *, icon = None, text = None, text_compact = None, use_button = False, disabled = False, use_tabs = False):
 		"""
