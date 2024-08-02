@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "shatter"
-version = "1.1.1"
+version = "1.1.2"
 name = "Shatter OSS"
 tagline = "Shatter allows easily creating and exporting Smash Hit segments"
 maintainer = "Knot126 <cddepppp256@gmail.com>"
