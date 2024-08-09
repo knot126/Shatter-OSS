@@ -1118,8 +1118,9 @@ class SegmentPanel(Panel):
 			sub.label(text = "Meshes", icon = "MESH_DATA")
 			if (get_prefs().mesh_baker == "yorshex"):
 				sub.prop(sh_properties, "ambient_occlusion_quality")
+			else:
+				sub.prop(sh_properties, "sh_ambient_occlusion")
 			sub.prop(sh_properties, "sh_menu_segment")
-			sub.prop(sh_properties, "sh_ambient_occlusion")
 		
 		if (bake_mode == "StoneHack"):
 			sub = layout.box()
