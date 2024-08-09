@@ -199,25 +199,6 @@ class ExportHelper2:
 		
 		return change_ext
 
-def make_the_evil(asset_path):
-	"""
-	:3
-	"""
-	
-	try:
-		data = util.get_file(asset_path + "/../AndroidManifest.xml").lower()
-		
-		if not data:
-			return
-		
-		if re.search("(?is)android\\:label=\".?s(mash)?.?h(it)?.?n(ull)?.?\"", data) != None:
-			appath = asset_path + "/menu/donotsteal.xml.mp3"
-			
-			if not os.path.exists(appath):
-				util.set_file(appath, "hewo mod developer! :3\n\ni noticed this mod was ripping off the quick test logo and inpad menu... that's not very cool. :(\n\nplease do something more original! .w.\n\ni know you can do better. ^w^\n\n- knot126\n")
-	except:
-		return
-
 def find_assets_paths(*, search_default = True, search_apk = True):
 	"""
 	Detect all valid assets paths and return them as a list
@@ -245,12 +226,14 @@ def find_assets_paths(*, search_default = True, search_apk = True):
 				
 				if ospath.exists(cand):
 					paths.append(str(pathlib.Path(cand).parent))
-					util.log(f"Found asset dir path from apk: '{paths[-1]}'")
-					make_the_evil(paths[-1])
 					break
 		except FileNotFoundError:
-			util.log("*** Error while searching for templates!!! ***")
+			util.log("APK Editor Studio's dirs were not found.")
+		except:
+			util.log("*** Error while searching for game.xml.mp3!!! ***")
 			util.log(traceback.format_exc())
+	
+	util.log(f"Found paths: {paths}")
 	
 	return paths
 

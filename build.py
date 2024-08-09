@@ -13,7 +13,7 @@ import json
 import urllib.request
 import tomllib
 
-YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.0/"
+YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.1/"
 ASSET_SERVER_URL = 'https://raw.githubusercontent.com/yorshex/sh-asset-server/main/asset_server.py'
 
 SHATTER_BINDIR = "addon/bin"
@@ -29,6 +29,7 @@ def download_file(url):
 	return data
 
 def save_file(url, path):
+	print(f"Downloading: {url} ...")
 	Path(path).write_bytes(download_file(url))
 
 def read_manifest():
@@ -101,28 +102,39 @@ def make_legacy_package():
 
 def main():
 	ap = argparse.ArgumentParser()
-	ap.add_argument("--install-deps", help = "Install build depends (arch linux only)", action = "store_true")
 	ap.add_argument("--update-meshbake", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
-	ap.add_argument("--build-legacy", help = "Build a legacy addon package", action = "store_true")
+	ap.add_argument("--build-ext", help = "Build a Blender Extensions (Blender 4.2+) package", action = "store_true")
+	ap.add_argument("--build-legacy", help = "Build a legacy addon (Blender 4.1 and earlier) package", action = "store_true")
 	ap = ap.parse_args()
 	
 	os.makedirs("build", exist_ok = True)
 	
-	if (ap.install_deps):
-		run(['sudo', 'pacman', '-Syu', 'zlib', 'expat', 'mingw-w64-gcc', 'unzip', 'cmake'])
+	did_anything = False
 	
 	if (ap.update_meshbake):
+		did_anything = True
 		update_meshbake()
 	
 	if (ap.update_asset_server):
+		did_anything = True
 		update_asset_server()
 	
-	# Build the blender extension
-	make_full_package()
+	if (ap.build_ext):
+		did_anything = True
+		make_full_package()
 	
 	if (ap.build_legacy):
+		did_anything = True
 		make_legacy_package()
+	
+	if not did_anything:
+		print(f"""Warning: No action has been preformed! You probably want to run:
+
+  $ {sys.argv[0]} --update-meshbake --update-asset-server # Download mesh baker and asset server
+  $ {sys.argv[0]} --build-ext --build-legacy # Build both extension and legacy package
+
+... instead of invoking with no arguments.""")
 
 if (__name__ == "__main__"):
 	main()
