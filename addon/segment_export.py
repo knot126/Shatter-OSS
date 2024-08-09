@@ -609,6 +609,7 @@ def MB_progress_update_callback(value):
 def bake_mesh(input_file, templates, params):
 	new_params = {
 		"BAKE_UNSEEN_FACES": params.get("bake_menu_segment", False),
+		"bake_menu_segment": params.get("bake_menu_segment", False),
 		"ABMIENT_OCCLUSION_ENABLED": params.get("bake_vertex_light", True),
 		"LIGHTING_ENABLED": params.get("lighting_enabled", False),
 		"ymb_ao": params.get("ymb_ao", "1"),
