@@ -37,6 +37,53 @@ from bpy.types import (
 	PropertyGroup,
 )
 
+NX_QUICK_TEST_LEVEL = """<level>
+	<room type="test" length="300" start="true" end="true"/>
+	<room type="test" length="300" start="true" end="true"/>
+	<room type="test" length="300" start="true" end="true"/>
+</level>
+"""
+
+NX_QUICK_TEST_ROOM = """
+function init()
+	pStart = mgGetBool("start", true)
+	pEnd = mgGetBool("end", true)
+
+	mgMusic("0")
+	mgFogColor(1, 1, 1, 0, 0, 0)
+
+	confSegment("test", 1)
+	confSegment("test", 1)
+	confSegment("test", 1)
+	confSegment("test", 1)
+	confSegment("test", 1)
+	
+	l = 0
+	
+	if pStart then
+		l = l + mgSegment("test", -l)	
+	end
+
+	local targetLen = 140 
+	if mgGet("player.mode")=="0" then targetLen = 120 end
+	if mgGet("player.mode")=="2" then targetLen = 200 end
+	
+	while l < targetLen do
+		s = nextSegment()
+		l = l + mgSegment(s, -l)
+	end
+	
+	if pEnd then
+		l = l + mgSegment("test", -l)
+	end
+		
+	mgLength(l)
+end
+
+function tick()
+end
+"""
+
 prefs = butil.prefs
 
 class ExportWarnings():
@@ -665,51 +712,56 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	# Get templates path, needed for later
 	templates = params.get("sh_meshbake_template", None)
 	
-	# Export current segment to test server
+	# Do some extra quick test related things
 	# TODO Implement mutli segment exporting
-	# TODO Just make this stupid thing part of the normal export flow
 	if (params.get("sh_test_server", False) == True):
-		util.log("** Export to test server **")
+		server_type = prefs().quick_test_server
 		
-		# Solve templates if we have them
-		if (templates):
+		if (server_type == "builtin"):
+			util.log("Builtin test server export")
+			
+			# Solve templates if we have them
+			if (templates):
+				content = util.solve_templates(content, util.load_templates(templates))
+			
+			# Make dirs
+			tempdir = butil.storage_path("testserver")
+			os.makedirs(tempdir, exist_ok = True)
+			
+			# Make XML path
+			filepath = ospath.join(tempdir, "segment.xml")
+			
+			# Write quick test JSON room info file
+			writeQuicktestInfo(tempdir, context.scene.sh_properties)
+		elif (server_type == "nx"):
+			util.log("Exporting segment for NxQuick test server")
+			
+			# NxServer uses asset folder overlays which override certian files
+			# in one asset folder with another instead of the simlper but pretty
+			# jank tempdir that the old ('builtin') server uses.
+			# 
+			# Create the overlay structure, if not already created
+			overlay = butil.storage_path("testserver")
+			
+			os.makedirs(f"{overlay}/levels", exist_ok=True)
+			os.makedirs(f"{overlay}/rooms", exist_ok=True)
+			os.makedirs(f"{overlay}/segments", exist_ok=True)
+			
+			util.set_file(f"{overlay}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
+			util.set_file(f"{overlay}/rooms/test.lua.mp3", NX_QUICK_TEST_ROOM)
+			filepath = f"{overlay}/segments/test.xml.mp3"
+			compress = False
+			
+			# TODO Async POST /v6/config to update config for asset dir if need
+	else:
+		# Preform template resolution if it is enabled for all segments and not
+		# in quick test mode.
+		if (prefs().resolve_templates and templates):
 			content = util.solve_templates(content, util.load_templates(templates))
-		
-		# Make dirs
-		tempdir = butil.storage_path("testserver")
-		os.makedirs(tempdir, exist_ok = True)
-		
-		# Delete old mesh file
-		if (ospath.exists(tempdir + "/segment.mesh")):
-			os.remove(tempdir + "/segment.mesh")
-		
-		# Write XML
-		with open(tempdir + "/segment.xml", "w") as f:
-			f.write(content)
-		
-		# Write mesh if needed
-		if (params.get("sh_box_bake_mode", "Mesh") == "Mesh"):
-			bake_mesh(tempdir + "/segment.xml", templates, params)
-		
-		context.window_manager.progress_end()
-		
-		# Write quick test JSON room info file
-		writeQuicktestInfo(tempdir, context.scene.sh_properties)
-		
-		context.window.cursor_set('DEFAULT')
-		
-		# Display export warnings, if any
-		params["warnings"].display()
-		
-		return
 	
 	##
 	## Write the file
 	##
-	
-	# Preform template resolution if it is enabled for all segments
-	if (prefs().resolve_templates and templates):
-		content = util.solve_templates(content, util.load_templates(templates))
 	
 	# Write out file
 	with (gzip.open(filepath, "wb") if compress else open(filepath, "wb")) as f:

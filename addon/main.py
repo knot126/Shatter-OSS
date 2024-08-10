@@ -46,6 +46,10 @@ from bpy_extras.io_utils import ImportHelper
 # The level test server manager
 gServerManager = None
 
+# Quick Test Protocol v6 servers use a token for security since the config can
+# be updated via the HTTP API.
+gNxToken = None
+
 ExportHelper2 = butil.ExportHelper2
 get_prefs = butil.prefs
 
@@ -143,7 +147,7 @@ class SegmentExportTest(Operator):
 	bl_label = "Export segment to quick test"
 	
 	def execute(self, context):
-		if (get_prefs().quick_test_server == "builtin"):
+		if (get_prefs().quick_test_server in ["builtin", "nx"]):
 			segment_export.sh_export_segment(None, context, globals(), False, True, aotype=get_prefs().ymb_ao_quick_test)
 		else:
 			butil.show_message("Quick test not running", "The quick test server is not running right now. If you're using Yorshex's asset server, use auto export (Alt + Shift + R by default) instead.")
@@ -209,6 +213,11 @@ def server_manager_update(_self = None, _context = None):
 			gServerManager.set_params((butil.find_apk(), level_name))
 		elif (server_type == "builtin"):
 			gServerManager.set_params((butil.storage_path("testserver"),))
+		elif (server_type == "nx"):
+			global gNxToken
+			gNxToken = secrets.token_hex(24)
+			
+			gServerManager.set_params((butil.storage_path("testserver"), butil.find_apk(), gNxToken))
 		else:
 			gServerManager.set_params(tuple())
 		
@@ -948,8 +957,9 @@ class ShatterPreferences(AddonPreferences):
 		description = "Selects which, if any, level test server will be used. This will create a local HTTP server on port 8000, which might pose a security risk",
 		items = [
 			('none', "None", "Don't use any quick test server"),
-			('builtin', "Quick test server", "The classic quick test server integrated with Shatter, simplest and fastest to use but only loads one segment at a time"),
+			('builtin', "Quick test server (deprecated)", "The classic quick test server integrated with Shatter, simplest and fastest to use but only loads one segment at a time"),
 			('yorshex', "Yorshex's asset server", "More advanced test server that allows loading an entire level from a Smash Hit assets folder, written by Yorshex. Shatter integration is a work in progress but should be usable"),
+			('nx', "NxQuick (beta)", "NeXt Quick Testing server, FOR DEVELOPERS ONLY!!!"),
 		],
 		update = server_manager_update,
 		default = "builtin",

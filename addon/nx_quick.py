@@ -162,6 +162,10 @@ class NXRequestHandler(BaseHTTPRequestHandler):
 
 """
 The routes specific to quick test v6 and later
+
+TODO:
+  - Template resolution
+  - Remote scripts, so we have more compatiblity with other APIs
 """
 
 from pathlib import Path
@@ -184,8 +188,6 @@ RAW_CONTENT_TYPES = {
 }
 
 ROOM_SCRIPT_INJECTION = """-- BEGIN ROOM INJECTION
--- __mgSegment_dYXNmdzkzdDlna2Ewd__ = mgSegment
-
 function __mgSegment_dYXNmdzkzdDlna2Ewd__(path, l)
 	knLog(LOG_INFO, "Load segment: " .. path)
 	return mgSegment("user://segments/" .. path, l)
@@ -495,7 +497,9 @@ def v6_ping(request):
 
 @routes.add("GET", r"/v6/config")
 def v6_download_config(request):
-	return NXResponse(200, {"success": True, "config": quick_config})
+	conf = quick_config.copy()
+	del conf["token"]
+	return NXResponse(200, {"success": True, "config": conf})
 
 
 @routes.add("POST", r"/v6/config")
@@ -544,7 +548,7 @@ def main():
 		return
 	
 	if not args.insecure:
-		quick_config["assets"] = args.token
+		quick_config["token"] = args.token
 	
 	run_server()
 
