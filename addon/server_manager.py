@@ -104,10 +104,23 @@ def cb_yorshex(asset_dir, level):
 	
 	return proc
 
+def cb_nx(overlay, assets, token):
+	"""
+	Run NxQuick server
+	"""
+	
+	python_path = os.path.realpath(sys.executable)
+	script_path = str(Path(__file__).parent) + "/nx_quick.py"
+	
+	proc = Popen([python_path, script_path, "-o", overlay, "-a", assets, "-t", token])
+	
+	return proc
+
 SERVER_CALLBACKS = {
 	"none": None,
 	"builtin": cb_builtin,
 	"yorshex": cb_yorshex,
+	"nx": cb_nx,
 }
 
 

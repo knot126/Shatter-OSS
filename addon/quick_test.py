@@ -7,7 +7,7 @@ Notes:
    excludes the port. We have to fix that.
 """
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from multiprocessing import Process
 import tempfile
 import xml.etree.ElementTree as et
@@ -160,8 +160,8 @@ end"""
 	return bytes(room, "utf-8")
 
 def doError(self, s = ""):
-	data = bytes(f"404 File Not Found\n\n{s}", "utf-8")
-	self.send_response(404)
+	data = bytes(f"Internal server error!!!\n\n{s}", "utf-8")
+	self.send_response(500)
 	self.send_header("Content-Length", str(len(data)))
 	self.send_header("Content-Type", "text/plain")
 	self.end_headers()
@@ -246,6 +246,15 @@ class AdServer(BaseHTTPRequestHandler):
 			### MENU UI ###
 			elif (path.endswith("menu")):
 				data = bytes(f'''<ui texture="menu/start.png" selected="menu/button_select.png"><rect coords="0 0 294 384" cmd="level.start level:http://{host}:8000/level?ignore="/></ui>''', "utf-8")
+			
+			### CLIENT PING ###
+			elif (path.endswith("ping")):
+				data = b"connected"
+				contenttype = "text/plain"
+			
+			### ERROR - NO HANDLER ###
+			else:
+				raise Exception(f"No handler for '{path}'")
 		except Exception as e:
 			# Error on other files
 			import traceback
@@ -268,16 +277,14 @@ def runServer():
 		global TEMPDIR
 		TEMPDIR = sys.argv[1] + "/"
 	
-	server = HTTPServer(("0.0.0.0", 8000), AdServer)
-	
-	print("** SegServ v1.0 - Smash Hit Quick Test Server **")
+	server = ThreadingHTTPServer(("0.0.0.0", 8000), AdServer)
 	
 	try:
 		server.serve_forever()
 	except Exception as e:
 		print("SegServ has crashed!!\n", e)
-	
-	server.server_close()
+	finally:
+		server.server_close()
 
 def runServerProcess():
 	"""
