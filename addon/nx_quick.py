@@ -184,11 +184,14 @@ RAW_CONTENT_TYPES = {
 }
 
 ROOM_SCRIPT_INJECTION = """-- BEGIN ROOM INJECTION
-_mgSegment = mgSegment
-function mgSegment(path, l)
-	return _mgSegment("user://segments/" .. path, l)
+-- __mgSegment_dYXNmdzkzdDlna2Ewd__ = mgSegment
+
+function __mgSegment_dYXNmdzkzdDlna2Ewd__(path, l)
+	knLog(LOG_INFO, "Load segment: " .. path)
+	return mgSegment("user://segments/" .. path, l)
 end
 -- END ROOM INJECTION
+
 """
 
 # Global config options - set via POST /v6/config
@@ -341,13 +344,13 @@ class AssetManager:
 		
 		# TODO fix this
 		if type(deps) == set:
-			print("deps search")
-			
 			for match in re.findall(r'mgSegment\s*\(\s*"([^"]+)"', room):
 				deps.add(match)
 			
 			for match in re.findall(r'confSegment\s*\(\s*"([^"]+)"', room):
 				deps.add(match)
+		
+		room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
 		
 		return prepend + room + append
 	
@@ -504,6 +507,7 @@ def v6_update_config(request):
 
 
 def run_server():
+	global server
 	server = ThreadingHTTPServer(('0.0.0.0', QUICK_PORT), NXRequestHandler)
 	
 	try:
