@@ -249,7 +249,7 @@ class AdServer(BaseHTTPRequestHandler):
 			
 			### CLIENT PING ###
 			elif (path.endswith("ping")):
-				data = b"connected"
+				data = bytes(f"connected (sv=1.2,pv={protocol})", "utf-8")
 				contenttype = "text/plain"
 			
 			### ERROR - NO HANDLER ###

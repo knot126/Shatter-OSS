@@ -44,46 +44,6 @@ NX_QUICK_TEST_LEVEL = """<level>
 </level>
 """
 
-NX_QUICK_TEST_ROOM = """
-function init()
-	pStart = mgGetBool("start", true)
-	pEnd = mgGetBool("end", true)
-
-	mgMusic("0")
-	mgFogColor(1, 1, 1, 0, 0, 0)
-
-	confSegment("test", 1)
-	confSegment("test", 1)
-	confSegment("test", 1)
-	confSegment("test", 1)
-	confSegment("test", 1)
-	
-	l = 0
-	
-	if pStart then
-		l = l + mgSegment("test", -l)	
-	end
-
-	local targetLen = 140 
-	if mgGet("player.mode")=="0" then targetLen = 120 end
-	if mgGet("player.mode")=="2" then targetLen = 200 end
-	
-	while l < targetLen do
-		s = nextSegment()
-		l = l + mgSegment(s, -l)
-	end
-	
-	if pEnd then
-		l = l + mgSegment("test", -l)
-	end
-		
-	mgLength(l)
-end
-
-function tick()
-end
-"""
-
 prefs = butil.prefs
 
 class ExportWarnings():
@@ -650,6 +610,41 @@ def writeQuicktestInfo(tempdir, scene):
 	
 	pathlib.Path(tempdir + "/room.json").write_text(json.dumps(info))
 
+def get_room_data(scene):
+	scene = scene.sh_properties
+	room = util.get_file(util.codedir() + "/data/quick.lua")
+	
+	music = f"mgMusic({repr(scene.sh_music)})" if scene.sh_music else "mgMusic(tostring(math.random(0, 28)))"
+	room = room.replace("__shatter_quick_music__", music)
+	
+	fog = f"mgFogColor({scene.sh_fog_colour_bottom[0]}, {scene.sh_fog_colour_bottom[1]}, {scene.sh_fog_colour_bottom[2]}, {scene.sh_fog_colour_top[0]}, {scene.sh_fog_colour_top[1]}, {scene.sh_fog_colour_top[2]})"
+	room = room.replace("__shatter_quick_fog__", fog)
+	
+	for field in ["echo", "reverb", "rotation", "difficulty", "gravity"]:
+		data = getattr(scene, f"sh_{field}")
+		
+		if not data:
+			room = room.replace(f"__shatter_quick_{field}__\n\t", "")
+			continue
+		
+		# Setter function name
+		funcname = "mg" + field.title()
+		if field == "rotation": funcname = "mgSetRotation"
+		if field == "difficulty": funcname = "mgSetDifficulty"
+		
+		# The params
+		params = "(" + ", ".join(str(data).split()) + ")"
+		
+		# Substitution
+		room = room.replace(f"__shatter_quick_{field}__", funcname + params)
+	
+	particles = f"mgParticles({repr(scene.sh_particles)})" if not scene.sh_particles == "None" else ""
+	room = room.replace("__shatter_quick_particles__", particles)
+	
+	room = room.replace("__shatter_quick_length__", str(scene.sh_room_length))
+	
+	return room
+
 def MB_progress_update_callback(value):
 	bpy.context.window_manager.progress_update(value)
 
@@ -748,7 +743,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 			os.makedirs(f"{overlay}/segments", exist_ok=True)
 			
 			util.set_file(f"{overlay}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
-			util.set_file(f"{overlay}/rooms/test.lua.mp3", NX_QUICK_TEST_ROOM)
+			util.set_file(f"{overlay}/rooms/test.lua.mp3", get_room_data(scene))
 			filepath = f"{overlay}/segments/test.xml.mp3"
 			compress = False
 			

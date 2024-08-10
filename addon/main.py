@@ -1143,7 +1143,7 @@ class SegmentPanel(Panel):
 		# Quick test
 		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
 		
-		if (server_type == "builtin"):
+		if (server_type in ["builtin", "nx"]):
 			sub = layout.box()
 			sub.label(text = "Quick test", icon = "AUTO")
 			sub.prop(sh_properties, "sh_fog_colour_top")
@@ -1156,7 +1156,8 @@ class SegmentPanel(Panel):
 			sub.prop(sh_properties, "sh_rotation")
 			sub.prop(sh_properties, "sh_particles")
 			sub.prop(sh_properties, "sh_difficulty")
-			sub.prop(sh_properties, "sh_extra_code")
+			if (server_type == "builtin"):
+				sub.prop(sh_properties, "sh_extra_code")
 			sub.label(text = f"Your IP: {util.get_local_ip()}")
 		elif (server_type == "yorshex"):
 			sub = layout.box()
@@ -1435,7 +1436,7 @@ class SHATTER_MT_3DViewportMenu(Menu):
 		
 		self.layout.operator("shatter.export_auto", icon = "MOD_BEVEL")
 		
-		if (get_prefs().quick_test_server == "builtin"):
+		if (get_prefs().quick_test_server in ["builtin", "nx"]):
 			self.layout.operator("shatter.export_test_server", icon = "AUTO")
 
 def SHATTER_MT_3DViewportMenu_draw(self, context):
@@ -1450,7 +1451,7 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.separator()
 		self.layout.label(text = "Export")
 		self.layout.operator("shatter.export_all_auto")
-		if (get_prefs().quick_test_server == "builtin"):
+		if (get_prefs().quick_test_server in ["builtin", "nx"]):
 			self.layout.operator("shatter.export_room")
 		self.layout.operator("shatter.export_level_package")
 		self.layout.separator()
