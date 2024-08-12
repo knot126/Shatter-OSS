@@ -94,7 +94,7 @@ class SegmentExport(ShatterExportCommon):
 	filter_glob = bpy.props.StringProperty(default='*.xml.mp3', options={'HIDDEN'}, maxlen=255)
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(self.filepath, context, globals(), aotype=get_prefs().ymb_ao_manual)
+		segment_export.sh_export_segment(self.filepath, context, aotype=get_prefs().ymb_ao_manual)
 		
 		return {"FINISHED"}
 
@@ -111,7 +111,7 @@ class SegmentExportGz(ShatterExportCommon):
 	filter_glob = bpy.props.StringProperty(default='*.xml.gz.mp3', options={'HIDDEN'}, maxlen=255)
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(self.filepath, context, globals(), True, aotype=get_prefs().ymb_ao_manual)
+		segment_export.sh_export_segment(self.filepath, context, True, aotype=get_prefs().ymb_ao_manual)
 		
 		return {"FINISHED"}
 
@@ -125,7 +125,7 @@ class SegmentExportAuto(bpy.types.Operator):
 	bl_label = "Export to Assets"
 	
 	def execute(self, context):
-		segment_export.sh_export_segment(None, context, globals(), get_prefs().auto_export_compressed, aotype=get_prefs().ymb_ao_auto_export)
+		segment_export.sh_export_segment(None, context, get_prefs().auto_export_compressed, aotype=get_prefs().ymb_ao_auto_export)
 		
 		return {"FINISHED"}
 
@@ -148,7 +148,7 @@ class SegmentExportTest(Operator):
 	
 	def execute(self, context):
 		if (get_prefs().quick_test_server in ["builtin", "nx"]):
-			segment_export.sh_export_segment(None, context, globals(), False, True, aotype=get_prefs().ymb_ao_quick_test)
+			segment_export.sh_export_segment(None, context, False, True, aotype=get_prefs().ymb_ao_quick_test, nx_token=gNxToken)
 		else:
 			butil.show_message("Quick test not running", "The quick test server is not running right now. If you're using Yorshex's asset server, use auto export (Alt + Shift + R by default) instead.")
 		

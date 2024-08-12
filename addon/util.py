@@ -17,6 +17,7 @@ import shutil
 import sys
 import importlib.util
 import secrets
+import urllib.request
 import xml.etree.ElementTree as et
 import subprocess
 import platform
@@ -238,6 +239,36 @@ def start_async_task(func, args):
 	p.start()
 	
 	return p
+
+def do_http_request(method, url, data = b"", headers = {}):
+	"""
+	Preform an http request
+	"""
+	
+	req = urllib.request.Request(url=url, method=method, data=data)
+	for k, v in headers.items():
+		req.add_header(k, v)
+	response = urllib.request.urlopen(req)
+	output = response.read()
+	response.close()
+	
+	return output
+
+def do_async_json_post(url, data):
+	"""
+	Do an async JSON post (does not return results)
+	"""
+	
+	def func(url, data):
+		try:
+			do_http_request("POST", url, json.dumps(data).encode('utf-8'), headers = {
+				"Content-Type": "application/json"
+			})
+		except:
+			log(f"Async POST to {url} failed")
+		os._exit(0)
+	
+	start_async_task(func, (url, data))
 
 def load_module(path):
 	"""
