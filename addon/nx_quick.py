@@ -210,8 +210,11 @@ def assert_key(request_body):
 		return
 	
 	if "token" in request_body:
-		if not compare_digest(request_body["token"], quick_config["token"]):
-			raise SecurityException("Tokens do not match")
+		try:
+			if not compare_digest(request_body["token"], quick_config["token"]):
+				raise SecurityException("Tokens do not match")
+		except:
+			raise SecurityException(f"Unknown error, user supplied token = {request_body['token']}")
 	else:
 		raise SecurityException("Token not in body")
 
