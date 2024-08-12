@@ -405,7 +405,7 @@ class AssetManager:
 			
 			for sub in root:
 				if "template" in sub.attrib:
-					sub.attrib = templates[sub.attrib["template"]] | sub.attrib
+					sub.attrib = templates.get(sub.attrib["template"], {}) | sub.attrib
 					del sub.attrib["template"]
 		
 		return et.tostring(root, 'unicode')
