@@ -168,7 +168,7 @@ TODO:
   - Remote scripts, so we have more compatiblity with other APIs
 """
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from hmac import compare_digest
 import os
 import os.path
@@ -195,6 +195,8 @@ end
 -- END ROOM INJECTION
 
 """
+
+BUILTIN_OBSTACLES = ["3dcross", "creditssign", "hitblock", "suspendcube", "babytoy", "cubeframe", "laser", "suspendcylinder", "bar", "dna", "levicube", "suspendhollow", "beatmill", "doors", "ngon", "suspendside", "beatsweeper", "dropblock", "pyramid", "suspendwindow", "beatwindow", "elevatorgrid", "revolver", "sweeper", "bigcrank", "elevator", "rotor", "test", "bigpendulum", "fence", "scorediamond", "tree", "boss", "flycube", "scoremulti", "vs_door", "bowling", "foldwindow", "scorestar", "vs_sweeper", "box", "framedwindow", "scoretop", "vs_wall", "cactus", "gear", "sidesweeper", "credits1", "grid", "stone", "credits2", "gyro", "suspendbox", "boss/cube", "boss/matryoshka", "boss/single", "boss/telecube", "boss/triple", "doors/45", "doors/basic", "doors/double", "fence/carousel", "fence/dna", "fence/slider"]
 
 # Global config options - set via POST /v6/config
 quick_config = {}
@@ -318,10 +320,29 @@ class AssetManager:
 	def readXml(self, f, gzipped=False):
 		return et.fromstring(self.read(f, gzipped=gzipped))
 	
-	def readLevelXml(self, name, prepend = "", append = "", deps = None):
+	def readTemplatesXml(self, name = "templates.xml"):
 		"""
-		Read a level XML, prepending `prepend` and appending `append` to room
-		type attributes. Optionally, if `deps` is a set, add the original
+		Read a template XML into a {"template": {"prop": "val"}} style form and
+		return it.
+		"""
+		
+		templates = {}
+		
+		try:
+			root = self.readXml(name)
+			
+			for tmp in root:
+				name = tmp.attrib["name"]
+				attribs = tmp[0].attrib
+				templates[name] = attribs
+		except FileNotFoundError:
+			pass
+		
+		return templates
+	
+	def readLevelXml(self, name, deps = None):
+		"""
+		Read a level XML. Optionally, if `deps` is a set, add the original
 		name of every room used in this XML to this list.
 		"""
 		
@@ -330,11 +351,11 @@ class AssetManager:
 		for sub in root:
 			if "type" in sub.attrib:
 				if type(deps) == set: deps.add(sub.attrib["type"])
-				sub.attrib["type"] = prepend + sub.attrib["type"] + append
+				sub.attrib["type"] = "user://rooms/" + sub.attrib["type"]
 		
 		return et.tostring(root, 'unicode')
 	
-	def readRoomLua(self, name, prepend = "", append = "", deps = None):
+	def readRoomLua(self, name, deps = None):
 		"""
 		Read a room lua file. If deps is a set, add the name of every segment
 		type found to it.
@@ -354,13 +375,12 @@ class AssetManager:
 		
 		room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
 		
-		return prepend + room + append
+		return ROOM_SCRIPT_INJECTION + room
 	
-	def readSegmentXml(self, name, prepend = "", append = "", deps = None):
+	def readSegmentXml(self, name, solve = True, deps = None):
 		"""
-		Read a segment's XML file, prepending and appending the given strings
-		to each obstacle's type attributes. Optionally, if `deps` is a set,
-		add the original name of every obstacle type found.
+		Read a segment's XML file. Optionally, if `deps` is a set, add the
+		original name of every obstacle type found.
 		
 		TODO: Remote obstacle loading
 		"""
@@ -372,8 +392,21 @@ class AssetManager:
 		
 		for sub in root:
 			if sub.tag == "obstacle" and "type" in sub.attrib:
-				if type(deps) == set: deps.add(sub.attrib["type"])
-				sub.attrib["type"] = prepend + sub.attrib["type"] + append
+				if type(deps) == set:
+					deps.add(sub.attrib["type"])
+				
+				if sub.attrib["type"] in BUILTIN_OBSTACLES:
+					sub.attrib["type"] = "obstacles/" + sub.attrib["type"]
+				else:
+					sub.attrib["type"] = "user://obstacles/" + sub.attrib["type"]
+		
+		if solve:
+			templates = self.readTemplatesXml()
+			
+			for sub in root:
+				if "template" in sub.attrib:
+					sub.attrib = templates[sub.attrib["template"]] | sub.attrib
+					del sub.attrib["template"]
 		
 		return et.tostring(root, 'unicode')
 	
@@ -383,6 +416,13 @@ class AssetManager:
 		"""
 		
 		return self.read(f"segments/{name}.mesh", False)
+	
+	def readObstacleLua(self, name):
+		"""
+		Read an obstacle's lua file
+		"""
+		
+		return self.read(f"obstacles/{name}.lua")
 	
 	def write(self, f, data):
 		"""
@@ -438,7 +478,7 @@ def v6_level_list(request):
 def v6_level(request):
 	try:
 		deps = set()
-		data = assets.readLevelXml(request.query["name"], "user://rooms/", "", deps)
+		data = assets.readLevelXml(request.query["name"], deps)
 		
 		if 'depends' in request.query:
 			return NXResponse(200, join_content_and_deps_set(data, deps), {"Content-Type": "application/octet-stream"})
@@ -452,7 +492,7 @@ def v6_level(request):
 def v6_room(request):
 	try:
 		deps = set()
-		data = assets.readRoomLua(request.query["name"], ROOM_SCRIPT_INJECTION, "", deps)
+		data = assets.readRoomLua(request.query["name"], deps)
 		
 		if 'depends' in request.query:
 			return NXResponse(200, join_content_and_deps_set(data, deps), {"Content-Type": "application/octet-stream"})
@@ -466,7 +506,7 @@ def v6_room(request):
 def v6_segment_xml(request):
 	try:
 		deps = set()
-		data = assets.readSegmentXml(request.query["name"], "obstacles/", "", deps)
+		data = assets.readSegmentXml(request.query["name"], deps = deps)
 		
 		if 'depends' in request.query:
 			return NXResponse(200, join_content_and_deps_set(data, deps), {"Content-Type": "application/octet-stream"})
@@ -485,9 +525,116 @@ def v6_segment_mesh(request):
 		return NXResponse(404, f"Segment '{request.query['name']}' not found")
 
 
-@routes.add("POST", r"/v6/mega")
-def v6_download_bundled(request):
-	return NXResponse(404, f"Mega bundling is not supported by this server")
+@routes.add("GET", r"/v6/obstacle")
+def v6_obstacle(request):
+	try:
+		data = assets.readObstacleLua(request.query["name"])
+		
+		return NXResponse(200, data, {"Content-Type": "text/plain"})
+	except FileNotFoundError:
+		return NXResponse(404, f"Obstacle '{request.query['name']}' not found")
+
+
+@routes.add("GET", r"/v6/packed")
+def v6_mega(request):
+	"""
+	POST /v6/packed?levels=<level1>[;<level2>;<level3>;...]
+	
+	Responds with an archive in a custom, simple binary format containing the
+	level XMLs and their dependents.
+	"""
+	
+	if "levels" not in request.query:
+		return NXResponse(400, "Parameter 'levels' is required!")
+	
+	def pack_int(i):
+		# Pack an integer into required format
+		return i.to_bytes(4, 'little')
+	
+	CMD_START = pack_int(100)
+	CMD_UNPACK = pack_int(200)
+	CMD_MKDIR = pack_int(201)
+	CMD_END = pack_int(300)
+	
+	have_dirs = []
+	
+	def add_mkdir(arr, name):
+		# Add a make dir command
+		arr += CMD_MKDIR
+		arr += pack_int(len(str(name)) + 1)
+		arr += bytes(str(name), 'utf-8') + b"\x00"
+	
+	def assert_dirs(arr, name):
+		# If the path contains dirs that may not exist, add a command to
+		# create them.
+		nonlocal have_dirs
+		for parent in reversed(PurePosixPath(name).parents):
+			parent = str(parent)
+			if parent not in have_dirs and parent != ".":
+				add_mkdir(arr, parent)
+				have_dirs.append(parent)
+	
+	def add_pack(arr, name, data):
+		# Add a file to the package
+		assert_dirs(arr, name)
+		arr += CMD_UNPACK
+		arr += pack_int(len(str(name)) + 1)
+		arr += bytes(str(name), 'utf-8') + b"\x00"
+		arr += pack_int(len(data))
+		arr += bytes(data, 'utf-8') if type(data) == str else data
+	
+	# Start bundling
+	package = bytearray()
+	package += CMD_START
+	package += pack_int(1 | (int.from_bytes(b"NX", 'little') << 16)) # format version
+	
+	# Construct a set of levels to bundle
+	levels_to_load = {x for x in request.query["levels"].split(";")}
+	
+	# Bundling the level's xml
+	level_deps = set()
+	for item in levels_to_load:
+		print(item)
+		try:
+			level_data = assets.readLevelXml(item, level_deps)
+			add_pack(package, f'levels/{item}.xml', level_data)
+		except FileNotFoundError:
+			print(f"warning: item {item} not found")
+	
+	# Bundle any rooms the level is dependent on
+	room_deps = set()
+	for item in level_deps:
+		print(item)
+		try:
+			room_data = assets.readRoomLua(item, room_deps)
+			add_pack(package, f'rooms/{item}.lua', room_data)
+		except FileNotFoundError:
+			print(f"warning: item {item} not found")
+	
+	# Bundle any segments the rooms are dependent on
+	segment_deps = set()
+	for item in room_deps:
+		print(item)
+		try:
+			segment_data = assets.readSegmentXml(item, deps = segment_deps)
+			add_pack(package, f'segments/{item}.xml', segment_data)
+			mesh_data = assets.readSegmentMesh(item)
+			add_pack(package, f'segments/{item}.mesh', mesh_data)
+		except FileNotFoundError:
+			print(f"warning: item {item} not found")
+	
+	# Bundle any obstacles the segments are dependent on
+	for item in segment_deps:
+		print(item)
+		try:
+			obstacle_data = assets.readObstacleLua(item)
+			add_pack(package, f'obstacles/{item}.lua', obstacle_data)
+		except FileNotFoundError:
+			print(f"warning: item {item} not found")
+	
+	package += CMD_END
+	
+	return NXResponse(200, package)
 
 
 @routes.add("GET", r"/v6/ping")
