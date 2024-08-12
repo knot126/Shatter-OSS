@@ -365,12 +365,14 @@ class AssetManager:
 		
 		room = self.read(f"rooms/{name}.lua")
 		
-		# TODO fix this
+		# TODO: We *should* use better regexes. Namely lua strings can start
+		# with a ' instead of " and it also fails to handle escaped quotes, just
+		# to name some things wrong from the start.
 		if type(deps) == set:
-			for match in re.findall(r'mgSegment\s*\(\s*"([^"]+)"', room):
+			for match in re.findall(r'''mgSegment\s*\(\s*"([^"]+)"''', room):
 				deps.add(match)
 			
-			for match in re.findall(r'confSegment\s*\(\s*"([^"]+)"', room):
+			for match in re.findall(r'''confSegment\s*\(\s*"([^"]+)"''', room):
 				deps.add(match)
 		
 		room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
@@ -381,8 +383,6 @@ class AssetManager:
 		"""
 		Read a segment's XML file. Optionally, if `deps` is a set, add the
 		original name of every obstacle type found.
-		
-		TODO: Remote obstacle loading
 		"""
 		
 		try:
@@ -594,7 +594,6 @@ def v6_mega(request):
 	# Bundling the level's xml
 	level_deps = set()
 	for item in levels_to_load:
-		print(item)
 		try:
 			level_data = assets.readLevelXml(item, level_deps)
 			add_pack(package, f'levels/{item}.xml', level_data)
@@ -604,7 +603,6 @@ def v6_mega(request):
 	# Bundle any rooms the level is dependent on
 	room_deps = set()
 	for item in level_deps:
-		print(item)
 		try:
 			room_data = assets.readRoomLua(item, room_deps)
 			add_pack(package, f'rooms/{item}.lua', room_data)
@@ -614,7 +612,6 @@ def v6_mega(request):
 	# Bundle any segments the rooms are dependent on
 	segment_deps = set()
 	for item in room_deps:
-		print(item)
 		try:
 			segment_data = assets.readSegmentXml(item, deps = segment_deps)
 			add_pack(package, f'segments/{item}.xml', segment_data)
@@ -625,7 +622,6 @@ def v6_mega(request):
 	
 	# Bundle any obstacles the segments are dependent on
 	for item in segment_deps:
-		print(item)
 		try:
 			obstacle_data = assets.readObstacleLua(item)
 			add_pack(package, f'obstacles/{item}.lua', obstacle_data)
