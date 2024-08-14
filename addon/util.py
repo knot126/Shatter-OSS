@@ -254,21 +254,21 @@ def do_http_request(method, url, data = b"", headers = {}):
 	
 	return output
 
+def do_async_json_post_func(url, data):
+	try:
+		do_http_request("POST", url, json.dumps(data).encode('utf-8'), headers = {
+			"Content-Type": "application/json"
+		})
+	except:
+		log(f"Async POST to {url} failed")
+	os._exit(0)
+
 def do_async_json_post(url, data):
 	"""
 	Do an async JSON post (does not return results)
 	"""
 	
-	def func(url, data):
-		try:
-			do_http_request("POST", url, json.dumps(data).encode('utf-8'), headers = {
-				"Content-Type": "application/json"
-			})
-		except:
-			log(f"Async POST to {url} failed")
-		os._exit(0)
-	
-	start_async_task(func, (url, data))
+	start_async_task(do_async_json_post_func, (url, data))
 
 def load_module(path):
 	"""
