@@ -303,22 +303,23 @@ class AssetManager:
 		"""
 		
 		files = []
-		fulldirpath = self.fullpath(d)
+		paths = self._fullpaths(d)
 		
-		for dirpath, dirnames, filenames in os.walk(fulldirpath):
-			for filename in filenames:
-				cand = os.path.join(dirpath, filename)[len(fulldirpath)+1:]
-				
-				if suffixes:
-					for suffix in suffixes:
-						if cand.endswith(suffix):
-							files.append(cand)
-							if strip_suffix:
-								files[-1] = files[-1][:-len(suffix)]
-				else:
-					files.append(cand)
+		for current_dir in paths:
+			for dirpath, dirnames, filenames in os.walk(current_dir):
+				for filename in filenames:
+					cand = os.path.join(dirpath, filename)[len(current_dir)+1:]
+					
+					if suffixes:
+						for suffix in suffixes:
+							if cand.endswith(suffix):
+								files.append(cand)
+								if strip_suffix:
+									files[-1] = files[-1][:-len(suffix)]
+					else:
+						files.append(cand)
 		
-		return files
+		return list(set(files))
 	
 	def readXml(self, f, gzipped=False):
 		return et.fromstring(self.read(f, gzipped=gzipped))
