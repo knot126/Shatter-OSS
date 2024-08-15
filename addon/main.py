@@ -207,10 +207,23 @@ def server_manager_update(_self = None, _context = None):
 		gServerManager.set_type(server_type)
 		
 		if (server_type == "yorshex"):
+			# Derive the actual level name to use
+			use_test_level = False
 			level_name = get_prefs().test_level
 			level_name = level_name if level_name != "/" else (bpy.context.scene.sh_properties.sh_level if _context else "")
 			
-			gServerManager.set_params((butil.find_apk(), level_name))
+			if not level_name:
+				use_test_level = True
+				level_name = "test"
+			
+			# Find the asset dir the use
+			asset_dir = butil.find_apk()
+			
+			if not asset_dir or use_test_level:
+				asset_dir = butil.storage_path("testserver")
+			
+			# Set parameters
+			gServerManager.set_params((asset_dir, level_name))
 		elif (server_type == "builtin"):
 			gServerManager.set_params((butil.storage_path("testserver"),))
 		elif (server_type == "nx"):
@@ -233,7 +246,7 @@ def get_test_level_list(self, context):
 	
 	gLevelList = assets.list_levels(gLevelList)
 	
-	levels = [("/", "Segment's level", "Use the segment's level attribute to determine the level"), None]
+	levels = [("/", "Segment's level", "Use the segment's level attribute to determine the level, or if not available use Shatter's builtin test level"), None]
 	
 	for l in gLevelList["results"]:
 		levels.append((l, l, ""))
@@ -970,7 +983,7 @@ class ShatterPreferences(AddonPreferences):
 		description = "The name of the level to test",
 		items = get_test_level_list,
 		update = server_manager_update,
-		default = 0,
+		default = 1,
 	)
 	
 	####################
