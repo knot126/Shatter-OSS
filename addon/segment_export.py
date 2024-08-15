@@ -645,9 +645,6 @@ def get_room_data(scene):
 	
 	return room
 
-def MB_progress_update_callback(value):
-	bpy.context.window_manager.progress_update(value)
-
 def bake_mesh(input_file, templates, params):
 	new_params = {
 		"BAKE_UNSEEN_FACES": params.get("bake_menu_segment", False),
