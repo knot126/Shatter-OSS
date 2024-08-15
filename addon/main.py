@@ -967,15 +967,15 @@ class ShatterPreferences(AddonPreferences):
 	
 	quick_test_server: EnumProperty(
 		name = "Level test server",
-		description = "Selects which, if any, level test server will be used. This will create a local HTTP server on port 8000, which might pose a security risk",
+		description = "Selects which, if any, level test server will be used. This will create a local HTTP server, which might pose a security risk",
 		items = [
 			('none', "None", "Don't use any quick test server"),
-			('builtin', "Quick test server (deprecated)", "The classic quick test server integrated with Shatter, simplest and fastest to use but only loads one segment at a time"),
-			('yorshex', "Yorshex's asset server", "More advanced test server that allows loading an entire level from a Smash Hit assets folder, written by Yorshex. Shatter integration is a work in progress but should be usable"),
-			('nx', "NxQuick (beta)", "NeXt Quick Testing server, FOR DEVELOPERS ONLY!!!"),
+			('nx', "NxQuick (beta)", "The most modern server supporting Shatter Client v4 to the fullest. It is faster and more reliable, and despite supporting classic Quick Test export also supports loading entire levels. Does not support older clients"),
+			('yorshex', "Yorshex's asset server", "An advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients. It has been written by Yorshex"),
+			('builtin', "Quick test server (deprecated)", "The classic quick test server integrated with Shatter. Of the old servers, it is the simplest and fastest to use but only loads one segment at a time. Due to being buggy and hard to maintain, it is now deprecated"),
 		],
 		update = server_manager_update,
-		default = "builtin",
+		default = "nx",
 	)
 	
 	test_level: EnumProperty(
