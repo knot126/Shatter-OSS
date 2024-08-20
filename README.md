@@ -4,4 +4,4 @@
 
 ## Usage and help
 
-Please see [the wiki](https://github.com/Shatter-Team/Shatter/wiki) for information about how to use the addon, as well as some technical information about Smash Hit and the mesh baker.
+Please see [the wiki](https://codeberg.org/knot126/Shatter-OSS/wiki) for information about how to use the addon, as well as some technical information about Smash Hit and the mesh baker.
