@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Generic utilities
 """
@@ -7,6 +8,7 @@ import os.path as ospath
 import pathlib
 import tempfile
 from multiprocessing import Process
+from subprocess import Popen
 import math
 import time
 import json
@@ -254,21 +256,27 @@ def do_http_request(method, url, data = b"", headers = {}):
 	
 	return output
 
-def do_async_json_post_func(url, data):
-	try:
-		do_http_request("POST", url, json.dumps(data).encode('utf-8'), headers = {
-			"Content-Type": "application/json"
-		})
-	except:
-		log(f"Async POST to {url} failed")
-	os._exit(0)
+# def do_async_json_post_func(url, data):
+# 	try:
+# 		do_http_request("POST", url, json.dumps(data).encode('utf-8'), headers = {
+# 			"Content-Type": "application/json"
+# 		})
+# 	except:
+# 		log(f"Async POST to {url} failed")
+# 	os._exit(0)
 
 def do_async_json_post(url, data):
 	"""
 	Do an async JSON post (does not return results)
 	"""
 	
-	start_async_task(do_async_json_post_func, (url, data))
+	# start_async_task(do_async_json_post_func, (url, data))
+	
+	# HACK So that it works on windows ig
+	# Python can't seem to find bl_ext.<ext path> on windows, needed for
+	# pickling :/
+	cmd = [sys.executable, __file__, "post", url, json.dumps(data)]
+	Popen(cmd)
 
 def load_module(path):
 	"""
@@ -381,3 +389,11 @@ def run_native(cmd, args):
 
 def get_homedir():
 	return str(pathlib.Path.home())
+
+if (__name__ == "__main__"):
+	import sys
+	
+	if (sys.argv[1] == "post"):
+		do_http_request("POST", sys.argv[2], sys.argv[3].encode('utf-8'), headers = {
+			"Content-Type": "application/json"
+		})
