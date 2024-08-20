@@ -645,7 +645,7 @@ def v6_ping(request):
 @routes.add("GET", r"/v6/config")
 def v6_download_config(request):
 	conf = quick_config.copy()
-	del conf["token"]
+	if "token" in conf: del conf["token"]
 	return NXResponse(200, {"success": True, "config": conf})
 
 
