@@ -18,6 +18,9 @@ ASSET_SERVER_URL = 'https://codeberg.org/yorshex/sh-asset-server/raw/branch/main
 
 SHATTER_BINDIR = "addon/bin"
 BLENDER = "blender"
+MINISIGN = "minisign"
+
+SHOULD_SIGN = False
 
 def run(cmd):
 	assert(subprocess.run(cmd).returncode == 0)
@@ -43,6 +46,9 @@ def get_zip_path(build_type = "ext", ext = ".zip"):
 	version = man["version"]
 	return f'./build/{id}-{version}-{build_type}{ext}'
 
+def sign(path, comment):
+	if SHOULD_SIGN: run([MINISIGN, '-Sm', path, '-t', comment])
+
 def update_meshbake():
 	print("Update meshbake binaries")
 	
@@ -58,7 +64,9 @@ def update_asset_server():
 	save_file(ASSET_SERVER_URL, "addon/asset_server.py")
 
 def make_full_package():
+	manifest = read_manifest()
 	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', get_zip_path(), '--verbose'])
+	sign(get_zip_path(), f"shatter {manifest['version']} ext")
 
 def make_legacy_package():
 	print("build legacy zip...")
@@ -98,6 +106,7 @@ def make_legacy_package():
 	# run([BLENDER, '--command', 'extension', 'build', '--source-dir', './build/legacy', '--output-filepath', get_zip_path('legacy'), '--verbose'])
 	path = get_zip_path('legacy', '')
 	shutil.make_archive(path, 'zip', 'build/legacy', manifest['id'])
+	sign(path + ".zip", f"shatter {manifest['version']} legacy")
 	print(f"Built legacy zip to {path}.zip")
 
 def main():
@@ -106,7 +115,12 @@ def main():
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
 	ap.add_argument("--build-ext", help = "Build a Blender Extensions (Blender 4.2+) package", action = "store_true")
 	ap.add_argument("--build-legacy", help = "Build a legacy addon (Blender 4.1 and earlier) package", action = "store_true")
+	ap.add_argument("--sign", help = "Enables signing builds using minisign", action = "store_true")
 	ap = ap.parse_args()
+	
+	if (ap.sign):
+		global SHOULD_SIGN
+		SHOULD_SIGN = True
 	
 	os.makedirs("build", exist_ok = True)
 	
@@ -134,7 +148,10 @@ def main():
   $ {sys.argv[0]} --update-meshbake --update-asset-server # Download mesh baker and asset server
   $ {sys.argv[0]} --build-ext --build-legacy # Build both extension and legacy package
 
-... instead of invoking with no arguments.""")
+... instead of invoking with no arguments.
+
+Also, if you wish to create a build for general release, use --sign with the
+first command.""")
 
 if (__name__ == "__main__"):
 	main()
