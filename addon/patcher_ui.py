@@ -38,8 +38,8 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_premium: BoolProperty(
-		name = "Pirate premium",
-		description = "Legal disclaimer: You should not use this in an APK that you distribute as that is piracy. This option only exists since it's hard to have a side-by-side version of a mod with premium legitimately enabled. Please buy the game and support the developers <3",
+		name = "Force enable premium",
+		description = "Forces premium to always be enabled",
 		default = False,
 	)
 	
@@ -140,15 +140,37 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	def drawItem(self, ui, name, pl = []):
-		ui.prop(f"do_{name}", disabled = (name not in pl and pl))
+		# ui.prop(f"do_{name}", disabled = (name not in pl and pl))
+		ui.prop(f"do_{name}", disabled = name not in pl)
 		
 		if (hasattr(self, name) and getattr(self, f"do_{name}")):
 			ui.prop(name)
 	
+	def getFileInfo(self):
+		# Create previous filepath and cached patches, they might not exist
+		if (not hasattr(self, "prev_filepath")):
+			self.prev_filepath = ""
+		
+		if (not hasattr(self, "cached_patches")):
+			self.cached_patches = None
+		
+		# Get valid patches list, if cache is outdated
+		try:
+			if (self.prev_filepath != self.filepath):
+				self.cached_patches = patcher.valid_patches(self.filepath)
+		except:
+			self.cached_patches = None
+		
+		# Save previous filepath
+		self.prev_filepath = self.filepath
+		
+		return self.cached_patches
+	
 	def draw(self, context):
 		ui = butil.UIDrawingHelper(context, self.layout, self)
 		
-		pl = []
+		fi = self.getFileInfo()
+		pl = [] if not fi else fi[2]
 		
 		self.drawItem(ui, "antitamper", pl)
 		self.drawItem(ui, "premium", pl)
