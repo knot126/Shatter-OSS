@@ -405,6 +405,7 @@ PATCHES_LIST = {
 		"1.5.5": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 	},
 	"x86": {},
+	"x86_64": {},
 }
 
 def determine_version(p):
@@ -437,6 +438,46 @@ def determine_version(p):
 	
 	if (cand == b"1.5.4" or cand == b"1.5.5"):
 		return ("arm64", cand.decode("utf-8"))
+	
+	# ARM32 v1.5.6
+	cand = p.peek(0x7a74e, 5)
+	if (cand == b"1.5.6"):
+		return ("arm32", "1.5.6")
+	
+	# ARM64 v1.5.6
+	cand = p.peek(0x84f3f, 5)
+	if (cand == b"1.5.6"):
+		return ("arm64", "1.5.6")
+	
+	# ARM32 1.5.7
+	cand = p.peek(0x00082224, 5)
+	if (cand == b"1.5.7"):
+		return ("arm32", "1.5.7")
+	
+	# ARM64 1.5.7
+	cand = p.peek(0x0008D381, 5)
+	if (cand == b"1.5.7"):
+		return ("arm64", "1.5.7")
+	
+	# ARM32 1.5.8
+	cand = p.peek(0x7c402, 5)
+	if (cand == b"1.5.8"):
+		return ("arm32", "1.5.8")
+	
+	# ARM64 1.5.8
+	cand = p.peek(0x872ed, 5)
+	if (cand == b"1.5.8"):
+		return ("arm64", "1.5.8")
+	
+	# ARM32 1.5.9
+	cand = p.peek(0x81248, 5)
+	if (cand == b"1.5.9"):
+		return ("arm32", "1.5.9")
+	
+	# ARM64 1.5.9
+	cand = p.peek(0x8c347, 5)
+	if (cand == b"1.5.9"):
+		return ("arm64", "1.5.9")
 	
 	return NotImplemented
 
@@ -497,7 +538,7 @@ def valid_patches(path):
 	# Get patches
 	arch = so_type[0]
 	ver = so_type[1]
-	archver_patches = PATCHES_LIST[arch][ver]
+	archver_patches = PATCHES_LIST[arch][ver] if ver in PATCHES_LIST[arch] else {}
 	
 	patch_list = []
 	
