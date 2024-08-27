@@ -55,6 +55,12 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_offline: BoolProperty(
+		name = "Remove tracking and banners",
+		description = "Nops out the HttpThread::checkBanners and HttpThread::reportStats functions. NOTE: This only applies for PRE-COFFEE STAIN tracking and does not fully remove tracking from 1.5.x and later",
+		default = False,
+	)
+	
 	do_balls: BoolProperty(
 		name = "Change starting ball count",
 		description = "",
@@ -182,6 +188,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		self.drawItem(ui, "premium", pl)
 		self.drawItem(ui, "encryption", pl)
 		self.drawItem(ui, "lualib", pl)
+		self.drawItem(ui, "offline", pl)
 		self.drawItem(ui, "balls", pl)
 		self.drawItem(ui, "savekey", pl)
 		self.drawItem(ui, "fov", pl)
@@ -206,6 +213,9 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		
 		if (self.do_lualib):
 			patches["lualib"] = []
+		
+		if (self.do_offline):
+			patches["offline"] = []
 		
 		if (self.do_balls):
 			patches["balls"] = [self.balls]

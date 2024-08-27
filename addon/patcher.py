@@ -123,6 +123,17 @@ def _patch_v142_v143_arm64_encryption(patcher, params):
 	patcher.patch(0x567e8, b"\xc0\x03\x5f\xd6")
 	patcher.patch(0x5672c, b"\xc0\x03\x5f\xd6")
 
+def _patch_v142_v143_arm64_offline(patcher, params):
+	"""
+	Make the checkBanners and reportStats nop functions
+	"""
+	
+	# Nop checkBanners
+	patcher.patch(0x1ca720, b"\xc0\x03\x5f\xd6")
+	
+	# Nop reportStats
+	patcher.patch(0x1c9ef4, b"\xc0\x03\x5f\xd6")
+
 def _patch_v142_v143_arm64_balls(patcher, params):
 	"""
 	Patch the number of starting balls
@@ -246,6 +257,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"premium": _patch_v142_v143_arm64_premium,
 	"lualib": _patch_v142_v143_arm64_lualib,
 	"encryption": _patch_v142_v143_arm64_encryption,
+	"offline": _patch_v142_v143_arm64_offline,
 	"balls": _patch_v142_v143_arm64_balls,
 	"savekey": _patch_v142_v143_arm64_savekey,
 	"vertical": _patch_v142_v143_arm64_vertical,
@@ -341,11 +353,23 @@ def _patch_v142_v143_arm32_encryption(patcher, params):
 	patcher.patch(0x44e88, b"\x1e\xff\x2f\xe1")
 	patcher.patch(0x44dd8, b"\x1e\xff\x2f\xe1")
 
+def _patch_v142_v143_arm32_offline(patcher, params):
+	"""
+	Make the checkBanners and reportStats nop functions
+	"""
+	
+	# Patch checkBanners
+	patcher.patch(0x197bdc, b"\x1e\xff\x2f\xe1")
+	
+	# Patch reportStats
+	patcher.patch(0x197318, b"\x1e\xff\x2f\xe1")
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
 	"lualib": _patch_v142_v143_arm32_lualib,
 	"encryption": _patch_v142_v143_arm32_encryption,
+	"offline": _patch_v142_v143_arm32_offline,
 }
 
 def _patch_v152_arm64_premium(patcher, params):
