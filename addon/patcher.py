@@ -27,7 +27,8 @@ class Patcher:
 		When we are done with the file
 		"""
 		
-		self.f.close()
+		if (hasattr(self, "f")):
+			self.f.close()
 	
 	def patch(self, location, data):
 		"""
