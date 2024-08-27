@@ -1438,7 +1438,7 @@ class SHATTER_MT_3DViewportMenu(Menu):
 	bl_label = "Shatter"
 	
 	def draw(self, context):
-		self.layout.menu("SHATTER_MT_3DViewportMenuExtras")
+		self.layout.menu("SHATTER_MT_3DViewportMenuExtras", icon = "TOOL_SETTINGS")
 		
 		self.layout.separator()
 		
@@ -1456,10 +1456,10 @@ def SHATTER_MT_3DViewportMenu_draw(self, context):
 	self.layout.menu("SHATTER_MT_3DViewportMenu")
 
 class SHATTER_MT_3DViewportMenuExtras(Menu):
-	bl_label = "Extra features"
+	bl_label = "Tools"
 	
 	def draw(self, context):
-		self.layout.label(text = "Common")
+		self.layout.label(text = "Tweaking")
 		self.layout.operator("shatter.patch_libsmashhit")
 		self.layout.separator()
 		self.layout.label(text = "Export")
