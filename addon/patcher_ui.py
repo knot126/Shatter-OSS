@@ -141,7 +141,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	
 	def drawItem(self, ui, name, pl = []):
 		# ui.prop(f"do_{name}", disabled = (name not in pl and pl))
-		ui.prop(f"do_{name}", disabled = name not in pl)
+		ui.prop(f"do_{name}", disabled = (name not in pl) and (not ui.get(f"do_{name}")))
 		
 		if (hasattr(self, name) and getattr(self, f"do_{name}")):
 			ui.prop(name)
@@ -171,6 +171,12 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		
 		fi = self.getFileInfo()
 		pl = [] if not fi else fi[2]
+		
+		if fi:
+			ui.label(f"Version: {fi[1]}")
+			ui.label(f"Arch: {fi[0]}")
+		else:
+			ui.label("Unknown version")
 		
 		self.drawItem(ui, "antitamper", pl)
 		self.drawItem(ui, "premium", pl)
