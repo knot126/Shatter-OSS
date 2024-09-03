@@ -749,6 +749,20 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 				"token": params.get("nx_token", "unknown"),
 				"assets": butil.find_apk(),
 			})
+		elif (server_type == "yorshex"):
+			util.log("Export to yorshex asset server in quick test mode")
+			
+			# NxServer uses asset folder overlays which override certian files
+			# in one asset folder with another instead of the simlper but pretty
+			# jank tempdir that the old ('builtin') server uses.
+			# 
+			# Create the overlay structure, if not already created
+			asset_dir = butil.find_apk()
+			
+			util.set_file(f"{asset_dir}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
+			util.set_file(f"{asset_dir}/rooms/test.lua.mp3", get_room_data(scene))
+			filepath = f"{asset_dir}/segments/test.xml.mp3"
+			compress = False
 	else:
 		# Preform template resolution if it is enabled for all segments and not
 		# in quick test mode.
