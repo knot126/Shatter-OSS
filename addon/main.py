@@ -147,10 +147,10 @@ class SegmentExportTest(Operator):
 	bl_label = "Export segment to quick test"
 	
 	def execute(self, context):
-		if (get_prefs().quick_test_server in ["builtin", "nx"]):
+		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
 			segment_export.sh_export_segment(None, context, False, True, aotype=get_prefs().ymb_ao_quick_test, nx_token=gNxToken)
 		else:
-			butil.show_message("Quick test not running", "The quick test server is not running right now. If you're using Yorshex's asset server, use auto export (Alt + Shift + R by default) instead.")
+			butil.show_message("Quick test not running", "The quick test server is currently disabled or you are using a level server that isn't compatible with Quick Test.")
 		
 		return {"FINISHED"}
 
@@ -208,19 +208,13 @@ def server_manager_update(_self = None, _context = None):
 		
 		if (server_type == "yorshex"):
 			# Derive the actual level name to use
-			use_test_level = False
 			level_name = get_prefs().test_level
-			level_name = level_name if level_name != "/" else (bpy.context.scene.sh_properties.sh_level if _context else "")
 			
-			if not level_name:
-				use_test_level = True
-				level_name = "test"
+			if level_name == "/":
+				level_name = bpy.context.scene.sh_properties.sh_level if _context else ""
 			
-			# Find the asset dir the use
+			# Find the asset dir to use
 			asset_dir = butil.find_apk()
-			
-			if not asset_dir or use_test_level:
-				asset_dir = butil.storage_path("testserver")
 			
 			# Set parameters
 			gServerManager.set_params((asset_dir, level_name))
@@ -246,9 +240,16 @@ def get_test_level_list(self, context):
 	
 	gLevelList = assets.list_levels(gLevelList)
 	
-	levels = [("/", "Segment's level", "Use the segment's level attribute to determine the level, or if not available use Shatter's builtin test level"), None]
+	levels = [
+		("test", "Test level", "The default testing level"),
+		("/", "Level of segment", "Use the segment's level attribute to determine the level, or if not available use Shatter's builtin test level"),
+		None,
+	]
 	
 	for l in gLevelList["results"]:
+		if l == "test":
+			continue
+		
 		levels.append((l, l, ""))
 	
 	return levels
@@ -436,7 +437,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_fog_colour_top: FloatVectorProperty(
 		name = "Top fog",
-		description = "Fog colour for quick test. While this does use the fogcolor xml attribute, this property cannot be inherited from templates or used like a normal property",
+		description = "Fog colour for quick test",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0), 
 		soft_min = 0.0,
@@ -445,7 +446,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_fog_colour_bottom: FloatVectorProperty(
 		name = "Bottom fog",
-		description = "Fog colour for quick test. While this does use the fogcolor xml attribute, this property cannot be inherited from templates or used like a normal property",
+		description = "Fog colour for quick test",
 		subtype = "COLOR_GAMMA",
 		default = (0.0, 0.0, 0.0),
 		soft_min = 0.0,
@@ -454,7 +455,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_music: StringProperty(
 		name = "Music track",
-		description = "Name of the music file to play in quick test. The track must be in the apk. Default is to choose a random track. Using \\ in the name will break it :-)",
+		description = "Name of the music file to play in quick test. The track must be in the apk. Default is to choose a random track. Warning: Using \\ in the name will break it :-)",
 		default = "",
 	)
 	
@@ -1156,7 +1157,7 @@ class SegmentPanel(Panel):
 		# Quick test
 		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
 		
-		if (server_type in ["builtin", "nx"]):
+		if (server_type in ["builtin", "nx", "yorshex"]):
 			sub = layout.box()
 			sub.label(text = "Quick test", icon = "AUTO")
 			sub.prop(sh_properties, "sh_fog_colour_top")
@@ -1172,11 +1173,11 @@ class SegmentPanel(Panel):
 			if (server_type == "builtin"):
 				sub.prop(sh_properties, "sh_extra_code")
 			sub.label(text = f"Your IP: {util.get_local_ip()}")
-		elif (server_type == "yorshex"):
+		
+		if (server_type == "yorshex"):
 			sub = layout.box()
 			sub.label(text = "Asset server", icon = "AUTO")
 			sub.prop(get_prefs(), "test_level")
-			sub.label(text = f"Your IP: {util.get_local_ip()}")
 		
 		layout.separator()
 
@@ -1449,7 +1450,7 @@ class SHATTER_MT_3DViewportMenu(Menu):
 		
 		self.layout.operator("shatter.export_auto", icon = "MOD_BEVEL")
 		
-		if (get_prefs().quick_test_server in ["builtin", "nx"]):
+		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
 			self.layout.operator("shatter.export_test_server", icon = "AUTO")
 
 def SHATTER_MT_3DViewportMenu_draw(self, context):
@@ -1464,7 +1465,7 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.separator()
 		self.layout.label(text = "Export")
 		self.layout.operator("shatter.export_all_auto")
-		if (get_prefs().quick_test_server in ["builtin", "nx"]):
+		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
 			self.layout.operator("shatter.export_room")
 		self.layout.operator("shatter.export_level_package")
 		self.layout.separator()
