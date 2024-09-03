@@ -966,14 +966,20 @@ class ShatterPreferences(AddonPreferences):
 		default = False,
 	)
 	
+	show_deprecated_gradients: BoolProperty(
+		name = "Show gradients (deprecated)",
+		description = "Shows the gradients panel even when there are no gradients. Note that gradients are *deprecated* meaning they could be removed at any time",
+		default = False,
+	)
+	
 	quick_test_server: EnumProperty(
 		name = "Level test server",
 		description = "Selects which, if any, level test server will be used. This will create a local HTTP server, which might pose a security risk",
 		items = [
 			('none', "None", "Don't use any quick test server"),
-			('nx', "NxQuick (beta)", "The most modern server supporting Shatter Client v4 to the fullest. It is faster and more reliable, and despite supporting classic Quick Test export also supports loading entire levels. Does not support older clients"),
-			('yorshex', "Yorshex's asset server", "An advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients. It has been written by Yorshex"),
-			('builtin', "Quick test server (deprecated)", "The classic quick test server integrated with Shatter. Of the old servers, it is the simplest and fastest to use but only loads one segment at a time. Due to being buggy and hard to maintain, it is now deprecated"),
+			('nx', "NxQuick", "The most modern server supporting Shatter Client v4 to the fullest. It is faster and more reliable, and despite supporting classic Quick Test export also supports loading entire levels. Does not support older clients"),
+			('yorshex', "Yorshex's Asset Server", "An advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients. It has been written by Yorshex"),
+			('builtin', "SegServ (deprecated)", "The classic quick test server integrated with Shatter. Of the old servers, it is the simplest and fastest to use but only loads one segment at a time"),
 		],
 		update = server_manager_update,
 		default = "nx",
@@ -1040,6 +1046,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
 		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
+		ui.prop("show_deprecated_gradients", disabled = (ui.get("purist_mode") == True))
 		ui.end()
 		
 		ui.region("AUTO", "Quick test")
@@ -1228,7 +1235,7 @@ class EntityPanel(Panel):
 				
 				ui.end()
 			
-			if (not get_prefs().purist_mode or ui.get("sh_graddir") != "none"):
+			if ((not get_prefs().purist_mode and get_prefs().show_deprecated_gradients) or ui.get("sh_graddir") != "none"):
 				ui.region("NODE_TEXTURE", "Gradient")
 				v = ui.prop("sh_graddir", text_compact = "Gradient direction")
 				
