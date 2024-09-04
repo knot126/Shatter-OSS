@@ -35,13 +35,13 @@ def save_file(url, path):
 	print(f"Downloading: {url} ...")
 	Path(path).write_bytes(download_file(url))
 
-def read_manifest():
-	return tomllib.loads(Path(f"addon/blender_manifest.toml").read_text())
+def read_manifest(forAddon = "addon"):
+	return tomllib.loads(Path(f"{forAddon}/blender_manifest.toml").read_text())
 
-def get_zip_path(build_type = "ext", ext = ".zip"):
+def get_zip_path(build_type = "ext", ext = ".zip", forAddon = "addon"):
 	# HACK: Parse id and version from toml since Blender can't do that when
 	# passing in a filename.
-	man = read_manifest()
+	man = read_manifest(forAddon)
 	id = man["id"]
 	version = man["version"]
 	return f'./build/{id}-{version}-{build_type}{ext}'
@@ -63,7 +63,7 @@ def update_meshbake():
 def update_asset_server():
 	save_file(ASSET_SERVER_URL, "addon/asset_server.py")
 
-def make_full_package():
+def make_ext_package():
 	manifest = read_manifest()
 	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './addon', '--output-filepath', get_zip_path(), '--verbose'])
 	sign(get_zip_path(), f"shatter {manifest['version']} ext")
@@ -109,12 +109,18 @@ def make_legacy_package():
 	sign(path + ".zip", f"shatter {manifest['version']} legacy")
 	print(f"Built legacy zip to {path}.zip")
 
+def make_autogen_ext_package():
+	manifest = read_manifest("autogen")
+	run([BLENDER, '--command', 'extension', 'build', '--source-dir', './autogen', '--output-filepath', get_zip_path(forAddon="autogen"), '--verbose'])
+	sign(get_zip_path(), f"autogen {manifest['version']} ext")
+
 def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--update-meshbake", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
 	ap.add_argument("--build-ext", help = "Build a Blender Extensions (Blender 4.2+) package", action = "store_true")
 	ap.add_argument("--build-legacy", help = "Build a legacy addon (Blender 4.1 and earlier) package", action = "store_true")
+	ap.add_argument("--build-autogen-ext", help = "Build a Blender Extensions (Blender 4.2+) package for the autogen addon", action = "store_true")
 	ap.add_argument("--sign", help = "Enables signing builds using minisign", action = "store_true")
 	ap = ap.parse_args()
 	
@@ -136,11 +142,15 @@ def main():
 	
 	if (ap.build_ext):
 		did_anything = True
-		make_full_package()
+		make_ext_package()
 	
 	if (ap.build_legacy):
 		did_anything = True
 		make_legacy_package()
+	
+	if (ap.build_autogen_ext):
+		did_anything = True
+		make_autogen_ext_package()
 	
 	if not did_anything:
 		print(f"""Warning: No action has been preformed! You probably want to run:

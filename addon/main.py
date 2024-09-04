@@ -13,7 +13,7 @@ from . import obstacle_db
 from . import segment_export
 from . import segment_import
 from . import room_export
-from . import autogen_ui
+# from . import autogen_ui
 from . import util
 from . import butil
 from . import level_pack_ui
@@ -1507,10 +1507,10 @@ classes = (
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
 	QuickTestCheckup,
-	autogen_ui.AutogenProperties,
-	autogen_ui.AutogenPanel,
-	autogen_ui.RunRandomiseSeedAction,
-	autogen_ui.RunAutogenAction,
+	# autogen_ui.AutogenProperties,
+	# autogen_ui.AutogenPanel,
+	# autogen_ui.RunRandomiseSeedAction,
+	# autogen_ui.RunAutogenAction,
 	level_pack_ui.ExportLevelPackage,
 	patcher_ui.PatchLibsmashhit,
 	progression_crypto_ui.ProgressionCrypto,
@@ -1547,7 +1547,7 @@ def register():
 		register_class(cls)
 	
 	bpy.types.Scene.sh_properties = PointerProperty(type=SegmentProperties)
-	bpy.types.Scene.shatter_autogen = PointerProperty(type=autogen_ui.AutogenProperties)
+	# bpy.types.Scene.shatter_autogen = PointerProperty(type=autogen_ui.AutogenProperties)
 	bpy.types.Object.sh_properties = PointerProperty(type=EntityProperties)
 	
 	# Add the export operator to menu
@@ -1591,7 +1591,7 @@ def unregister():
 	
 	# Delete property types
 	del bpy.types.Scene.sh_properties
-	del bpy.types.Scene.shatter_autogen
+	# del bpy.types.Scene.shatter_autogen
 	del bpy.types.Object.sh_properties
 	
 	# Delete keymaps
