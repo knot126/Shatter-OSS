@@ -5,7 +5,7 @@ Autogen UI stuff
 import bpy
 import random
 from . import autogen
-from . import butil
+# from . import butil
 
 from bpy.props import (
 	StringProperty,
@@ -171,7 +171,7 @@ class AutogenProperties(PropertyGroup):
 	)
 
 class AutogenPanel(Panel):
-	bl_label = "Shatter Autogen"
+	bl_label = "Smash Hit Autogen"
 	bl_idname = "OBJECT_PT_autogen_panel"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "UI"
@@ -443,7 +443,8 @@ class RunAutogenAction(bpy.types.Operator):
 		if (props.type == "SingleRow"):
 			# Check if a box is currently selected, error if not
 			if (not placer.getBase()):
-				butil.show_message("Shatter Autogen error", "To use the single row generator, please select a box to build on top of.")
+				# butil.show_message("Shatter Autogen error", )
+				self.report({"ERROR"}, "To use the single row generator, please select a box to build on top of.")
 				return {"FINISHED"}
 			
 			params["algorithm"] = props.algorithm
