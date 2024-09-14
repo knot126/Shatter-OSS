@@ -5,6 +5,7 @@ import re
 import traceback
 import json
 
+SERVER_VERSION = (1, 0, 0)
 QUICK_PORT = 8000
 
 """
@@ -162,10 +163,6 @@ class NXRequestHandler(BaseHTTPRequestHandler):
 
 """
 The routes specific to quick test v6 and later
-
-TODO:
-  - Template resolution
-  - Remote scripts, so we have more compatiblity with other APIs
 """
 
 from pathlib import Path, PurePosixPath

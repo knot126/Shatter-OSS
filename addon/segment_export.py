@@ -705,7 +705,6 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	templates = params.get("sh_meshbake_template", None)
 	
 	# Do some extra quick test related things
-	# TODO Implement mutli segment exporting
 	if (params.get("sh_test_server", False) == True):
 		server_type = prefs().quick_test_server
 		
