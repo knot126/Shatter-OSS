@@ -193,7 +193,7 @@ end
 
 """
 
-BUILTIN_OBSTACLES = ["3dcross", "creditssign", "hitblock", "suspendcube", "babytoy", "cubeframe", "laser", "suspendcylinder", "bar", "dna", "levicube", "suspendhollow", "beatmill", "doors", "ngon", "suspendside", "beatsweeper", "dropblock", "pyramid", "suspendwindow", "beatwindow", "elevatorgrid", "revolver", "sweeper", "bigcrank", "elevator", "rotor", "test", "bigpendulum", "fence", "scorediamond", "tree", "boss", "flycube", "scoremulti", "vs_door", "bowling", "foldwindow", "scorestar", "vs_sweeper", "box", "framedwindow", "scoretop", "vs_wall", "cactus", "gear", "sidesweeper", "credits1", "grid", "stone", "credits2", "gyro", "suspendbox", "boss/cube", "boss/matryoshka", "boss/single", "boss/telecube", "boss/triple", "doors/45", "doors/basic", "doors/double", "fence/carousel", "fence/dna", "fence/slider"]
+BUILTIN_OBSTACLES = []
 
 # Global config options - set via POST /v6/config
 quick_config = {}
