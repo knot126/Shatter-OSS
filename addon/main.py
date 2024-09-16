@@ -990,7 +990,7 @@ class ShatterPreferences(AddonPreferences):
 		description = "The name of the level to test",
 		items = get_test_level_list,
 		update = server_manager_update,
-		default = 1,
+		default = 0,
 	)
 	
 	####################
