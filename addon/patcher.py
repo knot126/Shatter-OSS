@@ -416,6 +416,18 @@ _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE = {
 	"premium": _patch_v154_v155_arm64_premium,
 }
 
+def _patch_v159_arm64_premium(patcher, params):
+	"""
+	Force always premium patch for v1.5.9
+	"""
+	
+	# The same Player::tick() hack...
+	patcher.patch(0x11d90c, b"\x68\xb2\x08\xb9")
+
+_LIBSMASHHIT_V159_ARM64_PATCH_TABLE = {
+	"premium": _patch_v159_arm64_premium,
+}
+
 PATCHES_LIST = {
 	"arm32": {
 		"1.4.2": _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE,
@@ -427,6 +439,7 @@ PATCHES_LIST = {
 		"1.5.2": _LIBSMASHHIT_V152_ARM64_PATCH_TABLE,
 		"1.5.4": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 		"1.5.5": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
+		"1.5.9": _LIBSMASHHIT_V159_ARM64_PATCH_TABLE,
 	},
 	"x86": {},
 	"x86_64": {},
