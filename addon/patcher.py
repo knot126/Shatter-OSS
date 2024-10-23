@@ -76,6 +76,28 @@ def _patch_const_subs_instruction_arm64(old, value):
 	
 	return (old | new)
 
+def _patch_v100_arm32_premium(patcher, params):
+	"""
+	Patch premium for v1.0.0. Note that this version has no anti-tamper...
+	0x79c04 07 00 00 ea -- remove premium from cond
+	0x79844 7a 00 00 ea -- remove premium from cond
+	0x77cc0 00 f0 20 e3 -- nop out early exit if no premium
+	0x5d950 01 30 a0 e3 -- just make the compare true == false :)
+	0x785dc 6f 00 00 ea -- remove premium dependent cond
+	0x79ea0 1e ff 2f e1 -- nop out Player::setPremium
+	"""
+	
+	patcher.patch(0x79c04, b"\x07\x00\x00\xea") # remove premium from cond
+	patcher.patch(0x79844, b"\x7a\x00\x00\xea") # remove premium from cond
+	patcher.patch(0x77cc0, b"\x00\xf0\x20\xe3") # nop out early exit if no premium
+	patcher.patch(0x5d950, b"\x01\x30\xa0\xe3") # just make the compare true == false :)
+	patcher.patch(0x785dc, b"\x6f\x00\x00\xea") # remove premium dependent cond
+	patcher.patch(0x79ea0, b"\x1e\xff\x2f\xe1") # nop out Player::setPremium
+
+_LIBSMASHHIT_V100_ARM32_PATCH_TABLE = {
+	"premium": _patch_v100_arm32_premium,
+}
+
 def _patch_v142_v143_arm64_antitamper(patcher, params):
 	"""
 	Patch antitamper (this is generally required)
@@ -430,6 +452,7 @@ _LIBSMASHHIT_V159_ARM64_PATCH_TABLE = {
 
 PATCHES_LIST = {
 	"arm32": {
+		"1.0.0": _LIBSMASHHIT_V100_ARM32_PATCH_TABLE,
 		"1.4.2": _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE,
 		"1.4.3": _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE,
 	},
@@ -450,6 +473,12 @@ def determine_version(p):
 	Take a guess at finding the version of libsmashhit.so to use. Returns in
 	(arch, version) pair.
 	"""
+	
+	# ARM32 v1.0.0
+	cand = p.peek(0x1c0030, 5)
+	
+	if (cand == b"1.0.0"):
+		return ("arm32", "1.0.0")
 	
 	# ARM64 v1.4.2 and v1.4.3
 	cand = p.peek(0x1f38a0, 5)
