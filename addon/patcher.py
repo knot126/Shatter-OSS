@@ -419,12 +419,20 @@ def _patch_v142_v143_arm32_offline(patcher, params):
 	# Patch reportStats
 	patcher.patch(0x197318, b"\x1e\xff\x2f\xe1")
 
+def _patch_v142_v143_arm32_savekey(patcher, params):
+	"""
+	Patch save file key in 1.4.2/3 32bit
+	"""
+	
+	return _patch_savekey(patcher, params, 0x1c7960, 16)
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
 	"lualib": _patch_v142_v143_arm32_lualib,
 	"encryption": _patch_v142_v143_arm32_encryption,
 	"offline": _patch_v142_v143_arm32_offline,
+	"savekey": _patch_v142_v143_arm32_savekey,
 }
 
 def _patch_v152_arm64_premium(patcher, params):
