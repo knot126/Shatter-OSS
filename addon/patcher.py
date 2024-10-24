@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Libsmashhit.so tweak tool/file patcher
 
@@ -76,15 +77,38 @@ def _patch_const_subs_instruction_arm64(old, value):
 	
 	return (old | new)
 
+def _patch_savekey(patcher, params, location, maxlen):
+	"""
+	Generic function to handle patching of the encryption key. Location is the
+	offset to the key and maxlen is the max possible length of the key before it
+	would overwrite another used string.
+	"""
+	
+	value = params[0] if len(params) > 0 else ""
+	msg = []
+	
+	if (not value):
+		msg.append("The encryption key will be set to Smash Hit's default key, 5m45hh1t41ght, since you did not set one.")
+		value = "5m45hh1t41ght"
+	
+	key = value.encode('utf-8')
+	
+	if (len(key) >= maxlen):
+		msg.append(f"Your encryption key is longer than {maxlen-1} bytes, so it has been truncated.")
+		key = key[:maxlen-1]
+	
+	patcher.patch(location, key + (b"\x00" * (maxlen - len(key))))
+	
+	if (msg):
+		return msg
+
+# ---------------------------------------------
+
 def _patch_v100_arm32_premium(patcher, params):
 	"""
 	Patch premium for v1.0.0. Note that this version has no anti-tamper...
-	0x79c04 07 00 00 ea -- remove premium from cond
-	0x79844 7a 00 00 ea -- remove premium from cond
-	0x77cc0 00 f0 20 e3 -- nop out early exit if no premium
-	0x5d950 01 30 a0 e3 -- just make the compare true == false :)
-	0x785dc 6f 00 00 ea -- remove premium dependent cond
-	0x79ea0 1e ff 2f e1 -- nop out Player::setPremium
+	Also, there isn't the easy, "one instruction premium hack" like later
+	versions, so I just patch out whenever the game checks for premium...
 	"""
 	
 	patcher.patch(0x79c04, b"\x07\x00\x00\xea") # remove premium from cond
@@ -94,8 +118,33 @@ def _patch_v100_arm32_premium(patcher, params):
 	patcher.patch(0x785dc, b"\x6f\x00\x00\xea") # remove premium dependent cond
 	patcher.patch(0x79ea0, b"\x1e\xff\x2f\xe1") # nop out Player::setPremium
 
+def _patch_v100_arm32_encryption(patcher, params):
+	"""
+	Make Player::encrypt() and Player::decrypt() nops
+	"""
+	
+	patcher.patch(0x77d94, b"\x1e\xff\x2f\xe1")
+	patcher.patch(0x77ce8, b"\x1e\xff\x2f\xe1")
+
+def _patch_v100_arm32_offline(patcher, params):
+	"""
+	Make HttpThread::run() a nop
+	"""
+	
+	patcher.patch(0x66858, b"\x1e\xff\x2f\xe1")
+
+def _patch_v100_arm32_savekey(patcher, params):
+	"""
+	Patch save key in 1.0.0
+	"""
+	
+	return _patch_savekey(patcher, params, 0x1c02e4, 16)
+
 _LIBSMASHHIT_V100_ARM32_PATCH_TABLE = {
 	"premium": _patch_v100_arm32_premium,
+	"encryption": _patch_v100_arm32_encryption,
+	"offline": _patch_v100_arm32_offline,
+	"savekey": _patch_v100_arm32_savekey,
 }
 
 def _patch_v142_v143_arm64_antitamper(patcher, params):
@@ -178,23 +227,7 @@ def _patch_v142_v143_arm64_savekey(patcher, params):
 	Change the encryption key used to obfuscate savegames
 	"""
 	
-	value = params[0] if len(params) > 0 else ""
-	msg = []
-	
-	if (not value):
-		msg.append("The encryption key will be set to Smash Hit's default key, 5m45hh1t41ght, since you did not set one.")
-		value = "5m45hh1t41ght"
-	
-	key = value.encode('utf-8')
-	
-	if (len(key) >= 24):
-		msg.append("Your encryption key is longer than 23 bytes, so it has been truncated.")
-		key = key[:23]
-	
-	patcher.patch(0x1f3ca8, key + (b"\x00" * (24 - len(key))))
-	
-	if (msg):
-		return msg
+	return _patch_savekey(patcher, params, 0x1f3ca8, 24)
 
 def _patch_v142_v143_arm64_vertical(patcher, params):
 	"""
@@ -657,7 +690,7 @@ def _main():
 	if (result == NotImplemented):
 		print("Error: Either you specified an invalid patch (most likely) or this version and archiecture combination are not supported by the patch tool!")
 	elif (result):
-		print("Some patches did not succede")
+		print("Some patches were not successful")
 	else:
 		print("Success")
 
