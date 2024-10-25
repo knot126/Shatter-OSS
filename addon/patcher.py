@@ -448,13 +448,25 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 }
 
 def _patch_v142_x86_antitamper(patcher, params):
+	"""
+	Hopefully this is enough, I don't have a device to test on...
+	"""
+	
 	patcher.patch(0x3674b, b"\xe9\x00\x01\x00\x00\x90")
 	patcher.patch(0x368e3, b"\xe9\x73\xf7\xff\xff\x90")
 	patcher.patch(0x367a5, b"\xe9\xb1\xf8\xff\xff\x90")
 	patcher.patch(0x35561, b"\xeb\xed")
 
+def _patch_v142_x86_premium(patcher, params):
+	"""
+	The hack again..
+	"""
+	
+	patcher.patch(0x4f337, b'\x66\xc6\x84\x21\xe8\x07\x00\x00\x01\x90')
+
 _LIBSMASHHIT_V142_X86_PATCH_TABLE = {
 	"antitamper": _patch_v142_x86_antitamper,
+	"premium": _patch_v142_x86_premium,
 }
 
 def _patch_v152_arm64_premium(patcher, params):
