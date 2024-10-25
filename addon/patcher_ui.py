@@ -31,11 +31,11 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	
 	filename_ext = ".so"
 	
-	do_antitamper: BoolProperty(
-		name = "Disable antitamper detection",
-		description = "Disables anti-tamper detection to allow modified libsmashhit.so's to run. This is required for the patch tool to work",
-		default = True,
-	)
+	# do_antitamper: BoolProperty(
+	# 	name = "Disable antitamper detection",
+	# 	description = "Disables anti-tamper detection to allow modified libsmashhit.so's to run. This is required for the patch tool to work",
+	# 	default = True,
+	# )
 	
 	do_premium: BoolProperty(
 		name = "Force enable premium",
@@ -61,9 +61,15 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_noenshittification: BoolProperty(
+		name = "Denshittify",
+		description = "Disable or remove consumer unfriendly features, like tracking and ads",
+		default = False,
+	)
+	
 	do_balls: BoolProperty(
 		name = "Change starting ball count",
-		description = "",
+		description = "Change the number of balls the player has at the beginning of the game",
 		default = False,
 	)
 	
@@ -184,11 +190,12 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		else:
 			ui.label("Unknown version")
 		
-		self.drawItem(ui, "antitamper", pl)
+		# self.drawItem(ui, "antitamper", pl)
 		self.drawItem(ui, "premium", pl)
 		self.drawItem(ui, "encryption", pl)
 		self.drawItem(ui, "lualib", pl)
 		self.drawItem(ui, "offline", pl)
+		self.drawItem(ui, "noenshittification", pl)
 		self.drawItem(ui, "balls", pl)
 		self.drawItem(ui, "savekey", pl)
 		self.drawItem(ui, "fov", pl)
@@ -202,7 +209,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	def execute(self, context):
 		patches = {}
 		
-		if (self.do_antitamper):
+		if (self.cached_patches and "antitamper" in self.cached_patches[2]):
 			patches["antitamper"] = []
 		
 		if (self.do_premium):
@@ -216,6 +223,9 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		
 		if (self.do_offline):
 			patches["offline"] = []
+		
+		if (self.do_noenshittification):
+			patches["noenshittification"] = []
 		
 		if (self.do_balls):
 			patches["balls"] = [self.balls]
