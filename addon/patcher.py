@@ -447,6 +447,16 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"savekey": _patch_v142_v143_arm32_savekey,
 }
 
+def _patch_v142_x86_antitamper(patcher, params):
+	patcher.patch(0x3674b, b"\xe9\x00\x01\x00\x00\x90")
+	patcher.patch(0x368e3, b"\xe9\x73\xf7\xff\xff\x90")
+	patcher.patch(0x367a5, b"\xe9\xb1\xf8\xff\xff\x90")
+	patcher.patch(0x35561, b"\xeb\xed")
+
+_LIBSMASHHIT_V142_X86_PATCH_TABLE = {
+	"antitamper": _patch_v142_x86_antitamper,
+}
+
 def _patch_v152_arm64_premium(patcher, params):
 	"""
 	Patch premium for the beta version 1.5.2
@@ -616,7 +626,9 @@ PATCHES_LIST = {
 		"1.5.5": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 		"1.5.9": _LIBSMASHHIT_V159_ARM64_PATCH_TABLE,
 	},
-	"x86": {},
+	"x86": {
+		"1.4.2": _LIBSMASHHIT_V142_X86_PATCH_TABLE,
+	},
 	"x86_64": {},
 }
 
@@ -643,6 +655,12 @@ def determine_version(p):
 	
 	if (cand == b"1.4.2" or cand == b"1.4.3"):
 		return ("arm32", cand.decode("utf-8"))
+	
+	# x86 v1.4.2
+	cand = p.peek(0x239cd3, 5)
+	
+	if (cand == b"1.4.2"):
+		return ("x86", "1.4.2")
 	
 	# ARM64 v1.5.2
 	# Still identifies as 1.4.3 in the so for some reason
