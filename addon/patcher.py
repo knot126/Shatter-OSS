@@ -21,7 +21,10 @@ class Patcher:
 		Initialise the patching utility
 		"""
 		
-		self.f = open(path, "rb+")
+		if path:
+			self.f = open(path, "rb+")
+		else:
+			self.captured = {}
 	
 	def __del__(self):
 		"""
@@ -36,8 +39,11 @@ class Patcher:
 		Write some data to the file at the given location
 		"""
 		
-		self.f.seek(location, 0)
-		self.f.write(data)
+		if (hasattr(self, "captured")):
+			self.captured[location] = data
+		else:
+			self.f.seek(location, 0)
+			self.f.write(data)
 	
 	def peek(self, location, amount):
 		"""
@@ -46,6 +52,12 @@ class Patcher:
 		
 		self.f.seek(location, 0)
 		return self.f.read(amount)
+	
+	def get_capture(self):
+		return self.captured.copy()
+
+AARCH64_NOP = b"\x1f\x20\x03\xd5"
+AARCH64_RET = b"\xc0\x03\x5f\xd6"
 
 def _patch_const_mov_instruction_arm64(old, value):
 	"""
@@ -184,15 +196,15 @@ def _patch_v142_v143_arm64_lualib(patcher, params):
 	patcher.patch(0xa748c, b"\xe0\x03\x13\xaa") # Preserve param_1
 	patcher.patch(0xa74a0, b"\xd1\xfe\xff\x17") # Chain to luaopen_os
 	patcher.patch(0xa7004, b"\xa0\x00\x80\x52") # Set return to 5 (2 + 1 + 1 + 1 = 5)
-	patcher.patch(0xa7010, b"\xc0\x03\x5f\xd6") # Make sure last is return (not really needed)
+	patcher.patch(0xa7010, AARCH64_RET) # Make sure last is return (not really needed)
 
 def _patch_v142_v143_arm64_encryption(patcher, params):
 	"""
 	Nop out the save file encryption functions
 	"""
 	
-	patcher.patch(0x567e8, b"\xc0\x03\x5f\xd6")
-	patcher.patch(0x5672c, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x567e8, AARCH64_RET)
+	patcher.patch(0x5672c, AARCH64_RET)
 
 def _patch_v142_v143_arm64_offline(patcher, params):
 	"""
@@ -200,10 +212,10 @@ def _patch_v142_v143_arm64_offline(patcher, params):
 	"""
 	
 	# Nop checkBanners
-	patcher.patch(0x1ca720, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x1ca720, AARCH64_RET)
 	
 	# Nop reportStats
-	patcher.patch(0x1c9ef4, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x1c9ef4, AARCH64_RET)
 
 def _patch_v142_v143_arm64_balls(patcher, params):
 	"""
@@ -305,7 +317,7 @@ def _patch_v142_v143_arm64_noclip(patcher, params):
 	Disable collision detection for the player
 	"""
 	
-	patcher.patch(0x71574, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x71574, AARCH64_RET)
 
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
@@ -456,10 +468,10 @@ def _patch_v152_arm64_encryption(patcher, params):
 	"""
 	
 	# Player::decrypt()
-	patcher.patch(0x117188, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x117188, AARCH64_RET)
 	
 	# Player::encrypt()
-	patcher.patch(0x118c9c, b"\xc0\x03\x5f\xd6")
+	patcher.patch(0x118c9c, AARCH64_RET)
 
 _LIBSMASHHIT_V152_ARM64_PATCH_TABLE = {
 	"premium": _patch_v152_arm64_premium,
@@ -487,8 +499,107 @@ def _patch_v159_arm64_premium(patcher, params):
 	# The same Player::tick() hack...
 	patcher.patch(0x11d90c, b"\x68\xb2\x08\xb9")
 
+def _patch_v159_arm64_noenshittification(patcher, params):
+	"""
+	Try to remove enshittified things from the game. The new versions are
+	probably fucked up beyond any repair but \\o/
+	"""
+	
+	### FIREBASE LOGGING ###
+	
+	# firebase::crashlytics::Initialize
+	patcher.patch(0xf3468, AARCH64_RET) # ret
+	
+	# firebase::crashlytics::Log
+	patcher.patch(0x107d14, AARCH64_RET) # ret
+	
+	### TRACKING ###
+	
+	## EASY/BASIC THINGS ##
+	# These have their own functions and can be fully patched out
+	
+	# AdTracker::TrackAdNotAvailable
+	patcher.patch(0x123b2c, AARCH64_RET) # ret
+	
+	# AdTracker::TrackAdWatched
+	patcher.patch(0x1239e8, AARCH64_RET) # ret
+	
+	# AdTracker::TrackButtonClick
+	patcher.patch(0x123c74, AARCH64_RET) # ret
+	
+	# TrackGameStart
+	patcher.patch(0x1111fc, AARCH64_RET) # ret
+	
+	# Level::TrackGateReached
+	patcher.patch(0x112028, AARCH64_RET) # ret
+	
+	## INLINED ##
+	# For these we just patch out the call to the logging function
+	
+	# Game::frame
+	patcher.patch(0x10519c, AARCH64_NOP)
+	patcher.patch(0x105274, AARCH64_NOP)
+	patcher.patch(0x105404, AARCH64_NOP)
+	patcher.patch(0x105418, AARCH64_NOP)
+	
+	# Game::handleCommand
+	patcher.patch(0x106d5c, AARCH64_NOP)
+	patcher.patch(0x106550, AARCH64_NOP)
+	patcher.patch(0x1065c4, AARCH64_NOP)
+	patcher.patch(0x1069e4, AARCH64_NOP)
+	patcher.patch(0x1067e4, AARCH64_NOP)
+	patcher.patch(0x106e1c, AARCH64_NOP)
+	
+	# Level::update
+	patcher.patch(0x113330, AARCH64_NOP)
+	patcher.patch(0x1138f8, AARCH64_NOP)
+	
+	# Level::activatePowerup
+	patcher.patch(0x116eb4, AARCH64_NOP)
+	
+	### ADS ###
+	
+	# AndroidDevice::ShowAd
+	patcher.patch(0xf3080, AARCH64_RET) # ret
+	
+	# AndroidDevice::GetAdResult
+	patcher.patch(0xf30f4, b"\x00\x00\x80\x52") # mov w0,#0x0
+	patcher.patch(0xf30f8, AARCH64_RET) # ret
+	
+	# AndroidDevice::IsAdFinished
+	patcher.patch(0xf31b8, b"\x20\x00\x80\x52") # mov w0,#0x1
+	patcher.patch(0xf31bc, AARCH64_RET) # ret
+	
+	# AndroidDevice::IsAdLoaded
+	patcher.patch(0xf2fe0, b"\x20\x00\x80\x52") # mov w0,#0x1
+	patcher.patch(0xf2fe4, AARCH64_RET) # ret
+	
+	# AndroidDevice::showPrivacyOptions
+	patcher.patch(0xf3258, AARCH64_RET) # ret
+	
+	# mgIsAdLoaded
+	patcher.patch(0x1dd314, b"\x20\x00\x80\x52") # mov w0,#0x1
+	
+	# Game::handleCommand - patch over possible calls to NULL
+	# may not be needed
+	patcher.patch(0x106454, b"\x20\x00\x80\x52") # mov w0,#0x1
+	patcher.patch(0x1064a0, b"\x1f\x20\x03\xd5") # nop
+	
+	### REMOTE CONFIG ###
+	
+	# AndroidDevice::GetRemoteConfig
+	## TODO returns a pointer to a bool value, how to handle? ##
+	
+	# AndroidDevice::getRemoteConfigBoolParameter
+	patcher.patch(0xf2f74, b"\x00\x00\x80\x52") # mov w0,#0x0
+	patcher.patch(0xf2f78, AARCH64_RET) # ret
+	
+	# mgGetRemoteConfigBoolParameter
+	patcher.patch(0x1dd364, b"\x00\x00\x80\x52") # mov w0,#0x0
+
 _LIBSMASHHIT_V159_ARM64_PATCH_TABLE = {
 	"premium": _patch_v159_arm64_premium,
+	"noenshittification": _patch_v159_arm64_noenshittification,
 }
 
 PATCHES_LIST = {
@@ -588,31 +699,12 @@ def determine_version(p):
 	
 	return NotImplemented
 
-def patch_binary(path, patches = {}):
+def preform_patches(p, patches, arch, ver):
 	"""
-	Patch a binary at the given path with the given patches and their parameters
+	Do the actual patching
 	"""
 	
-	p = Patcher(path)
-	
-	# Determine the version of libsmashhit.so that's being patched
-	so_type = determine_version(p)
-	
-	if (so_type == NotImplemented):
-		return NotImplemented
-	
-	arch = so_type[0]
-	ver = so_type[1]
 	archver_patches = PATCHES_LIST[arch][ver]
-	
-	print(f"Libsmashhit.so version {ver} on {arch} detected")
-	
-	# # Verify that all patches we want to make are in this binary
-	# for patch_type in patches:
-	# 	if (patch_type not in archver_patches):
-	# 		return NotImplemented
-	
-	# Preform the patches
 	all_errors = []
 	
 	for patch_type in patches:
@@ -628,6 +720,40 @@ def patch_binary(path, patches = {}):
 			all_errors += errors
 	
 	return all_errors
+
+def patch_binary(path, patches):
+	"""
+	Patch a binary at the given path with the given patches and their parameters
+	"""
+	
+	p = Patcher(path)
+	
+	# Determine the version of libsmashhit.so that's being patched
+	so_type = determine_version(p)
+	
+	if (so_type == NotImplemented):
+		return NotImplemented
+	
+	arch = so_type[0]
+	ver = so_type[1]
+	
+	print(f"Libsmashhit.so version {ver} on {arch} detected")
+	
+	# Preform the patches
+	all_errors = preform_patches(p, patches, arch, ver)
+	
+	return all_errors
+
+def export_patches(patches, arch, ver):
+	"""
+	Create a dict with patch info for the given params
+	"""
+	
+	p = Patcher(None)
+	
+	all_errors = preform_patches(p, patches, arch, ver)
+	
+	return (all_errors, p.get_capture())
 
 def valid_patches(path):
 	"""
@@ -683,7 +809,7 @@ def _main():
 	import sys
 	
 	if (len(sys.argv) < 2):
-		print(f"Usage: {sys.argv[0]} libsmashhit.so [patch0 patch1=param1,param2 ...]")
+		print(f"Usage: {sys.argv[0]} <so file> [patch0 patch1=param1,param2 ...]")
 		return
 	
 	if (len(sys.argv) < 3):
