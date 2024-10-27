@@ -19,6 +19,7 @@ from . import butil
 from . import level_pack_ui
 from . import patcher_ui
 from . import progression_crypto_ui
+from . import knshim_ui
 from . import server_manager
 from . import assets
 
@@ -1469,6 +1470,7 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 	def draw(self, context):
 		self.layout.label(text = "Tweaking")
 		self.layout.operator("shatter.patch_libsmashhit")
+		self.layout.operator("shatter.install_knshim")
 		self.layout.separator()
 		self.layout.label(text = "Export")
 		self.layout.operator("shatter.export_all_auto")
@@ -1507,14 +1509,11 @@ classes = (
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
 	QuickTestCheckup,
-	# autogen_ui.AutogenProperties,
-	# autogen_ui.AutogenPanel,
-	# autogen_ui.RunRandomiseSeedAction,
-	# autogen_ui.RunAutogenAction,
 	level_pack_ui.ExportLevelPackage,
 	patcher_ui.PatchLibsmashhit,
 	progression_crypto_ui.ProgressionCrypto,
 	room_export.ExportRoom,
+	knshim_ui.InstallKnShim,
 )
 
 keymaps = {
