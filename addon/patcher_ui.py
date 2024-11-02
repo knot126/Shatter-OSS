@@ -31,12 +31,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	
 	filename_ext = ".so"
 	
-	# do_antitamper: BoolProperty(
-	# 	name = "Disable antitamper detection",
-	# 	description = "Disables anti-tamper detection to allow modified libsmashhit.so's to run. This is required for the patch tool to work",
-	# 	default = True,
-	# )
-	
 	do_premium: BoolProperty(
 		name = "Force enable premium",
 		description = "Forces premium to always be enabled",
@@ -151,6 +145,30 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_powerupsfx: BoolProperty(
+		name = "Disable powerup audio effects",
+		description = "Disables the audio effects when activating a powerup",
+		default = False,
+	)
+	
+	all_patches = [
+		"premium",
+		"encryption",
+		"lualib",
+		"offline",
+		"noenshittification",
+		"balls",
+		"savekey",
+		"fov",
+		"dropballs",
+		"roomtime",
+		"trainingballs",
+		"mglength",
+		"vertical",
+		"noclip",
+		"powerupsfx",
+	]
+	
 	def drawItem(self, ui, name, pl = []):
 		# ui.prop(f"do_{name}", disabled = (name not in pl and pl))
 		ui.prop(f"do_{name}", disabled = (name not in pl) and (not ui.get(f"do_{name}")))
@@ -190,21 +208,8 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		else:
 			ui.label("Unknown version")
 		
-		# self.drawItem(ui, "antitamper", pl)
-		self.drawItem(ui, "premium", pl)
-		self.drawItem(ui, "encryption", pl)
-		self.drawItem(ui, "lualib", pl)
-		self.drawItem(ui, "offline", pl)
-		self.drawItem(ui, "noenshittification", pl)
-		self.drawItem(ui, "balls", pl)
-		self.drawItem(ui, "savekey", pl)
-		self.drawItem(ui, "fov", pl)
-		self.drawItem(ui, "dropballs", pl)
-		self.drawItem(ui, "roomtime", pl)
-		self.drawItem(ui, "trainingballs", pl)
-		self.drawItem(ui, "mglength", pl)
-		self.drawItem(ui, "vertical", pl)
-		self.drawItem(ui, "noclip", pl)
+		for item in self.all_patches:
+			self.drawItem(ui, item, pl)
 	
 	def execute(self, context):
 		patches = {}
@@ -212,47 +217,11 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		if (self.cached_patches and "antitamper" in self.cached_patches[2]):
 			patches["antitamper"] = []
 		
-		if (self.do_premium):
-			patches["premium"] = []
-		
-		if (self.do_encryption):
-			patches["encryption"] = []
-		
-		if (self.do_lualib):
-			patches["lualib"] = []
-		
-		if (self.do_offline):
-			patches["offline"] = []
-		
-		if (self.do_noenshittification):
-			patches["noenshittification"] = []
-		
-		if (self.do_balls):
-			patches["balls"] = [self.balls]
-		
-		if (self.do_savekey):
-			patches["savekey"] = [self.savekey]
-		
-		if (self.do_vertical):
-			patches["vertical"] = []
-		
-		if (self.do_fov):
-			patches["fov"] = [self.fov]
-		
-		if (self.do_dropballs):
-			patches["dropballs"] = [self.dropballs]
-		
-		if (self.do_roomtime):
-			patches["roomtime"] = [self.roomtime]
-		
-		if (self.do_trainingballs):
-			patches["trainingballs"] = []
-		
-		if (self.do_mglength):
-			patches["mglength"] = []
-		
-		if (self.do_noclip):
-			patches["noclip"] = []
+		# More dynamic version so i dont have to keep adding 69 fucking things
+		# to add a new patch :p
+		for entry in self.all_patches:
+			if entry != "antitamper" and getattr(self, f"do_{entry}"):
+				patches[entry] = [getattr(self, entry)] if hasattr(self, entry) else []
 		
 		result = patcher.patch_binary(self.filepath, patches)
 		

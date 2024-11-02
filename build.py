@@ -13,7 +13,7 @@ import json
 import urllib.request
 import tomllib
 
-YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.4/"
+YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.7/"
 ASSET_SERVER_URL = 'https://codeberg.org/yorshex/sh-asset-server/raw/branch/main/asset_server.py'
 
 SHATTER_BINDIR = "addon/bin"
