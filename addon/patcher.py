@@ -164,11 +164,11 @@ def _patch_v142_v143_arm64_antitamper(patcher, params):
 	Patch antitamper (this is generally required)
 	"""
 	
-	patcher.patch(0x47130, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x47130, AARCH64_NOP)
 	patcher.patch(0x474b8, b"\x3e\xfe\xff\x17")
 	patcher.patch(0x47464, b"\x3a\x00\x00\x14")
 	patcher.patch(0x47744, b"\x0a\x00\x00\x14")
-	patcher.patch(0x4779c, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x4779c, AARCH64_NOP)
 	patcher.patch(0x475b4, b"\xff\xfd\xff\x17")
 	patcher.patch(0x46360, b"\x13\x00\x00\x14")
 
@@ -177,7 +177,7 @@ def _patch_v142_v143_arm64_premium(patcher, params):
 	Patch permium
 	"""
 	
-	patcher.patch(0x5ace0, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x5ace0, AARCH64_NOP)
 	patcher.patch(0x598cc, b"\x14\x00\x00\x14")
 	patcher.patch(0x59720, b"\xa0\xc2\x22\x39")
 	patcher.patch(0x58da8, b"\x36\x00\x00\x14")
@@ -248,7 +248,7 @@ def _patch_v142_v143_arm64_vertical(patcher, params):
 	
 	patcher.patch(0x46828, b"\x47\x00\x00\x14") # Patch an if (gWidth < gHeight)
 	patcher.patch(0x4693c, b"\x71\x00\x00\x14") # Another if ...
-	patcher.patch(0x46a48, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x46a48, AARCH64_NOP)
 
 def _patch_v142_v143_arm64_fov(patcher, params):
 	"""
@@ -310,7 +310,7 @@ def _patch_v142_v143_arm64_mglength(patcher, params):
 	Make mgLength count properly in multiplayer mode
 	"""
 	
-	patcher.patch(0x6b6d4, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x6b6d4, AARCH64_NOP)
 
 def _patch_v142_v143_arm64_noclip(patcher, params):
 	"""
@@ -318,6 +318,13 @@ def _patch_v142_v143_arm64_noclip(patcher, params):
 	"""
 	
 	patcher.patch(0x71574, AARCH64_RET)
+
+def _patch_v142_v143_arm64_powerupsfx(patcher, params):
+	"""
+	Remove the powerup sfx effect
+	"""
+	
+	patcher.patch(0x161384, b"\x90\x00\x00\x14")
 
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
@@ -334,6 +341,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"trainingballs": _patch_v142_v143_arm64_trainingballs,
 	"mglength": _patch_v142_v143_arm64_mglength,
 	"noclip": _patch_v142_v143_arm64_noclip,
+	"powerupsfx": _patch_v142_v143_arm64_powerupsfx,
 }
 
 def _patch_v142_v143_arm32_antitamper(patcher, params):
@@ -438,6 +446,9 @@ def _patch_v142_v143_arm32_savekey(patcher, params):
 	
 	return _patch_savekey(patcher, params, 0x1c7960, 16)
 
+def _patch_v142_v143_arm32_powerupsfx(patcher, params):
+	patcher.patch(0x1301e0, b"\x8a\x00\x00\xea")
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
@@ -445,6 +456,7 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"encryption": _patch_v142_v143_arm32_encryption,
 	"offline": _patch_v142_v143_arm32_offline,
 	"savekey": _patch_v142_v143_arm32_savekey,
+	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
 }
 
 def _patch_v142_x86_antitamper(patcher, params):
@@ -605,7 +617,7 @@ def _patch_v159_arm64_noenshittification(patcher, params):
 	# Game::handleCommand - patch over possible calls to NULL
 	# may not be needed
 	patcher.patch(0x106454, b"\x20\x00\x80\x52") # mov w0,#0x1
-	patcher.patch(0x1064a0, b"\x1f\x20\x03\xd5") # nop
+	patcher.patch(0x1064a0, AARCH64_NOP) # nop
 	
 	### REMOTE CONFIG ###
 	
