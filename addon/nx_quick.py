@@ -193,7 +193,18 @@ end
 
 """
 
-BUILTIN_OBSTACLES = []
+BUILTIN_OBSTACLES = [
+	"boss/cube", "boss/matryoshka", "boss/single", "boss/telecube", "boss/triple",
+	"doors/45", "doors/basic", "doors/double", "fence/carousel", "fence/dna",
+	"fence/slider", "scoretop", "scorediamond", "scorestar", "scoremulti", "3dcross",
+	"creditssign", "hitblock", "suspendcube", "babytoy", "cubeframe", "laser",
+	"suspendcylinder", "bar", "dna", "levicube", "suspendhollow", "beatmill", "ngon",
+	"suspendside", "beatsweeper", "dropblock", "pyramid", "suspendwindow", "beatwindow",
+	"elevatorgrid", "revolver", "sweeper", "bigcrank", "elevator", "rotor", "test",
+	"bigpendulum", "tree", "flycube", "vs_door", "bowling", "foldwindow", "vs_sweeper",
+	"box", "framedwindow", "vs_wall", "cactus", "gear", "sidesweeper", "credits1",
+	"grid", "stone", "credits2", "gyro", "suspendbox"
+]
 
 # Global config options - set via POST /v6/config
 quick_config = {}
@@ -291,6 +302,17 @@ class AssetManager:
 			g.close()
 			return data
 	
+	def exists(self, f):
+		"""
+		Check that a file exists
+		"""
+		
+		try:
+			self.fullpath(f)
+			return True
+		except FileNotFoundError:
+			return False
+	
 	def listDir(self, d, suffixes=None, strip_suffix=False):
 		"""
 		Recursively list files in the given directory. If suffix is given, it is
@@ -380,6 +402,9 @@ class AssetManager:
 		
 		return ROOM_SCRIPT_INJECTION + room
 	
+	def hasObstacle(self, obs):
+		return self.exists(f"obstacles/{obs}.lua")
+	
 	def readSegmentXml(self, name, solve = True, deps = None):
 		"""
 		Read a segment's XML file. Optionally, if `deps` is a set, add the
@@ -396,7 +421,9 @@ class AssetManager:
 				if type(deps) == set:
 					deps.add(sub.attrib["type"])
 				
-				if sub.attrib["type"] in BUILTIN_OBSTACLES:
+				# If it's a builtin obstacle and we don't have it locally, use
+				# the one from the client itself.
+				if sub.attrib["type"] in BUILTIN_OBSTACLES and not self.hasObstacle(sub.attrib["type"]):
 					sub.attrib["type"] = "obstacles/" + sub.attrib["type"]
 				else:
 					sub.attrib["type"] = "user://obstacles/" + sub.attrib["type"]
