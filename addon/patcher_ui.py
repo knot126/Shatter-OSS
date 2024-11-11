@@ -151,6 +151,18 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_timestep: BoolProperty(
+		name = "Change time step",
+		description = "Change the time step",
+		default = False,
+	)
+	
+	timestep: FloatProperty(
+		name = "Time step",
+		description = "",
+		default = 60.0,
+	)
+	
 	all_patches = [
 		"premium",
 		"encryption",
@@ -167,6 +179,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		"vertical",
 		"noclip",
 		"powerupsfx",
+		"timestep",
 	]
 	
 	def drawItem(self, ui, name, pl = []):
