@@ -152,13 +152,13 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_timestep: BoolProperty(
-		name = "Change time step",
-		description = "Change the time step",
+		name = "Change target frame rate",
+		description = "Updates the maximum framerate Smash Hit is allowed to run at and adjusts the physics time step to compensate. A side effect of the way this patch works will lead to slow-motion-like gameplay on devices which update their screen at a rate less than the target framerate. For example, Smash Hit usually targets 60 FPS, and runs normally on 60 FPS devices, but setting it to 120 FPS here will allow you to play the game at 120 FPS on a 120 Hz device, though the physics will be strange on a 60 Hz device",
 		default = False,
 	)
 	
 	timestep: FloatProperty(
-		name = "Time step",
+		name = "Frame rate",
 		description = "",
 		default = 60.0,
 	)
