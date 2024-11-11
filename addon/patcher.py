@@ -326,6 +326,28 @@ def _patch_v142_v143_arm64_powerupsfx(patcher, params):
 	
 	patcher.patch(0x161384, b"\x90\x00\x00\x14")
 
+def _patch_v142_v143_arm64_timestep(patcher, params):
+	"""
+	Change the time step statically, allowing for higher framerates on N-hz
+	devices but making it slower on others.
+	"""
+	
+	hz = float(params[0]) if len(params) > 0 else 60.0
+	time_step = 1.0 / hz
+	
+	# Game::Game() where Game.time_step is init
+	patcher.patch(0x1e7584, struct.pack("<f", time_step))
+	
+	# Game::update() also sets it
+	patcher.patch(0x1e3b1c, struct.pack("<f", time_step))
+	
+	# Update the string, it doesnt seem to be used anywhere in the binary
+	# but could be used in scripts.
+	patcher.patch(0x213ee0, str(time_step).encode("utf-8")[:10] + b"\x00")
+	
+	# android_main() where the main loop usleep()s for any remaining time
+	patcher.patch(0x4791c, struct.pack("<f", time_step))
+
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
 	"premium": _patch_v142_v143_arm64_premium,
@@ -342,6 +364,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"mglength": _patch_v142_v143_arm64_mglength,
 	"noclip": _patch_v142_v143_arm64_noclip,
 	"powerupsfx": _patch_v142_v143_arm64_powerupsfx,
+	"timestep": _patch_v142_v143_arm64_timestep,
 }
 
 def _patch_v142_v143_arm32_antitamper(patcher, params):
