@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Smash Hit progression.xml crypto tool
 

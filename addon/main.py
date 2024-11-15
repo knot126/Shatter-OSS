@@ -1479,7 +1479,8 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.operator("shatter.export_level_package")
 		self.layout.separator()
 		self.layout.label(text = "Others")
-		self.layout.operator("shatter.progression_crypto")
+		self.layout.operator("shatter.progression_crypto_encrypt")
+		self.layout.operator("shatter.progression_crypto_decrypt")
 		self.layout.operator("shatter.open_obstacles_txt")
 		self.layout.operator("shatter.open_current_asset_folder")
 
@@ -1511,7 +1512,8 @@ classes = (
 	QuickTestCheckup,
 	level_pack_ui.ExportLevelPackage,
 	patcher_ui.PatchLibsmashhit,
-	progression_crypto_ui.ProgressionCrypto,
+	progression_crypto_ui.ProgressionCryptoEncrypt,
+	progression_crypto_ui.ProgressionCryptoDecrypt,
 	room_export.ExportRoom,
 	knshim_ui.InstallKnShim,
 )
