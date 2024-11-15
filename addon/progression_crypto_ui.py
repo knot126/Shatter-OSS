@@ -23,23 +23,13 @@ from bpy.types import (
 	AddonPreferences,
 )
 
-class ProgressionCrypto(bpy_extras.io_utils.ImportHelper, Operator):
-	"""Encrypts or decrypts a progression.xml (save file) from any Mediocre game, filled with the key for Smash Hit by default"""
+class ProgressionCryptoEncrypt(bpy_extras.io_utils.ImportHelper, Operator):
+	"""Encrypts a progression.xml (save file) from any Mediocre game, filled with the key for Smash Hit by default"""
 	
-	bl_idname = "shatter.progression_crypto"
-	bl_label = "Encrypt or decrypt progression.xml"
+	bl_idname = "shatter.progression_crypto_encrypt"
+	bl_label = "Encrypt user data file"
 	
 	filename_ext = ".xml"
-	
-	action: EnumProperty(
-		name = "Action",
-		description = "Weather to encrypt or decrypt",
-		items = [
-			('Encrypt', "Encrypt", ""),
-			('Decrypt', "Decrypt", ""),
-		],
-		default = "Decrypt",
-	)
 	
 	key: StringProperty(
 		name = "Key",
@@ -49,8 +39,30 @@ class ProgressionCrypto(bpy_extras.io_utils.ImportHelper, Operator):
 	
 	def execute(self, context):
 		if (len(self.key) > 0):
-			progression_crypto.crypt_file(self.filepath, self.key, self.action == "Decrypt")
+			progression_crypto.crypt_file(self.filepath, self.key, False)
 		
-		self.report({"INFO"}, f"The file has been succesfully {self.action.lower()}ed.")
+		self.report({"INFO"}, f"The file has been encrypted.")
+		
+		return {"FINISHED"}
+
+class ProgressionCryptoDecrypt(bpy_extras.io_utils.ImportHelper, Operator):
+	"""Encrypts a progression.xml (save file) from any Mediocre game, filled with the key for Smash Hit by default"""
+	
+	bl_idname = "shatter.progression_crypto_decrypt"
+	bl_label = "Decrypt user data file"
+	
+	filename_ext = ".xml"
+	
+	key: StringProperty(
+		name = "Key",
+		description = "The key/password to decrypt with",
+		default = "5m45hh1t41ght",
+	)
+	
+	def execute(self, context):
+		if (len(self.key) > 0):
+			progression_crypto.crypt_file(self.filepath, self.key, True)
+		
+		self.report({"INFO"}, f"The file has been decrypted.")
 		
 		return {"FINISHED"}
