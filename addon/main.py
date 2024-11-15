@@ -580,7 +580,7 @@ class EntityProperties(PropertyGroup):
 			('freebie', "Freebie*", "*Does not work anymore. Old power up found in binary strings but no known usage"),
 			('antigravity', "Anti-gravity*", "*Does not work anymore. Old power up that probably would have reversed gravity"),
 			('rewind', "Rewind*", "*Does not work anymore. Old power up that probably would have reversed time"),
-			('sheild', "Sheild*", "*Does not work anymore. Old power up that probably would have protected the player"),
+			('shield', "Shield*", "*Does not work anymore. Old power up that probably would have protected the player"),
 			('homing', "Homing*", "*Does not work anymore. Old power up that probably would have homed to obstacles"),
 			('life', "Life*", "*Does not work anymore. Old power up that gave the player a life"),
 			('balls', "Balls*", "*Does not work anymore. Old power up that gave the player ten balls"),
