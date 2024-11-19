@@ -1,5 +1,6 @@
 from . import util
 import zipfile
+import gzip
 import json
 import os
 
@@ -57,7 +58,13 @@ def pack(assets, outpath, level, info = {}):
 	for f in files:
 		fn = f"{assets}/{f}"
 		print(f"Add file to archive: {fn}")
-		z.writestr(f, util.get_file_raw(fn))
+		
+		if (f.endswith(".gz.mp3")):
+			z.writestr(f[:-7], gzip.decompress(util.get_file_raw(fn)))
+		elif (f.endswith(".mp3")):
+			z.writestr(f[:-4], util.get_file_raw(fn))
+		else:
+			z.writestr(f, util.get_file_raw(fn))
 	
 	# Write the package info file
 	z.writestr("package.json", json.dumps(info, sort_keys = True, indent = 4))
