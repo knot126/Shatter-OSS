@@ -367,3 +367,6 @@ def storage_path(subdir = ""):
 def stay_offline():
 	# hasattr() needed for legacy addon
 	return hasattr(bpy.app, "online_access") and not bpy.app.online_access
+
+def get_setting(name):
+	return getattr(bpy.context.preferences.addons[__package__].preferences, name)
