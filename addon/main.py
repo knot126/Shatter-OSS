@@ -22,6 +22,7 @@ from . import progression_crypto_ui
 from . import knshim_ui
 from . import server_manager
 from . import assets
+from . import rebake_all_meshes
 
 from bpy.props import (
 	StringProperty,
@@ -1479,6 +1480,7 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.operator("shatter.export_level_package")
 		self.layout.separator()
 		self.layout.label(text = "Others")
+		self.layout.operator("shatter.rebake_all_meshes")
 		self.layout.operator("shatter.progression_crypto_encrypt")
 		self.layout.operator("shatter.progression_crypto_decrypt")
 		self.layout.operator("shatter.open_obstacles_txt")
@@ -1516,6 +1518,7 @@ classes = (
 	progression_crypto_ui.ProgressionCryptoDecrypt,
 	room_export.ExportRoom,
 	knshim_ui.InstallKnShim,
+	rebake_all_meshes.RebakeAllMeshes,
 )
 
 keymaps = {

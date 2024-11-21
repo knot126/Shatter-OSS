@@ -5,6 +5,7 @@ Functionality to rebake all meshes
 import os
 from . import butil
 from . import mesh_runner
+from pathlib import Path
 
 from bpy.props import (
 	StringProperty,
@@ -35,7 +36,7 @@ def get_candidate_apks(self, context):
 	return apks
 
 class RebakeAllMeshes(Operator):
-	"""Installs KnShim to an extracted Smash Hit APK"""
+	"""Rebakes all meshes in an APK (alpha)"""
 	
 	bl_idname = "shatter.rebake_all_meshes"
 	bl_label = "Rebake all meshes"
@@ -50,7 +51,8 @@ class RebakeAllMeshes(Operator):
 	def execute(self, context):
 		for dirpath, dirnames, filenames in os.walk(self.apk_path + "/assets/segments"):
 			for filename in filenames:
-				mesh_runner.bake("yorshex", os.path.join(dirname, filename), self.apk_path = "/assets/templates.xml.mp3")
+				if filename.endswith((".xml.mp3", ".xml.gz.mp3")):
+					mesh_runner.bake("yorshex", os.path.join(dirpath, filename), self.apk_path + "/assets/templates.xml.mp3")
 		
 		self.report({'INFO'}, "Meshes have been rebaked!")
 		return {'FINISHED'}
