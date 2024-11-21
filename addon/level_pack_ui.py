@@ -37,15 +37,15 @@ class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
 		default = "",
 	)
 	
-	package: StringProperty(
-		name = "Package ID",
-		description = "Name of the package to export. Recommended in 'correct' domain name form, e.g. org.knot126.smashhit.beehive",
+	name: StringProperty(
+		name = "Name",
+		description = "The name that the level will appear as in the level listing",
 		default = "",
 	)
 	
 	creator: StringProperty(
 		name = "Creator",
-		description = "Creator name",
+		description = "The name of the person or group who created the level",
 		default = "",
 	)
 	
@@ -54,12 +54,26 @@ class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
 		description = "Version of the mod",
 		size = 3,
 		default = (1, 0, 0),
+		max = 99,
+		min = 0,
 	)
 	
 	desc: StringProperty(
 		name = "Description",
 		description = "Description of this mod",
 		default = "",
+	)
+	
+	balls: IntProperty(
+		name = "Starting Balls",
+		description = "Balls the player should start with",
+		default = 25,
+	)
+	
+	streak: IntProperty(
+		name = "Starting Streak",
+		description = "Streak the player should start with",
+		default = 0,
 	)
 	
 	def execute(self, context):
@@ -74,12 +88,18 @@ class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
 			return {"FINISHED"}
 		
 		level_pack.pack(assets_dir, self.filepath, self.level, {
-			"package": self.package,
-			"name": self.level.replace("-", " ").replace("_", " ").title(),
+			"package": f"com.dummy.stage.{self.level}",
+			"name": self.name.replace("-", " ").replace("_", " ").title(),
 			"creator": self.creator,
 			"version": f"v{self.version[0]}.{self.version[1]}.{self.version[2]}",
 			"verid": 10000 * self.version[0] + 100 * self.version[1] + self.version[2],
 			"desc": self.desc,
+			"org.knot126.smashhit.tulip": {
+				"version": f"{self.version[0]}.{self.version[1]}.{self.version[2]}",
+				"level": self.level,
+				"balls": self.balls,
+				"streak": self.streak,
+			},
 		})
 		
 		return {"FINISHED"}
