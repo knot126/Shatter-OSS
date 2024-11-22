@@ -52,7 +52,8 @@ class RebakeAllMeshes(Operator):
 		for dirpath, dirnames, filenames in os.walk(self.apk_path + "/assets/segments"):
 			for filename in filenames:
 				if filename.endswith((".xml.mp3", ".xml.gz.mp3")):
-					mesh_runner.bake("yorshex", os.path.join(dirpath, filename), self.apk_path + "/assets/templates.xml.mp3")
+					filepath = os.path.join(dirpath, filename)
+					mesh_runner.bake("yorshex", filepath, self.apk_path + "/assets/templates.xml.mp3")
 		
 		self.report({'INFO'}, "Meshes have been rebaked!")
 		return {'FINISHED'}
