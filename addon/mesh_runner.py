@@ -61,6 +61,9 @@ def cb_yorshex(fin, fout, templates, params):
 	args.append("-c")
 	args.append("2" if params.get("bake_menu_segment", False) else "1")
 	
+	if "ymb_tiles" in params:
+		args += ["-T", str(params['ymb_tiles'][0]), str(params['ymb_tiles'][1])]
+	
 	return util.run_native("yorshex_mesh_baker", args)
 
 def cb_command(fin, fout, templates, params):

@@ -45,14 +45,6 @@ class MtxconvBake(bpy_extras.io_utils.ImportHelper, Operator):
 	
 	filename_ext = ""
 	
-	quality: IntProperty(
-		name = "JPEG Quality",
-		description = "The JPEG quality that mtxconv will use when baking",
-		default = 90,
-		min = 0,
-		max = 100,
-	)
-	
 	version: EnumProperty(
 		name = "MTX Version",
 		description = "The version of the MTX format that will be used",
@@ -63,6 +55,14 @@ class MtxconvBake(bpy_extras.io_utils.ImportHelper, Operator):
 			('2', "MTX v2", "Simple wrapper around the PVR image format"),
 		],
 		default = "auto",
+	)
+	
+	quality: IntProperty(
+		name = "JPEG Quality",
+		description = "The JPEG quality that mtxconv will use when baking",
+		default = 90,
+		min = 0,
+		max = 100,
 	)
 	
 	def execute(self, context):
