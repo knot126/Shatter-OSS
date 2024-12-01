@@ -467,58 +467,11 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	el.tail = "\n\t"
 	if (params["isLast"]): # Fixes the issues with the last line of the file
 		el.tail = "\n"
-	
-	# Some things to handle legacy colour model
-	# use_legacy = params["stone_legacy_colour_model"]
-	# default_colour = params["stone_legacy_colour_default"]
-	
-	'''
-	if (params.get("sh_box_bake_mode", "Mesh") == "StoneHack" and sh_type == "BOX" and (obj.sh_properties.sh_visible or use_legacy)):
-		"""
-		Export a fake obstacle that will represent stone in the level.
-		"""
-		
-		el.tail = "\n\t\t"
-		
-		size = {"X": obj.dimensions[1] / 2, "Y": obj.dimensions[2] / 2, "Z": obj.dimensions[0] / 2}
-		position = {"X": obj.location[1], "Y": obj.location[2], "Z": obj.location[0]}
-		
-		# VR Multiply setting
-		position["Z"] = position["Z"] * sh_vrmultiply
-		size["Z"] = size["Z"] * sh_vrmultiply
-		
-		properties = {
-			"pos": str(position["X"]) + " " + str(position["Y"]) + " " + str(position["Z"]),
-			"type": params.get("stone_type", "stone"),
-			"param9": "sizeX=" + str(size["X"]),
-			"param10": "sizeY=" + str(size["Y"]),
-			"param11": "sizeZ=" + str(size["Z"]),
-			"shbt-ignore": "1",
-		}
-		
-		if (obj.sh_properties.sh_template):
-			properties["template"] = obj.sh_properties.sh_template
-		else:
-			colour = obj.sh_properties.sh_tint if obj.sh_properties.sh_visible else default_colour
-			
-			properties["param7"] = "tile=" + str(obj.sh_properties.sh_decal)
-			properties["param8"] = "color=" + str(colour[0]) + " " + str(colour[1]) + " " + str(colour[2])
-		
-		el_stone = et.SubElement(level_root, "obstacle", properties)
-		el_stone.tail = "\n\t"
-		if (params["isLast"]):
-			el_stone.tail = "\n"
-	'''
 
 def createSegmentText(scene, params):
 	"""
 	Export the XML part of a segment to a string
 	"""
-	
-	# Set some params
-	# params["stone_type"] = scene.sh_properties.sh_stone_obstacle_name
-	# params["stone_legacy_colour_model"] = scene.sh_properties.sh_legacy_colour_model
-	# params["stone_legacy_colour_default"] = scene.sh_properties.sh_legacy_colour_default
 	
 	level_root = sh_create_root(scene.sh_properties, params)
 	
@@ -712,7 +665,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 		server_type = prefs().quick_test_server
 		
 		if (server_type == "builtin"):
-			util.log("Builtin test server export")
+			util.log("Legacy test server export")
 			
 			# Solve templates if we have them
 			if (templates):
@@ -754,12 +707,13 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 		elif (server_type == "yorshex"):
 			util.log("Export to yorshex asset server in quick test mode")
 			
-			# NxServer uses asset folder overlays which override certian files
-			# in one asset folder with another instead of the simlper but pretty
-			# jank tempdir that the old ('builtin') server uses.
-			# 
-			# Create the overlay structure, if not already created
-			asset_dir = butil.find_apk()
+			# YAS exports to whatever the current APK path is, or to a default
+			# assets directory if an asset path isn't found.
+			asset_dir = butil.find_apk() or butil.storage_path("testserver")
+			
+			os.makedirs(f"{asset_dir}/levels", exist_ok=True)
+			os.makedirs(f"{asset_dir}/rooms", exist_ok=True)
+			os.makedirs(f"{asset_dir}/segments", exist_ok=True)
 			
 			util.set_file(f"{asset_dir}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
 			util.set_file(f"{asset_dir}/rooms/test.lua.mp3", get_room_data(scene))
@@ -779,8 +733,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	with (gzip.open(filepath, "wb") if compress else open(filepath, "wb")) as f:
 		f.write(content.encode())
 	
-	# Cook the mesh if we need to
-	# if (params.get("sh_box_bake_mode", "Mesh") == "Mesh"):
+	# Cook the mesh
 	bake_mesh(filepath, templates, params)
 	
 	# Display export warnings, if any and if enabled
@@ -793,13 +746,12 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 
 def sh_export_all_segments(context, compress = True, aotype = '1'):
 	for s in bpy.data.scenes:
-		util.log(f"Exporting a scene: {s} ...")
+		# util.log(f"Exporting a scene: {s} ...")
 		
 		sh_properties = s.sh_properties
 		
 		sh_export_segment_ext(None, context, s, compress, params = {
 				"sh_vrmultiply": sh_properties.sh_vrmultiply,
-				# "sh_box_bake_mode": sh_properties.sh_box_bake_mode,
 				"sh_meshbake_template": tryTemplatesPath(),
 				"bake_menu_segment": sh_properties.sh_menu_segment,
 				"bake_vertex_light": sh_properties.sh_ambient_occlusion,
@@ -813,7 +765,6 @@ def sh_export_segment(filepath, context, compress = False, testserver = False, n
 	
 	params = {
 		"sh_vrmultiply": sh_properties.sh_vrmultiply,
-		# "sh_box_bake_mode": sh_properties.sh_box_bake_mode,
 		"bake_menu_segment": sh_properties.sh_menu_segment,
 		"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 		"lighting_enabled": sh_properties.sh_lighting,
@@ -824,7 +775,7 @@ def sh_export_segment(filepath, context, compress = False, testserver = False, n
 		"ymb_ao": aotype,
 	}
 	
-	util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}\n\tparams = {params}")
+	# util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}\n\tparams = {params}")
 	
 	sh_export_segment_ext(filepath, context, context.scene, compress, params)
 
