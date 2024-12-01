@@ -193,19 +193,6 @@ end
 
 """
 
-BUILTIN_OBSTACLES = [
-	"boss/cube", "boss/matryoshka", "boss/single", "boss/telecube", "boss/triple",
-	"doors/45", "doors/basic", "doors/double", "fence/carousel", "fence/dna",
-	"fence/slider", "scoretop", "scorediamond", "scorestar", "scoremulti", "3dcross",
-	"creditssign", "hitblock", "suspendcube", "babytoy", "cubeframe", "laser",
-	"suspendcylinder", "bar", "dna", "levicube", "suspendhollow", "beatmill", "ngon",
-	"suspendside", "beatsweeper", "dropblock", "pyramid", "suspendwindow", "beatwindow",
-	"elevatorgrid", "revolver", "sweeper", "bigcrank", "elevator", "rotor", "test",
-	"bigpendulum", "tree", "flycube", "vs_door", "bowling", "foldwindow", "vs_sweeper",
-	"box", "framedwindow", "vs_wall", "cactus", "gear", "sidesweeper", "credits1",
-	"grid", "stone", "credits2", "gyro", "suspendbox"
-]
-
 # Global config options - set via POST /v6/config
 quick_config = {}
 
@@ -388,15 +375,36 @@ class AssetManager:
 		
 		room = self.read(f"rooms/{name}.lua")
 		
-		# TODO: We *should* use better regexes. Namely lua strings can start
-		# with a ' instead of " and it also fails to handle escaped quotes, just
-		# to name some things wrong from the start.
+		# Sort of a HACK/TODO:
+		# Any string could be a segment name, so instead of something more sane
+		# we check every possible string to see if it is a valid segment. If so,
+		# we should include it even if it might not be used. This will ensure
+		# that 99% of rooms will work, even if they have a list of segments that
+		# aren't in mgSegment() calls (e.g. random rooms mod), though if the
+		# user is generating segment strings on the fly or doing other bullshit
+		# then this won't work.
 		if type(deps) == set:
-			for match in re.findall(r'''mgSegment\s*\(\s*"([^"]+)"''', room):
-				deps.add(match)
+			for match in re.findall(r'''"([^"]+)"''', room):
+				if self.hasSegment(match):
+					deps.add(match)
 			
-			for match in re.findall(r'''confSegment\s*\(\s*"([^"]+)"''', room):
-				deps.add(match)
+			for match in re.findall(r"""'([^']+)'""", room):
+				if self.hasSegment(match):
+					deps.add(match)
+		
+		# As a workaround for users doing bullshit, we do also check if the
+		# segment folder associated with this room contains anything, and if so
+		# we add those segments too. Then this kind of thing:
+		# 
+		# -- room named "sewer/shit"
+		# for i=1, 8 do
+		#   confSegment("sewer/shit/16_" .. tostring(i), 1)
+		# end
+		# 
+		# ... would still work, which you could imagine happening somewhat often.
+		if self.exists(f"segments/{name}"):
+			for segment in self.listDir(f"segments/{name}", (".xml", ".xml.gz", ".xml.mp3", ".xml.gz.mp3"), True):
+				deps.add(f"{name}/{segment}")
 		
 		room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
 		
@@ -404,6 +412,9 @@ class AssetManager:
 	
 	def hasObstacle(self, obs):
 		return self.exists(f"obstacles/{obs}.lua")
+	
+	def hasSegment(self, seg):
+		return self.exists(f"segments/{seg}.xml") or self.exists(f"segments/{seg}.xml.gz")
 	
 	def readSegmentXml(self, name, solve = True, deps = None):
 		"""
@@ -421,9 +432,9 @@ class AssetManager:
 				if type(deps) == set:
 					deps.add(sub.attrib["type"])
 				
-				# If it's a builtin obstacle and we don't have it locally, use
-				# the one from the client itself.
-				if sub.attrib["type"] in BUILTIN_OBSTACLES and not self.hasObstacle(sub.attrib["type"]):
+				# If we don't have the obstacle, assume it's one built in to the
+				# client.
+				if not self.hasObstacle(sub.attrib["type"]):
 					sub.attrib["type"] = "obstacles/" + sub.attrib["type"]
 				else:
 					sub.attrib["type"] = "user://obstacles/" + sub.attrib["type"]
