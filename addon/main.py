@@ -582,7 +582,7 @@ class EntityProperties(PropertyGroup):
 			('freebie', "Freebie*", "*Does not work anymore. Old power up found in binary strings but no known usage"),
 			('antigravity', "Anti-gravity*", "*Does not work anymore. Old power up that probably would have reversed gravity"),
 			('rewind', "Rewind*", "*Does not work anymore. Old power up that probably would have reversed time"),
-			('shield', "Shield*", "*Does not work anymore. Old power up that probably would have protected the player"),
+			('shield', "Shield*", "*Only partially works in current versions. Old power up that probably would have protected the player"),
 			('homing', "Homing*", "*Does not work anymore. Old power up that probably would have homed to obstacles"),
 			('life', "Life*", "*Does not work anymore. Old power up that gave the player a life"),
 			('balls', "Balls*", "*Does not work anymore. Old power up that gave the player ten balls"),
@@ -1027,6 +1027,15 @@ class ShatterPreferences(AddonPreferences):
 		default = "2",
 	)
 	
+	ymb_tiles: IntVectorProperty(
+		name = "Tile grid size",
+		description = "Controls the number of tiles per row and column in the tiles texture, as the mesh baker considers it",
+		default = (8, 8),
+		size = 2,
+		min = 1,
+		max = 32,
+	)
+	
 	mesh_command: StringProperty(
 		name = "External mesh bake command",
 		description = "If specified, this command is run instead of the built-in mesh baker",
@@ -1085,6 +1094,8 @@ class ShatterPreferences(AddonPreferences):
 			ui.prop("ymb_ao_quick_test")
 			ui.prop("ymb_ao_auto_export")
 			ui.prop("ymb_ao_manual")
+			ui.label("Adjustments")
+			ui.prop("ymb_tiles")
 		
 		ui.end()
 		

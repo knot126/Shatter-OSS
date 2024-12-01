@@ -652,6 +652,7 @@ def bake_mesh(input_file, templates, params):
 		"ABMIENT_OCCLUSION_ENABLED": params.get("bake_vertex_light", True),
 		"LIGHTING_ENABLED": params.get("lighting_enabled", False),
 		"ymb_ao": params.get("ymb_ao", "1"),
+		"ymb_tiles": butil.get_setting('ymb_tiles'),
 		
 		"cmd": prefs().mesh_command,
 	}
