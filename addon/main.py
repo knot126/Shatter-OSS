@@ -298,16 +298,16 @@ class SegmentProperties(PropertyGroup):
 		default = False,
 	)
 	
-	sh_box_bake_mode: EnumProperty(
-		name = "Box bake type (legacy)",
-		description = "This will control how the boxes should be exported. Hover over each option for an explation of how it works",
-		items = [
-			('Mesh', "Mesh", "Exports a .mesh file alongside the segment for showing visible box geometry"),
-			('StoneHack', "Obstacle", "Adds a custom obstacle named 'stone' for every box that attempts to simulate stone. Only colour is supported: there are no textures"),
-			# ('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
-		],
-		default = "Mesh"
-	)
+	# sh_box_bake_mode: EnumProperty(
+	# 	name = "Box bake type (legacy)",
+	# 	description = "This will control how the boxes should be exported. Hover over each option for an explation of how it works",
+	# 	items = [
+	# 		('Mesh', "Mesh", "Exports a .mesh file alongside the segment for showing visible box geometry"),
+	# 		('StoneHack', "Obstacle", "Adds a custom obstacle named 'stone' for every box that attempts to simulate stone. Only colour is supported: there are no textures"),
+	# 		# ('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
+	# 	],
+	# 	default = "Mesh"
+	# )
 	
 	ambient_occlusion_quality: EnumProperty(
 		name = "Ambient occlusion quality",
@@ -417,26 +417,26 @@ class SegmentProperties(PropertyGroup):
 		soft_max = 1.0,
 	)
 	
-	sh_stone_obstacle_name: StringProperty(
-		name = "Stone obstacle name",
-		description = "Name of the obstacle to use for stone",
-		default = "stone",
-	)
-	
-	sh_legacy_colour_model: BoolProperty(
-		name = "Legacy colour model",
-		description = "Uses the colour inheritance model from SHBT v0.9x, which can avoid extra effort when using the stone hack without templates",
-		default = False
-	)
-	
-	sh_legacy_colour_default: FloatVectorProperty(
-		name = "Default colour",
-		description = "The default colour for all (non-visible marked) boxes when using the legacy colour model",
-		subtype = "COLOR_GAMMA",
-		default = (1.0, 1.0, 1.0), 
-		soft_min = 0.0,
-		soft_max = 1.0,
-	)
+# 	sh_stone_obstacle_name: StringProperty(
+# 		name = "Stone obstacle name",
+# 		description = "Name of the obstacle to use for stone",
+# 		default = "stone",
+# 	)
+# 	
+# 	sh_legacy_colour_model: BoolProperty(
+# 		name = "Legacy colour model",
+# 		description = "Uses the colour inheritance model from SHBT v0.9x, which can avoid extra effort when using the stone hack without templates",
+# 		default = False
+# 	)
+# 	
+# 	sh_legacy_colour_default: FloatVectorProperty(
+# 		name = "Default colour",
+# 		description = "The default colour for all (non-visible marked) boxes when using the legacy colour model",
+# 		subtype = "COLOR_GAMMA",
+# 		default = (1.0, 1.0, 1.0), 
+# 		soft_min = 0.0,
+# 		soft_max = 1.0,
+# 	)
 	
 	sh_fog_colour_top: FloatVectorProperty(
 		name = "Top fog",
@@ -1135,47 +1135,47 @@ class SegmentPanel(Panel):
 		sub.prop(sh_properties, "sh_auto_length", toggle = 1)
 		if (not sh_properties.sh_auto_length):
 			sub.prop(sh_properties, "sh_len")
-		sub.prop(sh_properties, "sh_box_bake_mode")
+		# sub.prop(sh_properties, "sh_box_bake_mode")
 		sub.prop(sh_properties, "sh_template")
 		sub.prop(sh_properties, "sh_default_template")
 		sub.prop(sh_properties, "sh_softshadow")
 		sub.prop(sh_properties, "sh_vrmultiply")
 		
-		bake_mode = sh_properties.sh_box_bake_mode
+		# bake_mode = sh_properties.sh_box_bake_mode
 		
-		if (bake_mode == "Mesh"):
-			# Lighting
-			sub = layout.box()
-			sub.label(text = "Light", icon = "LIGHT")
-			
-			sub.prop(sh_properties, "sh_light_right")
-			sub.prop(sh_properties, "sh_light_left")
-			sub.prop(sh_properties, "sh_light_top")
-			sub.prop(sh_properties, "sh_light_bottom")
-			sub.prop(sh_properties, "sh_light_front")
-			sub.prop(sh_properties, "sh_light_back")
-			
-			if ((not get_prefs().purist_mode and get_prefs().show_deprecated_advanced_lights) or sh_properties.sh_lighting):
-				sub.prop(sh_properties, "sh_lighting")
-				if (sh_properties.sh_lighting):
-					sub.prop(sh_properties, "sh_lighting_ambient")
-			
-			# Mesh settings
-			sub = layout.box()
-			sub.label(text = "Meshes", icon = "MESH_DATA")
-			if (get_prefs().mesh_baker == "yorshex"):
-				sub.prop(sh_properties, "ambient_occlusion_quality")
-			else:
-				sub.prop(sh_properties, "sh_ambient_occlusion")
-			sub.prop(sh_properties, "sh_menu_segment")
+		# if (bake_mode == "Mesh"):
+		# Lighting
+		sub = layout.box()
+		sub.label(text = "Light", icon = "LIGHT")
 		
-		if (bake_mode == "StoneHack"):
-			sub = layout.box()
-			sub.label(text = "Stone", icon = "UV_DATA")
-			sub.prop(sh_properties, "sh_stone_obstacle_name")
-			sub.prop(sh_properties, "sh_legacy_colour_model")
-			if (sh_properties.sh_legacy_colour_model):
-				sub.prop(sh_properties, "sh_legacy_colour_default")
+		sub.prop(sh_properties, "sh_light_right")
+		sub.prop(sh_properties, "sh_light_left")
+		sub.prop(sh_properties, "sh_light_top")
+		sub.prop(sh_properties, "sh_light_bottom")
+		sub.prop(sh_properties, "sh_light_front")
+		sub.prop(sh_properties, "sh_light_back")
+		
+		if ((not get_prefs().purist_mode and get_prefs().show_deprecated_advanced_lights) or sh_properties.sh_lighting):
+			sub.prop(sh_properties, "sh_lighting")
+			if (sh_properties.sh_lighting):
+				sub.prop(sh_properties, "sh_lighting_ambient")
+		
+		# Mesh settings
+		sub = layout.box()
+		sub.label(text = "Meshes", icon = "MESH_DATA")
+		if (get_prefs().mesh_baker == "yorshex"):
+			sub.prop(sh_properties, "ambient_occlusion_quality")
+		else:
+			sub.prop(sh_properties, "sh_ambient_occlusion")
+		sub.prop(sh_properties, "sh_menu_segment")
+		
+		# if (bake_mode == "StoneHack"):
+		# 	sub = layout.box()
+		# 	sub.label(text = "Stone", icon = "UV_DATA")
+		# 	sub.prop(sh_properties, "sh_stone_obstacle_name")
+		# 	sub.prop(sh_properties, "sh_legacy_colour_model")
+		# 	if (sh_properties.sh_legacy_colour_model):
+		# 		sub.prop(sh_properties, "sh_legacy_colour_default")
 		
 		# Quick test
 		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
