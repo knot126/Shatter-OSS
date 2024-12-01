@@ -217,7 +217,7 @@ def server_manager_update(_self = None, _context = None):
 				level_name = bpy.context.scene.sh_properties.sh_level if _context else ""
 			
 			# Find the asset dir to use
-			asset_dir = butil.find_apk()
+			asset_dir = butil.find_apk() or butil.storage_path("testserver")
 			
 			# Set parameters
 			gServerManager.set_params((asset_dir, level_name))
@@ -416,27 +416,6 @@ class SegmentProperties(PropertyGroup):
 		soft_min = 0.0,
 		soft_max = 1.0,
 	)
-	
-# 	sh_stone_obstacle_name: StringProperty(
-# 		name = "Stone obstacle name",
-# 		description = "Name of the obstacle to use for stone",
-# 		default = "stone",
-# 	)
-# 	
-# 	sh_legacy_colour_model: BoolProperty(
-# 		name = "Legacy colour model",
-# 		description = "Uses the colour inheritance model from SHBT v0.9x, which can avoid extra effort when using the stone hack without templates",
-# 		default = False
-# 	)
-# 	
-# 	sh_legacy_colour_default: FloatVectorProperty(
-# 		name = "Default colour",
-# 		description = "The default colour for all (non-visible marked) boxes when using the legacy colour model",
-# 		subtype = "COLOR_GAMMA",
-# 		default = (1.0, 1.0, 1.0), 
-# 		soft_min = 0.0,
-# 		soft_max = 1.0,
-# 	)
 	
 	sh_fog_colour_top: FloatVectorProperty(
 		name = "Top fog",
