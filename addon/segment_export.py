@@ -469,9 +469,10 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		el.tail = "\n"
 	
 	# Some things to handle legacy colour model
-	use_legacy = params["stone_legacy_colour_model"]
-	default_colour = params["stone_legacy_colour_default"]
+	# use_legacy = params["stone_legacy_colour_model"]
+	# default_colour = params["stone_legacy_colour_default"]
 	
+	'''
 	if (params.get("sh_box_bake_mode", "Mesh") == "StoneHack" and sh_type == "BOX" and (obj.sh_properties.sh_visible or use_legacy)):
 		"""
 		Export a fake obstacle that will represent stone in the level.
@@ -507,6 +508,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 		el_stone.tail = "\n\t"
 		if (params["isLast"]):
 			el_stone.tail = "\n"
+	'''
 
 def createSegmentText(scene, params):
 	"""
@@ -514,9 +516,9 @@ def createSegmentText(scene, params):
 	"""
 	
 	# Set some params
-	params["stone_type"] = scene.sh_properties.sh_stone_obstacle_name
-	params["stone_legacy_colour_model"] = scene.sh_properties.sh_legacy_colour_model
-	params["stone_legacy_colour_default"] = scene.sh_properties.sh_legacy_colour_default
+	# params["stone_type"] = scene.sh_properties.sh_stone_obstacle_name
+	# params["stone_legacy_colour_model"] = scene.sh_properties.sh_legacy_colour_model
+	# params["stone_legacy_colour_default"] = scene.sh_properties.sh_legacy_colour_default
 	
 	level_root = sh_create_root(scene.sh_properties, params)
 	
@@ -778,8 +780,8 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 		f.write(content.encode())
 	
 	# Cook the mesh if we need to
-	if (params.get("sh_box_bake_mode", "Mesh") == "Mesh"):
-		bake_mesh(filepath, templates, params)
+	# if (params.get("sh_box_bake_mode", "Mesh") == "Mesh"):
+	bake_mesh(filepath, templates, params)
 	
 	# Display export warnings, if any and if enabled
 	params["warnings"].display()
@@ -797,7 +799,7 @@ def sh_export_all_segments(context, compress = True, aotype = '1'):
 		
 		sh_export_segment_ext(None, context, s, compress, params = {
 				"sh_vrmultiply": sh_properties.sh_vrmultiply,
-				"sh_box_bake_mode": sh_properties.sh_box_bake_mode,
+				# "sh_box_bake_mode": sh_properties.sh_box_bake_mode,
 				"sh_meshbake_template": tryTemplatesPath(),
 				"bake_menu_segment": sh_properties.sh_menu_segment,
 				"bake_vertex_light": sh_properties.sh_ambient_occlusion,
@@ -811,7 +813,7 @@ def sh_export_segment(filepath, context, compress = False, testserver = False, n
 	
 	params = {
 		"sh_vrmultiply": sh_properties.sh_vrmultiply,
-		"sh_box_bake_mode": sh_properties.sh_box_bake_mode,
+		# "sh_box_bake_mode": sh_properties.sh_box_bake_mode,
 		"bake_menu_segment": sh_properties.sh_menu_segment,
 		"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 		"lighting_enabled": sh_properties.sh_lighting,
