@@ -23,6 +23,7 @@ from . import knshim_ui
 from . import server_manager
 from . import assets
 from . import rebake_all_meshes
+from . import mtxconv_ui
 
 from bpy.props import (
 	StringProperty,
@@ -1479,12 +1480,16 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 			self.layout.operator("shatter.export_room")
 		self.layout.operator("shatter.export_level_package")
 		self.layout.separator()
-		self.layout.label(text = "Others")
-		self.layout.operator("shatter.rebake_all_meshes")
+		self.layout.label(text = "Utilities")
+		self.layout.operator("shatter.extract_mtx")
+		self.layout.operator("shatter.bake_mtx")
 		self.layout.operator("shatter.progression_crypto_encrypt")
 		self.layout.operator("shatter.progression_crypto_decrypt")
-		self.layout.operator("shatter.open_obstacles_txt")
+		self.layout.operator("shatter.rebake_all_meshes")
+		self.layout.separator()
+		self.layout.label(text = "Actions")
 		self.layout.operator("shatter.open_current_asset_folder")
+		self.layout.operator("shatter.open_obstacles_txt")
 
 ###############################################################################
 
@@ -1519,6 +1524,8 @@ classes = (
 	room_export.ExportRoom,
 	knshim_ui.InstallKnShim,
 	rebake_all_meshes.RebakeAllMeshes,
+	mtxconv_ui.MtxconvExtract,
+	mtxconv_ui.MtxconvBake,
 )
 
 keymaps = {

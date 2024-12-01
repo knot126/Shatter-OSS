@@ -19,8 +19,6 @@ from bpy.types import (
 	Panel,
 	Menu,
 	Operator,
-	PropertyGroup,
-	AddonPreferences,
 )
 
 class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):

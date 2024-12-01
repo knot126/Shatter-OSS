@@ -659,6 +659,17 @@ _LIBSMASHHIT_V159_ARM64_PATCH_TABLE = {
 	"noenshittification": _patch_v159_arm64_noenshittification,
 }
 
+def _patch_v1510_force_out_of_balls_ads_to_show(patcher, params):
+	patcher.patch(0x1204dc, AARCH64_NOP)
+	patcher.patch(0x1204e0, AARCH64_NOP)
+	patcher.patch(0x1204e4, AARCH64_NOP)
+	patcher.patch(0x1204ec, AARCH64_NOP)
+	patcher.patch(0x1204f0, AARCH64_NOP)
+
+_LIBSMASHHIT_V1510_ARM64_PATCH_TABLE = {
+	"forceoutofballsadstoshow": _patch_v1510_force_out_of_balls_ads_to_show,
+}
+
 PATCHES_LIST = {
 	"arm32": {
 		"1.0.0": _LIBSMASHHIT_V100_ARM32_PATCH_TABLE,
@@ -672,6 +683,7 @@ PATCHES_LIST = {
 		"1.5.4": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 		"1.5.5": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 		"1.5.9": _LIBSMASHHIT_V159_ARM64_PATCH_TABLE,
+		"1.5.10": _LIBSMASHHIT_V1510_ARM64_PATCH_TABLE,
 	},
 	"x86": {
 		"1.4.2": _LIBSMASHHIT_V142_X86_PATCH_TABLE,
@@ -761,6 +773,10 @@ def determine_version(p):
 	cand = p.peek(0x8c347, 5)
 	if (cand == b"1.5.9"):
 		return ("arm64", "1.5.9")
+	
+	cand = p.peek(0x8eba8, 6)
+	if (cand == b"1.5.10"):
+		return ("arm64", "1.5.10")
 	
 	return NotImplemented
 
