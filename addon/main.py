@@ -636,7 +636,7 @@ class EntityProperties(PropertyGroup):
 		description = "The texture that will appear on the surface of the box or decal",
 		default = 0,
 		min = 0,
-		max = 63
+		max = 63, # TODO: Dynamically adjust this based on ymb_tiles setting
 	)
 	
 	sh_tile1: IntProperty(

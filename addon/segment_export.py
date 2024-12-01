@@ -513,12 +513,12 @@ def createSegmentText(scene, params):
 	Export the XML part of a segment to a string
 	"""
 	
-	level_root = sh_create_root(scene.sh_properties, params)
-	
 	# Set some params
 	params["stone_type"] = scene.sh_properties.sh_stone_obstacle_name
 	params["stone_legacy_colour_model"] = scene.sh_properties.sh_legacy_colour_model
 	params["stone_legacy_colour_default"] = scene.sh_properties.sh_legacy_colour_default
+	
+	level_root = sh_create_root(scene.sh_properties, params)
 	
 	# Enumerate which objects we should export right now
 	
