@@ -387,6 +387,9 @@ def run_native(cmd, args):
 	
 	return subprocess.run([cmd] + args).returncode
 
+def get_platform():
+	return sys.platform
+
 def get_homedir():
 	return str(pathlib.Path.home())
 

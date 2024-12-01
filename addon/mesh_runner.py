@@ -80,8 +80,12 @@ def cb_command(fin, fout, templates, params):
 	
 	return status
 
+def cb_none(fin, fout, templates, params):
+	pass
+
 MESH_BAKE_CALLBACKS = {
 	"bakemesh": cb_bakemesh,
 	"yorshex": cb_yorshex,
 	"command": cb_command,
+	"none": cb_none,
 }

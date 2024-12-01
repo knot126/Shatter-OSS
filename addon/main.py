@@ -299,12 +299,12 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_box_bake_mode: EnumProperty(
-		name = "Box bake mode",
+		name = "Box bake type (legacy)",
 		description = "This will control how the boxes should be exported. Hover over each option for an explation of how it works",
 		items = [
 			('Mesh', "Mesh", "Exports a .mesh file alongside the segment for showing visible box geometry"),
 			('StoneHack', "Obstacle", "Adds a custom obstacle named 'stone' for every box that attempts to simulate stone. Only colour is supported: there are no textures"),
-			('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
+			# ('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
 		],
 		default = "Mesh"
 	)
@@ -917,9 +917,11 @@ def list_mesh_bakers(self, context):
 	mesh_bakers = [
 		('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients. Kept for compatibility with older segments"),
 		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
+		('none', "None", "Don't bake any meshes"),
 	]
 	
-	mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
+	if util.get_platform() in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS:
+		mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
 	
 	return mesh_bakers
 
