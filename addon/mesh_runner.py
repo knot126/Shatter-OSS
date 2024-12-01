@@ -52,6 +52,11 @@ def cb_bakemesh(fin, fout, templates, params):
 	
 	return 0
 
+def cb_stonehack(fin, fout, templates, params):
+	from . import stonehack
+	
+	stonehack.cook(fin)
+
 def cb_yorshex(fin, fout, templates, params):
 	args = [fin, fout]
 	
@@ -85,6 +90,7 @@ def cb_none(fin, fout, templates, params):
 
 MESH_BAKE_CALLBACKS = {
 	"bakemesh": cb_bakemesh,
+	"stonehack": cb_stonehack,
 	"yorshex": cb_yorshex,
 	"command": cb_command,
 	"none": cb_none,

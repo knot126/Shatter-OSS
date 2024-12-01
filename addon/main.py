@@ -895,6 +895,7 @@ YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS = ["win32", "linux"]
 def list_mesh_bakers(self, context):
 	mesh_bakers = [
 		('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients. Kept for compatibility with older segments"),
+		('stonehack', "Stonehack", "Does not actually bake meshes, but instead adds an obstacle named 'stone' which look like meshes. This is probably only desirable if you want to create segments which look like those from 2020-2021 since stone hack was used then"),
 		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
 		('none', "None", "Don't bake any meshes"),
 	]

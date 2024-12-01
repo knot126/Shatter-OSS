@@ -5,7 +5,7 @@ import re
 import traceback
 import json
 
-SERVER_VERSION = (1, 0, 0)
+SERVER_VERSION = (1, 1, 0)
 QUICK_PORT = 8000
 
 """
