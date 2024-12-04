@@ -138,6 +138,12 @@ def isIndexableEqual(a, b):
 	
 	return True
 
+def getCombo(obj, basename):
+	if (getattr(obj, f"{basename}_chooser") == "(other)"):
+		return getattr(obj, basename)
+	else:
+		return getattr(obj, f"{basename}_chooser")
+
 ## Segment Export
 ## All of the following is related to exporting segments.
 
@@ -180,19 +186,19 @@ def sh_create_root(scene, params):
 	}
 	
 	# Check for the template attrib and set
-	if (scene.sh_template):
-		seg_props["template"] = scene.sh_template
-	elif (scene.sh_default_template):
-		seg_props["template"] = f"{scene.sh_default_template}_s"
+	if (getCombo(scene, 'sh_template')):
+		seg_props["template"] = getCombo(scene, 'sh_template')
+	elif (getCombo(scene, 'sh_default_template')):
+		seg_props["template"] = f"{getCombo(scene, 'sh_default_template')}_s"
 	
 	# Default template
-	if (scene.sh_default_template):
-		seg_props["shbt-default-template"] = scene.sh_default_template
+	if (getCombo(scene, 'sh_default_template')):
+		seg_props["shbt-default-template"] = getCombo(scene, 'sh_default_template')
 	
 	# Lighting
 	# We no longer export lighting info if the template is present since that should
 	# be taken care of there.
-	if (not scene.sh_template):
+	if (not getCombo(scene, 'sh_template')):
 		if (scene.sh_light_left != 1.0):   seg_props["lightLeft"] = str(scene.sh_light_left)
 		if (scene.sh_light_right != 1.0):  seg_props["lightRight"] = str(scene.sh_light_right)
 		if (scene.sh_light_top != 1.0):    seg_props["lightTop"] = str(scene.sh_light_top)
@@ -285,11 +291,15 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 			properties["rot"] = exportPointList(obj.rotation_euler)
 	
 	# Add template
-	if (obj.sh_properties.sh_template):
+	# Always use the chooser value if its being used
+	if obj.sh_properties.sh_use_template_chooser:
+		properties["template"] = obj.sh_properties.sh_template_chooser
+	# Use template box value if set
+	elif (obj.sh_properties.sh_template):
 		properties["template"] = obj.sh_properties.sh_template
 	# Use default template from scene if we don't have one
-	elif (scene.sh_default_template):
-		default_template = scene.sh_default_template
+	elif (getCombo(scene, 'sh_default_template')):
+		default_template = getCombo(scene, 'sh_default_template')
 		
 		# We use the standard naming convention from most Smash Hit templates
 		# for these:

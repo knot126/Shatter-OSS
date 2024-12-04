@@ -71,6 +71,12 @@ OBSTACLES = [
 	None,
 ]
 
+OBSTACLES_SET = set()
+
+for o in OBSTACLES:
+	if type(o) == tuple:
+		OBSTACLES_SET.add(o[0])
+
 # Find custom obstacles
 # TODO Make this not shit anymore (that is: a JSON file) :-)
 try:

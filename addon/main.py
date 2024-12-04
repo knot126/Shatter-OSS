@@ -236,12 +236,8 @@ def server_manager_update(_self = None, _context = None):
 		util.log(f"*** Exception in server manager!!! ***")
 		util.log(traceback.format_exc())
 
-gLevelList = None
-
 def get_test_level_list(self, context):
-	global gLevelList
-	
-	gLevelList = assets.list_levels(gLevelList)
+	level_list = assets.levels.get()
 	
 	levels = [
 		("test", "Test level", "The default testing level"),
@@ -249,13 +245,48 @@ def get_test_level_list(self, context):
 		None,
 	]
 	
-	for l in gLevelList["results"]:
+	for l in level_list["results"]:
 		if l == "test":
 			continue
 		
 		levels.append((l, l, ""))
 	
 	return levels
+
+def get_obstacle_list(self, context):
+	obstacles = obstacle_db.OBSTACLES.copy()
+	
+	# Get obstacles from APK
+	for obs in assets.obstacles.get():
+		if obs not in obstacle_db.OBSTACLES_SET:
+			obstacles.append((obs, obs, ""))
+	
+	return obstacles
+
+def get_template_list(self, context):
+	items = []
+	
+	for t in assets.templates.get():
+		desc = ""
+		
+		if t.endswith("_s"):
+			desc = f"Segment template for {t[:-2].title()}"
+		elif t.endswith("_st"):
+			desc = f"Crystal template for {t[:-3].title()}"
+		elif t.endswith("_glass"):
+			desc = f"Glass template for {t[:-6].title()}"
+		else:
+			desc = f"Stone template for {t.title()}"
+		
+		items.append((t, t, desc))
+	
+	return items
+
+def get_template_list_with_custom(self, context):
+	items = get_template_list(self, context)
+	items.insert(0, ("(other)", "Other...", ""))
+	items.insert(1, None)
+	return items
 
 ################################################################################
 # Item and scene data structures
@@ -317,15 +348,29 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_template: StringProperty(
-		name = "Template",
-		description = "The template paramater that is passed for the entire segment",
+		name = "Name",
+		description = "Other template entry field",
 		default = "",
 	)
 	
+	sh_template_chooser: EnumProperty(
+		name = "Template",
+		description = "The template paramater that is passed for the entire segment",
+		items = get_template_list_with_custom,
+		default = 0,
+	)
+	
 	sh_default_template: StringProperty(
+		name = "Name",
+		description = "Other default template entry field",
+		default = "",
+	)
+	
+	sh_default_template_chooser: EnumProperty(
 		name = "Default template",
 		description = "The base name of the template to use when no template is specified for an entity. Format: boxes 🡒 '{basename}', obstacles 🡒 '{basename}_glass', obstacles starting with 'score' 🡒 '{basename}_st', segment 🡒 '{basename}_s'",
-		default = "",
+		items = get_template_list_with_custom,
+		default = 0,
 	)
 	
 	sh_softshadow: FloatProperty(
@@ -522,12 +567,27 @@ class EntityProperties(PropertyGroup):
 		default = "BOX"
 	)
 	
+	# # TEMPLATES # #
+	sh_use_template_chooser: BoolProperty(
+		name = "Use template chooser",
+		description = "Use the template chooser instead of typing the name by hand",
+		default = False,
+	)
+	
 	sh_template: StringProperty(
 		name = "Template",
 		description = "The template for the obstacle/box (see templates.xml), remember that this can be easily overridden per obstacle/box",
 		default = "",
 	)
 	
+	sh_template_chooser: EnumProperty(
+		name = "Template",
+		description = "The template for the obstacle/box (see templates.xml), remember that this can be easily overridden per obstacle/box",
+		items = get_template_list,
+		default = 0,
+	)
+	
+	# # OBSTACLES # #
 	sh_use_chooser: BoolProperty(
 		name = "Use obstacle chooser",
 		description = "Use the obstacle chooser instead of typing the name by hand",
@@ -543,8 +603,8 @@ class EntityProperties(PropertyGroup):
 	sh_obstacle_chooser: EnumProperty(
 		name = "Obstacle",
 		description = "Type of obstacle to be used (pick a name)",
-		items = obstacle_db.OBSTACLES,
-		default = "scoretop",
+		items = get_obstacle_list,
+		default = 14,
 	)
 	
 	sh_powerup: EnumProperty(
@@ -1116,8 +1176,15 @@ class SegmentPanel(Panel):
 		if (not sh_properties.sh_auto_length):
 			sub.prop(sh_properties, "sh_len")
 		# sub.prop(sh_properties, "sh_box_bake_mode")
-		sub.prop(sh_properties, "sh_template")
-		sub.prop(sh_properties, "sh_default_template")
+		
+		def displayCombo(propname):
+			sub.prop(sh_properties, f"{propname}_chooser")
+			if getattr(sh_properties, f"{propname}_chooser") == "(other)":
+				sub.prop(sh_properties, propname)
+		
+		displayCombo("sh_template")
+		displayCombo("sh_default_template")
+		
 		sub.prop(sh_properties, "sh_softshadow")
 		sub.prop(sh_properties, "sh_vrmultiply")
 		
@@ -1206,7 +1273,13 @@ class EntityPanel(Panel):
 		# All objects will have all properties, but only some will be used for
 		# each of obstacle there is.
 		t = ui.prop("sh_type", text = "")
-		ui.prop("sh_template")
+		
+		ui.region("NODE_COMPOSITING", "Template")
+		if (ui.prop("sh_use_template_chooser", use_button=True)):
+			ui.prop("sh_template_chooser", text="", text_compact="Template")
+		else:
+			ui.prop("sh_template", text="", text_compact="Template")
+		ui.end()
 		
 		if (t == "BOX"):
 			ui.prop("sh_visible", disabled = not not ui.get("sh_template"))
