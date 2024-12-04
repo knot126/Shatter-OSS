@@ -5,23 +5,75 @@ Some stuff related to managing the assets folder.
 from . import butil
 from . import util
 import os
+from time import time
 
-def list_levels(cache = None):
+class AssetLister:
 	"""
-	List out the levels in an available assets folder
+	An object which can list assets with caching results
 	"""
 	
-	try:
-		if (cache and util.get_time() < cache["expire"]):
-			return cache
+	def __init__(self, category, cache_time=2.0):
+		self.category = category
+		self.cache_data = []
+		self.cache_updated = 0
+		self.cache_time = cache_time
+	
+	def _list(self):
+		assets = butil.find_apk()
+		items = []
 		
-		results = []
+		if assets:
+			try:
+				striplen = len(f"{assets}/{self.category}") + 1
+				
+				for dirpath, dirnames, filenames in os.walk(f"{assets}/{self.category}"):
+					for filename in filenames:
+						item = os.path.join(dirpath, filename)[striplen:]
+						
+						# Strip extensions
+						for ext in [".mp3", ".gz", ".lua", ".xml"]:
+							if item.endswith(ext):
+								item = item[:-len(ext)]
+						
+						items.append(item)
+			except:
+				pass
 		
-		files = util.list_folder(butil.find_apk() + "/levels/", False)
+		return items
+	
+	def get(self):
+		if (self.cache_updated + self.cache_time) < time():
+			self.cache_data = self._list()
+			self.cache_updated = time()
 		
-		for f in files:
-			results.append(os.path.basename(f)[:-8])
+		return self.cache_data
+	
+	def get_uncached(self):
+		return self._list()
+
+levels = AssetLister("levels")
+obstacles = AssetLister("obstacles")
+
+class TemplateLister(AssetLister):
+	"""
+	Anddd today's "Object Hierarchy That Makes No Sense" ...
+	"""
+	
+	def _list(self):
+		items = []
 		
-		return {"results": results, "expire": util.get_time() + 5}
-	except:
-		return {"results": [], "expire": util.get_time() + 1000}
+		# This is really a hack, but should be fast and should work most of the
+		# time.
+		try:
+			with open(f"{butil.find_apk()}/templates.xml.mp3", "r") as f:
+				for line in f:
+					item = line.partition('<template name="')[2].partition('"')[0]
+					
+					if item:
+						items.append(item)
+		except:
+			pass
+		
+		return items
+
+templates = TemplateLister(None)
