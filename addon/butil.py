@@ -81,6 +81,10 @@ class UIDrawingHelper():
 		sub = self.layout[-1].column()
 		self.layout.append(sub)
 	
+	def beginSplit(self, factor, align):
+		sub = self.layout[-1].split(factor=factor, align=align)
+		self.layout.append(sub)
+	
 	def beginFake(self):
 		"""
 		Begin a fake layout (just pushes the current one again)
@@ -158,6 +162,12 @@ class UIDrawingHelper():
 			self.end()
 		
 		return self.get(symbol)
+	
+	def combo(self, symbol, *, icon = None, text = None, text_compact = None, disabled = False):
+		self.beginSplit(0.92, True)
+		self.prop(symbol, icon = icon, text = text, text_compact = text_compact, disabled = disabled)
+		self.prop(f"{symbol}_chooser", text = "", text_compact = "")
+		self.end()
 	
 	def op(self, opname):
 		self.layout[-1].operator(opname)

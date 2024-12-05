@@ -263,7 +263,10 @@ def get_obstacle_list(self, context):
 	return obstacles
 
 def get_template_list(self, context):
-	items = []
+	items = [
+		("(other)", "Choose...", ""),
+		None,
+	]
 	
 	for t in assets.templates.get():
 		desc = ""
@@ -281,11 +284,18 @@ def get_template_list(self, context):
 	
 	return items
 
-def get_template_list_with_custom(self, context):
-	items = get_template_list(self, context)
-	items.insert(0, ("(other)", "Other...", ""))
-	items.insert(1, None)
-	return items
+def get_chooser_enum(self):
+	return 0
+
+def make_set_chooser_enum(propname, getlistfunc):
+	def set_chooser_enum(self, value):
+		if value != 0:
+			self[propname] = getlistfunc(None, None)[value][0]
+	
+	return set_chooser_enum
+
+set_template = make_set_chooser_enum("sh_template", get_template_list)
+set_default_template = make_set_chooser_enum("sh_default_template", get_template_list)
 
 ################################################################################
 # Item and scene data structures
@@ -328,17 +338,6 @@ class SegmentProperties(PropertyGroup):
 		default = False,
 	)
 	
-	# sh_box_bake_mode: EnumProperty(
-	# 	name = "Box bake type (legacy)",
-	# 	description = "This will control how the boxes should be exported. Hover over each option for an explation of how it works",
-	# 	items = [
-	# 		('Mesh', "Mesh", "Exports a .mesh file alongside the segment for showing visible box geometry"),
-	# 		('StoneHack', "Obstacle", "Adds a custom obstacle named 'stone' for every box that attempts to simulate stone. Only colour is supported: there are no textures"),
-	# 		# ('None', "None", "Don't do anything related to baking stone; only exports the raw segment data"),
-	# 	],
-	# 	default = "Mesh"
-	# )
-	
 	ambient_occlusion_quality: EnumProperty(
 		name = "Ambient occlusion quality",
 		description = "Controls the quality of ambient occlusion (shadows near corners) in this segment's mesh",
@@ -347,28 +346,32 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_template: StringProperty(
-		name = "Name",
-		description = "Other template entry field",
+		name = "Template",
+		description = "The template paramater that is passed for the entire segment",
 		default = "",
 	)
 	
 	sh_template_chooser: EnumProperty(
-		name = "Template",
-		description = "The template paramater that is passed for the entire segment",
-		items = get_template_list_with_custom,
+		name = "",
+		description = "",
+		items = get_template_list,
+		get = get_chooser_enum,
+		set = set_template,
 		default = 0,
 	)
 	
 	sh_default_template: StringProperty(
-		name = "Name",
-		description = "Other default template entry field",
+		name = "Default template",
+		description = "The base name of the template to use when no template is specified for an entity. Format: boxes 🡒 '{basename}', obstacles 🡒 '{basename}_glass', obstacles starting with 'score' 🡒 '{basename}_st', segment 🡒 '{basename}_s'",
 		default = "",
 	)
 	
 	sh_default_template_chooser: EnumProperty(
-		name = "Default template",
-		description = "The base name of the template to use when no template is specified for an entity. Format: boxes 🡒 '{basename}', obstacles 🡒 '{basename}_glass', obstacles starting with 'score' 🡒 '{basename}_st', segment 🡒 '{basename}_s'",
-		items = get_template_list_with_custom,
+		name = "",
+		description = "",
+		items = get_template_list,
+		get = get_chooser_enum,
+		set = set_default_template,
 		default = 0,
 	)
 	
@@ -567,12 +570,6 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	# # TEMPLATES # #
-	sh_use_template_chooser: BoolProperty(
-		name = "Use template chooser",
-		description = "Use the template chooser instead of typing the name by hand",
-		default = False,
-	)
-	
 	sh_template: StringProperty(
 		name = "Template",
 		description = "The template for the obstacle/box (see templates.xml), remember that this can be easily overridden per obstacle/box",
@@ -580,9 +577,11 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_template_chooser: EnumProperty(
-		name = "Template",
-		description = "The template for the obstacle/box (see templates.xml), remember that this can be easily overridden per obstacle/box",
+		name = "",
+		description = "",
 		items = get_template_list,
+		get = get_chooser_enum,
+		set = set_template,
 		default = 0,
 	)
 	
@@ -1174,12 +1173,11 @@ class SegmentPanel(Panel):
 		sub.prop(sh_properties, "sh_auto_length", toggle = 1)
 		if (not sh_properties.sh_auto_length):
 			sub.prop(sh_properties, "sh_len")
-		# sub.prop(sh_properties, "sh_box_bake_mode")
 		
 		def displayCombo(propname):
-			sub.prop(sh_properties, f"{propname}_chooser")
-			if getattr(sh_properties, f"{propname}_chooser") == "(other)":
-				sub.prop(sh_properties, propname)
+			u = sub.split(factor=0.9, align=True)
+			u.prop(sh_properties, propname)
+			u.prop(sh_properties, f"{propname}_chooser", text="")
 		
 		displayCombo("sh_template")
 		displayCombo("sh_default_template")
@@ -1274,10 +1272,7 @@ class EntityPanel(Panel):
 		t = ui.prop("sh_type", text = "")
 		
 		ui.region("NODE_COMPOSITING", "Template")
-		if (ui.prop("sh_use_template_chooser", use_button=True)):
-			ui.prop("sh_template_chooser", text="", text_compact="Template")
-		else:
-			ui.prop("sh_template", text="", text_compact="Template")
+		ui.combo("sh_template", text="", text_compact="Template")
 		ui.end()
 		
 		if (t == "BOX"):
