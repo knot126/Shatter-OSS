@@ -15,13 +15,12 @@ Everyone that has helped with the codebase(s) directly in some way.
 ### Test client
 
 * [Knot126](https://github.com/knot126) &mdash; Initial test client implementation, binary patches, some of the UI and graphics
-* [Yorshex](https://github.com/yorshex) &mdash; Some UI and graphics for the client
 
 ### Third party libraries used
 
-* [Python RSA](https://stuvel.eu/software/rsa/) &mdash; Creating and verifying update signatures
-* [Requests](https://docs.python-requests.org/en/latest/index.html) &mdash; Downloading updates and making web API calls
-* Simple XTEA &mdash; Segment obfuscation
+* [Yorshex's Asset Server](https://codeberg.org/yorshex/sh-asset-server)
+* [Yorshex's Mesh Baker](https://codeberg.org/yorshex/sh-meshbake)
+* [mtxconv](https://github.com/SamusAranX/mtxconv) by [SamusAranX](https://github.com/SamusAranX)
 
 ## Thanks to
 
