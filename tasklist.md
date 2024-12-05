@@ -1,1 +1,0 @@
-- NxServer: Make non-remote obstacles not packaged
