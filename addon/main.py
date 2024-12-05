@@ -13,7 +13,6 @@ from . import obstacle_db
 from . import segment_export
 from . import segment_import
 from . import room_export
-# from . import autogen_ui
 from . import util
 from . import butil
 from . import level_pack_ui
@@ -22,7 +21,7 @@ from . import progression_crypto_ui
 from . import knshim_ui
 from . import server_manager
 from . import assets
-from . import rebake_all_meshes
+from . import rebake_ui
 from . import mtxconv_ui
 
 from bpy.props import (
@@ -1589,7 +1588,7 @@ classes = (
 	progression_crypto_ui.ProgressionCryptoDecrypt,
 	room_export.ExportRoom,
 	knshim_ui.InstallKnShim,
-	rebake_all_meshes.RebakeAllMeshes,
+	rebake_ui.RebakeAllMeshes,
 	mtxconv_ui.MtxconvExtract,
 	mtxconv_ui.MtxconvBake,
 )

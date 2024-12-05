@@ -12,6 +12,25 @@ import bpy
 import re
 import traceback
 
+from bpy.props import (
+	StringProperty,
+	BoolProperty,
+	IntProperty,
+	IntVectorProperty,
+	FloatProperty,
+	FloatVectorProperty,
+	EnumProperty,
+	PointerProperty,
+)
+
+from bpy.types import (
+	Panel,
+	Menu,
+	Operator,
+	PropertyGroup,
+	AddonPreferences,
+)
+
 try:
 	import tomllib
 except ModuleNotFoundError:
@@ -198,6 +217,40 @@ class ExportHelper2:
 				change_ext = True
 		
 		return change_ext
+
+class FolderSelectHelper:
+	filepath: StringProperty(
+		name="Folder Path",
+		description="Filepath used for importing the folder",
+		maxlen=1024,
+		subtype='DIR_PATH',
+		options={'SKIP_PRESET', 'HIDDEN'}
+	)
+	
+	def invoke(self, context, _event):
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
+	
+	def invoke_popup(self, context, confirm_text=""):
+		if self.properties.is_property_set("filepath"):
+			title = self.filepath
+			if len(self.files) > 1:
+				title = iface_("Import {:d} files").format(len(self.files))
+			
+			if confirm_text:
+				confirm_text = iface_(confirm_text)
+			else:
+				# Use the operator's bl_label, extracted with an "Operator" translation context.
+				confirm_text = iface_(self.bl_label, i18n_contexts.operator_default)
+			
+			return context.window_manager.invoke_props_dialog(
+				self, confirm_text=confirm_text, title=title, translate=False)
+		
+		context.window_manager.fileselect_add(self)
+		return {'RUNNING_MODAL'}
+	
+	def check(self, _context):
+		return False
 
 def find_assets_paths(*, search_default = True, search_apk = True):
 	"""
