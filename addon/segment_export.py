@@ -288,11 +288,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 			properties["rot"] = exportPointList(obj.rotation_euler)
 	
 	# Add template
-	# Always use the chooser value if its being used
-	if obj.sh_properties.sh_use_template_chooser:
-		properties["template"] = obj.sh_properties.sh_template_chooser
-	# Use template box value if set
-	elif (obj.sh_properties.sh_template):
+	if (obj.sh_properties.sh_template):
 		properties["template"] = obj.sh_properties.sh_template
 	# Use default template from scene if we don't have one
 	elif (getCombo(scene, 'sh_default_template')):
