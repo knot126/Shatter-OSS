@@ -79,6 +79,9 @@ class TemplateLister(AssetLister):
 
 templates = TemplateLister(None)
 
+def between(string, start, end):
+	return string.partition(start)[2].partition(end)[0]
+
 class ObstacleParameterLister(AssetLister):
 	"""
 	List available parameters of a specific obstacle
@@ -90,16 +93,18 @@ class ObstacleParameterLister(AssetLister):
 		try:
 			with open(f"{butil.find_apk()}/obstacles/{self.category}.lua.mp3", "r") as f:
 				for line in f:
-					type = line.partition("mgGet")[2].partition("(")[0]
+					type = between(line, "mgGet", "(")
 					
 					if (type):
-						item = line.partition('"')[2].partition('"')[0]
+						item = between(line, '"', '"')
 						
 						if not item:
-							item = line.partition("'")[2].partition("'")[0]
+							item = between(line, "'", "'")
+						
+						default = between(between(line, "mgGet", "\n"), ",", ")").strip(" \"\'").replace(", ", " ")
 						
 						if item:
-							items.append((item, type.lower()))
+							items.append((item, type.lower(), default))
 		except:
 			pass
 		

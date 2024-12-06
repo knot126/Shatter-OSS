@@ -284,7 +284,7 @@ def get_template_list(self, context):
 	
 	return items
 
-def get_obstacle_param_list(self, context):
+def get_obstacle_param_list(self, context, withvalue=False):
 	items = [
 		("(other)", "Choose...", ""),
 		None,
@@ -293,9 +293,12 @@ def get_obstacle_param_list(self, context):
 	obs = context.object.sh_properties.sh_obstacle_chooser if context.object.sh_properties.sh_use_chooser else context.object.sh_properties.sh_obstacle
 	
 	for item in assets.obs_params.get(obs):
-		items.append((item[0], f"{item[0]} ({item[1]})", ""))
+		items.append((item[0], f"{item[0]} ({item[1]})", f"default: {item[2]}" if not withvalue else item[2]))
 	
 	return items
+
+def get_obstacle_param_list_but_two_arguments_to_make_blender_shut_the_fuck_up(self, context):
+	return get_obstacle_param_list(self, context)
 
 def get_chooser_enum(self):
 	return 0
@@ -304,6 +307,15 @@ def make_set_chooser_enum(propname, getlistfunc):
 	def set_chooser_enum(self, value):
 		if value != 0:
 			self[propname] = getlistfunc(None, bpy.context)[value][0]
+	
+	return set_chooser_enum
+
+def make_set_chooser_enum_with_value(propname, getlistfunc):
+	def set_chooser_enum(self, value):
+		if value != 0:
+			item = getlistfunc(None, bpy.context, True)[value]
+			self[propname] = item[0]
+			self[f"{propname}_value"] = item[2]
 	
 	return set_chooser_enum
 
@@ -900,9 +912,9 @@ def init_obstacle_params():
 		setattr(EntityProperties, f"sh_param{i}_chooser", EnumProperty(
 			name = "",
 			description = "",
-			items = get_obstacle_param_list,
+			items = get_obstacle_param_list_but_two_arguments_to_make_blender_shut_the_fuck_up,
 			get = get_chooser_enum,
-			set = make_set_chooser_enum(f"sh_param{i}", get_obstacle_param_list),
+			set = make_set_chooser_enum_with_value(f"sh_param{i}", get_obstacle_param_list),
 			default = 0,
 		))
 		
