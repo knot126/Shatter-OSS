@@ -163,10 +163,10 @@ class UIDrawingHelper():
 		
 		return self.get(symbol)
 	
-	def combo(self, symbol, *, icon = None, text = None, text_compact = None, disabled = False):
+	def combo(self, symbol, chooser_symbol = None, *, icon = None, text = None, text_compact = None, disabled = False):
 		self.beginSplit(0.92, True)
 		self.prop(symbol, icon = icon, text = text, text_compact = text_compact, disabled = disabled)
-		self.prop(f"{symbol}_chooser", text = "", text_compact = "")
+		self.prop(chooser_symbol or f"{symbol}_chooser", text = "", text_compact = "")
 		self.end()
 	
 	def op(self, opname):

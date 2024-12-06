@@ -253,12 +253,14 @@ def get_test_level_list(self, context):
 	return levels
 
 def get_obstacle_list(self, context):
-	obstacles = obstacle_db.OBSTACLES.copy()
+	obstacles = [
+		("(other)", "Choose...", ""),
+		None,
+	]
 	
 	# Get obstacles from APK
 	for obs in assets.obstacles.get():
-		if obs not in obstacle_db.OBSTACLES_SET:
-			obstacles.append((obs, obs, ""))
+		obstacles.append((obs, obs, ""))
 	
 	return obstacles
 
@@ -321,6 +323,7 @@ def make_set_chooser_enum_with_value(propname, getlistfunc):
 
 set_template = make_set_chooser_enum("sh_template", get_template_list)
 set_default_template = make_set_chooser_enum("sh_default_template", get_template_list)
+set_obstacle = make_set_chooser_enum("sh_obstacle", get_obstacle_list)
 
 ################################################################################
 # Item and scene data structures
@@ -612,8 +615,8 @@ class EntityProperties(PropertyGroup):
 	
 	# # OBSTACLES # #
 	sh_use_chooser: BoolProperty(
-		name = "Use obstacle chooser",
-		description = "Use the obstacle chooser instead of typing the name by hand",
+		name = "Use old obstacle chooser",
+		description = "Uses the OLD obstacle chooser instead of typing the name by hand",
 		default = False,
 	)
 	
@@ -626,8 +629,17 @@ class EntityProperties(PropertyGroup):
 	sh_obstacle_chooser: EnumProperty(
 		name = "Obstacle",
 		description = "Type of obstacle to be used (pick a name)",
+		items = obstacle_db.OBSTACLES,
+		default = "scoretop",
+	)
+	
+	sh_obstacle_chooser_new: EnumProperty(
+		name = "",
+		description = "",
 		items = get_obstacle_list,
-		default = 14,
+		get = get_chooser_enum,
+		set = set_obstacle,
+		default = 0,
 	)
 	
 	sh_powerup: EnumProperty(
@@ -1297,8 +1309,12 @@ class EntityPanel(Panel):
 			ui.prop("sh_reflective")
 		elif (t == "OBS"):
 			ui.region("COPY_ID", "Type")
-			ui.prop("sh_use_chooser", use_button = True)
-			ui.prop("sh_obstacle_chooser" if ui.get("sh_use_chooser") else "sh_obstacle", text = "", text_compact = "Type")
+			# ui.prop("sh_obstacle_chooser" if ui.get("sh_use_chooser") else "sh_obstacle", text = "", text_compact = "Type")
+			if ui.get("sh_use_chooser"):
+				ui.prop("sh_use_chooser", text="Click to use new chooser", use_button=True)
+				ui.prop("sh_obstacle_chooser")
+			else:
+				ui.combo("sh_obstacle", "sh_obstacle_chooser_new", text="", text_compact="Type")
 			ui.end()
 			
 			ui.region("HIDE_OFF", "Visibility")
