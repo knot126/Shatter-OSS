@@ -325,6 +325,14 @@ set_template = make_set_chooser_enum("sh_template", get_template_list)
 set_default_template = make_set_chooser_enum("sh_default_template", get_template_list)
 set_obstacle = make_set_chooser_enum("sh_obstacle", get_obstacle_list)
 
+def get_use_old_chooser(self):
+	return self["sh_use_chooser"]
+
+def set_use_old_chooser(self, value):
+	# Copy old value to new chooser
+	self["sh_use_chooser"] = value
+	self["sh_obstacle"] = bpy.context.object.sh_properties.sh_obstacle_chooser
+
 ################################################################################
 # Item and scene data structures
 ################################################################################
@@ -617,6 +625,8 @@ class EntityProperties(PropertyGroup):
 	sh_use_chooser: BoolProperty(
 		name = "Use old obstacle chooser",
 		description = "Uses the OLD obstacle chooser instead of typing the name by hand",
+		get = get_use_old_chooser,
+		set = set_use_old_chooser,
 		default = False,
 	)
 	
