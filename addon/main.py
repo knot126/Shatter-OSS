@@ -284,13 +284,26 @@ def get_template_list(self, context):
 	
 	return items
 
+def get_obstacle_param_list(self, context):
+	items = [
+		("(other)", "Choose...", ""),
+		None,
+	]
+	
+	obs = context.object.sh_properties.sh_obstacle_chooser if context.object.sh_properties.sh_use_chooser else context.object.sh_properties.sh_obstacle
+	
+	for item in assets.obs_params.get(obs):
+		items.append((item[0], f"{item[0]} ({item[1]})", ""))
+	
+	return items
+
 def get_chooser_enum(self):
 	return 0
 
 def make_set_chooser_enum(propname, getlistfunc):
 	def set_chooser_enum(self, value):
 		if value != 0:
-			self[propname] = getlistfunc(None, None)[value][0]
+			self[propname] = getlistfunc(None, bpy.context)[value][0]
 	
 	return set_chooser_enum
 
@@ -883,6 +896,28 @@ def init_obstacle_params():
 			description = "Parameter which is given to the obstacle when spawned",
 			default = "",
 		))
+		
+		setattr(EntityProperties, f"sh_param{i}_chooser", EnumProperty(
+			name = "",
+			description = "",
+			items = get_obstacle_param_list,
+			get = get_chooser_enum,
+			set = make_set_chooser_enum(f"sh_param{i}", get_obstacle_param_list),
+			default = 0,
+		))
+		
+		setattr(EntityProperties, f"sh_param{i}_value", StringProperty(
+			name = f"param{i} value",
+			description = "Value of the parameter",
+			default = "",
+		))
+
+def destroy_obstacle_params():
+	pass
+	# for i in range(0, 12):
+	# 	del EntityProperties[f"sh_param{i}"]
+	# 	del EntityProperties[f"sh_param{i}_chooser"]
+	# 	del EntityProperties[f"sh_param{i}_value"]
 
 ################################################################################
 # Addon, item and scene panels
@@ -1253,8 +1288,16 @@ class EntityPanel(Panel):
 			ui.end()
 			
 			ui.region("SETTINGS", "Parameters", force = True)
+			
 			for i in range(12):
-				ui.prop(f"sh_param{i}", text = "", disabled = (i == 0) and (ui.get("sh_template") != "") and (not ui.get(f"sh_param{i}")))
+				if "=" in ui.get(f"sh_param{i}"):
+					ui.prop(f"sh_param{i}")
+				else:
+					ui.beginSplit(0.65, False)
+					ui.combo(f"sh_param{i}", text = "")
+					ui.prop(f"sh_param{i}_value", text = "")
+					ui.end()
+			
 			ui.end()
 		elif (t == "DEC"):
 			ui.region("TEXTURE", "Sprite")
@@ -1581,6 +1624,8 @@ def unregister():
 	del bpy.types.Scene.sh_properties
 	# del bpy.types.Scene.shatter_autogen
 	del bpy.types.Object.sh_properties
+	
+	destroy_obstacle_params()
 	
 	# Delete keymaps
 	for a, b in keymaps_registered:

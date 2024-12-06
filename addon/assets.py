@@ -52,6 +52,7 @@ class AssetLister:
 		return self._list()
 
 levels = AssetLister("levels")
+rooms = AssetLister("rooms")
 obstacles = AssetLister("obstacles")
 
 class TemplateLister(AssetLister):
@@ -77,3 +78,42 @@ class TemplateLister(AssetLister):
 		return items
 
 templates = TemplateLister(None)
+
+class ObstacleParameterLister(AssetLister):
+	"""
+	List available parameters of a specific obstacle
+	"""
+	
+	def _list(self):
+		items = []
+		
+		try:
+			with open(f"{butil.find_apk()}/obstacles/{self.category}.lua.mp3", "r") as f:
+				for line in f:
+					type = line.partition("mgGet")[2].partition("(")[0]
+					
+					if (type):
+						item = line.partition('"')[2].partition('"')[0]
+						
+						if not item:
+							item = line.partition("'")[2].partition("'")[0]
+						
+						if item:
+							items.append((item, type.lower()))
+		except:
+			pass
+		
+		return items
+
+class MultiObstacleParameterLister:
+	def __init__(self, cache_time):
+		self.lists = {}
+		self.cache_time = cache_time
+	
+	def get(self, name):
+		if name not in self.lists:
+			self.lists[name] = ObstacleParameterLister(name, self.cache_time)
+		
+		return self.lists[name].get()
+
+obs_params = MultiObstacleParameterLister(10.0)
