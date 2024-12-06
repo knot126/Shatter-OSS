@@ -368,10 +368,13 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	# Set each of the tweleve paramaters if they are needed.
 	if (sh_type == "OBS"):
 		for i in range(12):
-			val = getattr(obj.sh_properties, "sh_param" + str(i))
+			val = getattr(obj.sh_properties, f"sh_param{i}")
 			
 			if (val):
-				properties["param" + str(i)] = val
+				if "=" in val:
+					properties[f"param{i}"] = val
+				else:
+					properties[f"param{i}"] = f'{val}={getattr(obj.sh_properties, f"sh_param{i}_value")}'
 	
 	# Warning for param0 and template being set
 	if (sh_type == "OBS" and obj.sh_properties.sh_param0 and obj.sh_properties.sh_template):
