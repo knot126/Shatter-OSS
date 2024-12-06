@@ -139,10 +139,7 @@ def isIndexableEqual(a, b):
 	return True
 
 def getCombo(obj, basename):
-	if (getattr(obj, f"{basename}_chooser") == "(other)"):
-		return getattr(obj, basename)
-	else:
-		return getattr(obj, f"{basename}_chooser")
+	return getattr(obj, basename)
 
 ## Segment Export
 ## All of the following is related to exporting segments.
