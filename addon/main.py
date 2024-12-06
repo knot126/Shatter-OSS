@@ -731,77 +731,7 @@ class EntityProperties(PropertyGroup):
 		default = False
 	)
 	
-	sh_param0: StringProperty(
-		name = "param0",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
 	
-	sh_param1: StringProperty(
-		name = "param1",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param2: StringProperty(
-		name = "param2",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param3: StringProperty(
-		name = "param3",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param4: StringProperty(
-		name = "param4",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param5: StringProperty(
-		name = "param5",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param6: StringProperty(
-		name = "param6",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param7: StringProperty(
-		name = "param7",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param8: StringProperty(
-		name = "param8",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param9: StringProperty(
-		name = "param9",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param10: StringProperty(
-		name = "param10",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
-	
-	sh_param11: StringProperty(
-		name = "param11",
-		description = "Parameter which is given to the obstacle when spawned",
-		default = "",
-	)
 	
 	sh_havetint: BoolProperty(
 		name = "Decal colourisation",
@@ -943,6 +873,16 @@ class EntityProperties(PropertyGroup):
 		min = 0.0,
 		max = 1000.0,
 	)
+	
+	
+
+def init_obstacle_params():
+	for i in range(0, 12):
+		setattr(EntityProperties, f"sh_param{i}", StringProperty(
+			name = f"param{i}",
+			description = "Parameter which is given to the obstacle when spawned",
+			default = "",
+		))
 
 ################################################################################
 # Addon, item and scene panels
@@ -1164,11 +1104,6 @@ class SegmentPanel(Panel):
 		
 		ui = butil.UIDrawingHelper(context, layout, sh_properties, compact = get_prefs().compact_ui)
 		
-		# def displayCombo(propname):
-		# 	u = sub.split(factor=0.92, align=True)
-		# 	u.prop(sh_properties, propname)
-		# 	u.prop(sh_properties, f"{propname}_chooser", text="")
-		
 		ui.region("NODE", "Location")
 		ui.prop("sh_level")
 		ui.prop("sh_room")
@@ -1225,17 +1160,8 @@ class SegmentPanel(Panel):
 			ui.prop("sh_rotation")
 			ui.prop("sh_particles")
 			ui.prop("sh_difficulty")
-			# if (server_type == "builtin"):
-			# 	ui.prop("sh_extra_code")
-			ui.label(text = f"Your IP: {util.get_local_ip()}")
+			ui.label(f"Your IP: {util.get_local_ip()}")
 			ui.end()
-		
-		# if (server_type == "yorshex"):
-		# 	sub = layout.box()
-		# 	sub.label(text = "Asset server", icon = "AUTO")
-		# 	sub.prop(get_prefs(), "test_level")
-		
-		# layout.separator()
 
 class EntityPanel(Panel):
 	bl_label = "Smash Hit Item"
@@ -1605,6 +1531,8 @@ def register():
 	
 	for cls in classes:
 		register_class(cls)
+	
+	init_obstacle_params()
 	
 	bpy.types.Scene.sh_properties = PointerProperty(type=SegmentProperties)
 	# bpy.types.Scene.shatter_autogen = PointerProperty(type=autogen_ui.AutogenProperties)
