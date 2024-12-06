@@ -638,12 +638,12 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	if (prefs().mesh_baker == "yorshex" and scene.sh_properties.ambient_occlusion_quality != "-1"):
 		params["ymb_ao"] = scene.sh_properties.ambient_occlusion_quality
 	
-	# If the filepath is None, then find it from the apk, force enable
-	# compression.
+	# If the filepath is None, then find it from the apk
 	if (filepath == None and params.get("auto_find_filepath", False)):
 		props = scene.sh_properties
 		
-		filepath = butil.find_apk()
+		apk_path = butil.find_apk()
+		filepath = apk_path
 		
 		if (not filepath):
 			butil.show_message("Export error", "There is currently no APK open in APK Editor Studio or your asset override path isn't set. Please open a Smash Hit APK with a valid structure or set an asset path in Shatter settings and try again.")
@@ -659,6 +659,21 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 		util.prepare_folders(filepath)
 		
 		util.log(f"Real file path will be {filepath}")
+		
+		# Auto-create levels and rooms
+		if butil.get_setting("create_nonexistant_assets"):
+			level_path = f"{apk_path}/levels/{props.sh_level}.xml.mp3"
+			room_path = f"{apk_path}/rooms/{props.sh_level}/{props.sh_room}.lua.mp3"
+			
+			if (not os.path.exists(level_path)):
+				util.log(f"Write new level to {level_path}")
+				util.set_file(level_path, f'<level>\n\t<room type="{props.sh_level}/{props.sh_room}" length="200"/>\n\t<!-- add more rooms here! -->\n</level>')
+			
+			if (not os.path.exists(room_path)):
+				util.log(f"Write new room to {room_path}")
+				util.prepare_folders(room_path)
+				from . import room_export
+				room_export.export_room(room_path)
 	
 	# Export to xml string
 	content = createSegmentText(scene, params)

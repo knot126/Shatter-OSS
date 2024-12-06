@@ -978,6 +978,12 @@ class ShatterPreferences(AddonPreferences):
 		default = False,
 	)
 	
+	create_nonexistant_assets: BoolProperty(
+		name = "Automatically create levels and rooms",
+		description = "When automatically exporting a segment, create assocaited level and room files if they don't yet exist",
+		default = True,
+	)
+	
 	purist_mode: BoolProperty(
 		name = "Limit UI to classic Smash Hit features",
 		description = "Removes shatter extended features from the UI, for example gradients and advanced lighting",
@@ -1076,6 +1082,7 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui.region("EXPORT", "Export and import")
 		ui.prop("default_assets_path")
+		ui.prop("create_nonexistant_assets")
 		ui.prop("enable_segment_warnings")
 		ui.prop("auto_export_compressed")
 		ui.prop("resolve_templates")

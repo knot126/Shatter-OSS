@@ -32,26 +32,31 @@ def func(cond, name, params):
 def export_room(path):
 	s = bpy.context.scene.sh_properties
 	
+	segpath = s.sh_level if (s.sh_level and not s.sh_room and not s.sh_segment) else f"{s.sh_level or 'level'}/{s.sh_room or 'room'}/{s.sh_segment or 'segment'}"
+	
 	data = f"""function init()
 	pStart = mgGetBool("start", true)
 	pEnd = mgGetBool("end", true)
 	
-	mgMusic("{s.sh_music}")
+	mgMusic("{s.sh_music or '0'}")
 	mgFogColor({make_list(s.sh_fog_colour_bottom)}, {make_list(s.sh_fog_colour_top)})
 	mgGravity({s.sh_gravity})
-{func(s.sh_reverb, 'mgReverb', make_list_str(s.sh_reverb))}{func(s.sh_echo, 'mgEcho', make_list_str(s.sh_echo))}{func(s.sh_echo, 'mgSetRotation', make_list_str(s.sh_echo))}{func(s.sh_particles != 'None', 'mgParticles', f'"{s.sh_particles}"')}{func(s.sh_difficulty, 'mgSetDifficulty', s.sh_difficulty)}{s.sh_extra_code}\t
+{func(s.sh_reverb, 'mgReverb', make_list_str(s.sh_reverb))}{func(s.sh_echo, 'mgEcho', make_list_str(s.sh_echo))}{func(s.sh_echo, 'mgSetRotation', make_list_str(s.sh_echo))}{func(s.sh_particles != 'None', 'mgParticles', f'"{s.sh_particles}"')}{func(s.sh_difficulty, 'mgSetDifficulty', s.sh_difficulty)}\t
+	-- put other segments after the first one!
+	confSegment("{segpath}", 1)
+	
 	if pStart then
-		--l = l + mgSegment("put your start segment here!!", -l)
+		--l = l + mgSegment("put your start segment here!", -l)
 	end
 	
 	local targetLen = {s.sh_room_length} 
 	while l < targetLen do
 		s = nextSegment()
-		l = l + mgSegment(s, -l)	
+		l = l + mgSegment(s, -l)
 	end
 	
 	if pEnd then 
-		--l = l + mgSegment("put your end segment here!!", -l)
+		--l = l + mgSegment("put your end segment here!", -l)
 	end
 end
 
