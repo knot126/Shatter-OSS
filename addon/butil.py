@@ -296,7 +296,7 @@ def find_assets_paths(*, search_default = True, search_apk = True):
 			util.log("*** Error while searching for game.xml.mp3!!! ***")
 			util.log(traceback.format_exc())
 	
-	util.log(f"Found paths: {paths}")
+	# util.log(f"Found paths: {paths}")
 	
 	return paths
 
