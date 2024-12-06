@@ -1162,91 +1162,80 @@ class SegmentPanel(Panel):
 		scene = context.scene
 		sh_properties = scene.sh_properties
 		
-		sub = layout.box()
-		sub.label(text = "Location", icon = "NODE")
-		sub.prop(sh_properties, "sh_level")
-		sub.prop(sh_properties, "sh_room")
-		sub.prop(sh_properties, "sh_segment")
+		ui = butil.UIDrawingHelper(context, layout, sh_properties, compact = get_prefs().compact_ui)
 		
-		sub = layout.box()
-		sub.label(text = "Segment data", icon = "SCENE_DATA")
-		sub.prop(sh_properties, "sh_auto_length", toggle = 1)
-		if (not sh_properties.sh_auto_length):
-			sub.prop(sh_properties, "sh_len")
+		# def displayCombo(propname):
+		# 	u = sub.split(factor=0.92, align=True)
+		# 	u.prop(sh_properties, propname)
+		# 	u.prop(sh_properties, f"{propname}_chooser", text="")
 		
-		def displayCombo(propname):
-			u = sub.split(factor=0.9, align=True)
-			u.prop(sh_properties, propname)
-			u.prop(sh_properties, f"{propname}_chooser", text="")
+		ui.region("NODE", "Location")
+		ui.prop("sh_level")
+		ui.prop("sh_room")
+		ui.prop("sh_segment")
+		ui.end()
 		
-		displayCombo("sh_template")
-		displayCombo("sh_default_template")
+		ui.region("SCENE_DATA", "Segment data")
 		
-		sub.prop(sh_properties, "sh_softshadow")
-		sub.prop(sh_properties, "sh_vrmultiply")
+		if (not ui.prop("sh_auto_length", use_button=True)):
+			ui.prop("sh_len")
 		
-		# bake_mode = sh_properties.sh_box_bake_mode
+		ui.combo("sh_template")
+		ui.combo("sh_default_template")
+		ui.prop("sh_softshadow")
+		ui.prop("sh_vrmultiply")
+		ui.end()
 		
-		# if (bake_mode == "Mesh"):
-		# Lighting
-		sub = layout.box()
-		sub.label(text = "Light", icon = "LIGHT")
-		
-		sub.prop(sh_properties, "sh_light_right")
-		sub.prop(sh_properties, "sh_light_left")
-		sub.prop(sh_properties, "sh_light_top")
-		sub.prop(sh_properties, "sh_light_bottom")
-		sub.prop(sh_properties, "sh_light_front")
-		sub.prop(sh_properties, "sh_light_back")
+		ui.region("LIGHT", "Lighting")
+		ui.prop("sh_light_right")
+		ui.prop("sh_light_left")
+		ui.prop("sh_light_top")
+		ui.prop("sh_light_bottom")
+		ui.prop("sh_light_front")
+		ui.prop("sh_light_back")
 		
 		if ((not get_prefs().purist_mode and get_prefs().show_deprecated_advanced_lights) or sh_properties.sh_lighting):
-			sub.prop(sh_properties, "sh_lighting")
+			ui.prop("sh_lighting")
 			if (sh_properties.sh_lighting):
-				sub.prop(sh_properties, "sh_lighting_ambient")
+				ui.prop("sh_lighting_ambient")
+		
+		ui.end()
 		
 		# Mesh settings
-		sub = layout.box()
-		sub.label(text = "Meshes", icon = "MESH_DATA")
+		ui.region("MESH_DATA", "Meshes")
 		if (get_prefs().mesh_baker == "yorshex"):
-			sub.prop(sh_properties, "ambient_occlusion_quality")
+			ui.prop("ambient_occlusion_quality")
 		else:
-			sub.prop(sh_properties, "sh_ambient_occlusion")
-		sub.prop(sh_properties, "sh_menu_segment")
-		
-		# if (bake_mode == "StoneHack"):
-		# 	sub = layout.box()
-		# 	sub.label(text = "Stone", icon = "UV_DATA")
-		# 	sub.prop(sh_properties, "sh_stone_obstacle_name")
-		# 	sub.prop(sh_properties, "sh_legacy_colour_model")
-		# 	if (sh_properties.sh_legacy_colour_model):
-		# 		sub.prop(sh_properties, "sh_legacy_colour_default")
+			ui.prop("sh_ambient_occlusion")
+		ui.prop("sh_menu_segment")
+		ui.end()
 		
 		# Quick test
 		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
 		
 		if (server_type in ["builtin", "nx", "yorshex"]):
-			sub = layout.box()
-			sub.label(text = "Quick test", icon = "AUTO")
-			sub.prop(sh_properties, "sh_fog_colour_top")
-			sub.prop(sh_properties, "sh_fog_colour_bottom")
-			sub.prop(sh_properties, "sh_room_length")
-			sub.prop(sh_properties, "sh_gravity")
-			sub.prop(sh_properties, "sh_music")
-			sub.prop(sh_properties, "sh_echo")
-			sub.prop(sh_properties, "sh_reverb")
-			sub.prop(sh_properties, "sh_rotation")
-			sub.prop(sh_properties, "sh_particles")
-			sub.prop(sh_properties, "sh_difficulty")
-			if (server_type == "builtin"):
-				sub.prop(sh_properties, "sh_extra_code")
-			sub.label(text = f"Your IP: {util.get_local_ip()}")
+			ui.region("AUTO", "Quick test")
+			ui.prop("sh_fog_colour_top")
+			ui.prop("sh_fog_colour_bottom")
+			ui.prop("sh_room_length")
+			ui.prop("sh_gravity")
+			ui.prop("sh_music")
+			ui.prop("sh_echo")
+			ui.prop("sh_reverb")
+			ui.prop("sh_rotation")
+			ui.prop("sh_particles")
+			ui.prop("sh_difficulty")
+			# if (server_type == "builtin"):
+			# 	ui.prop("sh_extra_code")
+			ui.label(text = f"Your IP: {util.get_local_ip()}")
+			ui.end()
 		
-		if (server_type == "yorshex"):
-			sub = layout.box()
-			sub.label(text = "Asset server", icon = "AUTO")
-			sub.prop(get_prefs(), "test_level")
+		# if (server_type == "yorshex"):
+		# 	sub = layout.box()
+		# 	sub.label(text = "Asset server", icon = "AUTO")
+		# 	sub.prop(get_prefs(), "test_level")
 		
-		layout.separator()
+		# layout.separator()
 
 class EntityPanel(Panel):
 	bl_label = "Smash Hit Item"
