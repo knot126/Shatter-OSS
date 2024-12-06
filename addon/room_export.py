@@ -29,8 +29,8 @@ def make_list_str(s):
 def func(cond, name, params):
 	return f"\t{name}({params})\n" if cond else ""
 
-def export_room(path):
-	s = bpy.context.scene.sh_properties
+def export_room(path, scene=None):
+	s = scene or bpy.context.scene.sh_properties
 	
 	segpath = s.sh_level if (s.sh_level and not s.sh_room and not s.sh_segment) else f"{s.sh_level or 'level'}/{s.sh_room or 'room'}/{s.sh_segment or 'segment'}"
 	

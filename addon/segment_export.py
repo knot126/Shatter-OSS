@@ -673,7 +673,7 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 				util.log(f"Write new room to {room_path}")
 				util.prepare_folders(room_path)
 				from . import room_export
-				room_export.export_room(room_path)
+				room_export.export_room(room_path, scene)
 	
 	# Export to xml string
 	content = createSegmentText(scene, params)
