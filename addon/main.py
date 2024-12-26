@@ -215,16 +215,16 @@ def server_manager_update(_self = None, _context = None):
 		
 		if (server_type == "yorshex"):
 			# Derive the actual level name to use
-			level_name = get_prefs().test_level
+			# level_name = get_prefs().test_level
 			
-			if level_name == "/":
-				level_name = bpy.context.scene.sh_properties.sh_level if _context else ""
+			# if level_name == "/":
+			# 	level_name = bpy.context.scene.sh_properties.sh_level if _context else ""
 			
 			# Find the asset dir to use
 			asset_dir = butil.find_apk() or butil.storage_path("testserver")
 			
 			# Set parameters
-			gServerManager.set_params((asset_dir, level_name))
+			gServerManager.set_params((asset_dir, "test"))
 		elif (server_type == "builtin"):
 			gServerManager.set_params((butil.storage_path("testserver"),))
 		elif (server_type == "nx"):
@@ -1048,13 +1048,13 @@ class ShatterPreferences(AddonPreferences):
 		default = "nx",
 	)
 	
-	test_level: EnumProperty(
-		name = "Test level",
-		description = "The name of the level to test",
-		items = get_test_level_list,
-		update = server_manager_update,
-		default = 0,
-	)
+	# test_level: EnumProperty(
+	# 	name = "Test level",
+	# 	description = "The name of the level to test",
+	# 	# items = get_test_level_list,
+	# 	update = server_manager_update,
+	# 	default = 0,
+	# )
 	
 	####################
 	## Advanced settings
