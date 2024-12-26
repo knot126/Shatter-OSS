@@ -150,6 +150,7 @@ class SegmentExportTest(Operator):
 	
 	def execute(self, context):
 		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
+			update_if_yas()
 			segment_export.sh_export_segment(None, context, False, True, aotype=get_prefs().ymb_ao_quick_test, nx_token=gNxToken)
 		else:
 			butil.show_message("Quick test not running", "The quick test server is currently disabled or you are using a level server that isn't compatible with Quick Test.")
@@ -191,6 +192,10 @@ def sh_draw_import_gz(self, context):
 ################################################################################
 # Server manager related
 ################################################################################
+
+def update_if_yas():
+	if (get_prefs().quick_test_server == "yorshex"):
+		server_manager_update()
 
 def server_manager_update(_self = None, _context = None):
 	"""
