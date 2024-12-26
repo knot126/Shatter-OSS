@@ -5,7 +5,7 @@ import re
 import traceback
 import json
 
-SERVER_VERSION = (1, 1, 0)
+SERVER_VERSION = (1, 1, 1)
 QUICK_PORT = 8000
 
 """
@@ -679,6 +679,7 @@ def v6_ping(request):
 
 @routes.add("GET", r"/v6/config")
 def v6_download_config(request):
+	assert_key({"token": request.query['token']})
 	conf = quick_config.copy()
 	if "token" in conf: del conf["token"]
 	return NXResponse(200, {"success": True, "config": conf})
