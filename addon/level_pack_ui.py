@@ -22,10 +22,10 @@ from bpy.types import (
 )
 
 class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
-	"""Create a ZIP file from a room in an open APK or an assets folder. This will also include some standard JSON packaging files so it can be installed using a mod manager"""
+	"""Create a ZIP file from a given level that contains all of its required resources for submission to Hyperspace"""
 	
 	bl_idname = "shatter.export_level_package"
-	bl_label = "Export level package"
+	bl_label = "Create Hyperspace Package"
 	
 	filename_ext = ".zip"
 	
@@ -74,6 +74,12 @@ class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
 		default = 0,
 	)
 	
+	pack_hud: BoolProperty(
+		name = "Pack HUD",
+		description = "Puts HUD and font data in the package, allowing a custom HUD",
+		default = False,
+	)
+	
 	def execute(self, context):
 		assets_dir = butil.find_apk()
 		
@@ -98,6 +104,6 @@ class ExportLevelPackage(bpy_extras.io_utils.ExportHelper, Operator):
 				"balls": self.balls,
 				"streak": self.streak,
 			},
-		})
+		}, ["hud", "fonts"] if self.pack_hud else [])
 		
 		return {"FINISHED"}
