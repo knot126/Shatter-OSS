@@ -1025,6 +1025,12 @@ class ShatterPreferences(AddonPreferences):
 		default = False,
 	)
 	
+	show_shards_ads: BoolProperty(
+		name = "Show Shards Community promos",
+		description = "Shows links to join the Shards Community Discord server",
+		default = True,
+	)
+	
 	show_deprecated_advanced_lights: BoolProperty(
 		name = "Show advanced lights (deprecated)",
 		description = "Shows the advanced lights panel when not relevant. Note that advanced lights is *deprecated* meaning it could be removed at any time",
@@ -1110,6 +1116,13 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui = butil.UIDrawingHelper(context, self.layout, self)
 		
+		# Shards promo
+		if butil.get_setting("show_shards_ads"):
+			ui.region("MESH_ICOSPHERE", "Shards Community")
+			ui.label("Consider joining the Shards Community on Discord for official Shatter updates!")
+			ui.op("shatter.open_shards_discord")
+			ui.end()
+		
 		ui.region("EXPORT", "Export and import")
 		ui.prop("default_assets_path")
 		ui.prop("create_nonexistant_assets")
@@ -1119,6 +1132,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.end()
 		
 		ui.region("DESKTOP", "Interface")
+		ui.prop("show_shards_ads")
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
 		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
@@ -1455,6 +1469,15 @@ class OpenLicensesIndex(Operator):
 		webbrowser.open(f"file://{util.codedir()}/licenses/index.html")
 		return {"FINISHED"}
 
+class OpenShardsCommunity(Operator):
+	"Join the shards Discord server for official Shatter updates and to chat about modding"
+	bl_idname = "shatter.open_shards_discord"
+	bl_label = "Join on Discord!"
+	
+	def execute(self, context):
+		webbrowser.open(f"https://discord.gg/VMvgn6HwU5")
+		return {"FINISHED"}
+
 class OpenObstaclesTextFile(Operator):
 	"""Open the obstacles.txt file"""
 	
@@ -1561,6 +1584,10 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.label(text = "Actions")
 		self.layout.operator("shatter.open_current_asset_folder")
 		self.layout.operator("shatter.open_obstacles_txt")
+		if butil.get_setting("show_shards_ads"):
+			self.layout.separator()
+			self.layout.label(text = "Promotion")
+			self.layout.operator("shatter.open_shards_discord", text="Join Shards Discord")
 
 ###############################################################################
 
@@ -1585,6 +1612,7 @@ classes = (
 	CreatePowerup,
 	CreateWater,
 	OpenLicensesIndex,
+	OpenShardsCommunity,
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
 	QuickTestCheckup,
