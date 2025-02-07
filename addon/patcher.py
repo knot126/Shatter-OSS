@@ -348,6 +348,119 @@ def _patch_v142_v143_arm64_timestep(patcher, params):
 	# android_main() where the main loop usleep()s for any remaining time
 	patcher.patch(0x4791c, struct.pack("<f", time_step))
 
+def encode_arm64_movz(sf, hw, imm16, Rd):
+	# sf = 0 is 32 and 1 is 64-bit, hw = shift/16
+	return struct.pack("<I", (sf << 31) | (0b10100101 << 23) | ((hw >> 4) << 21) | (imm16 << 5) | (Rd))
+
+def encode_arm64_cmp(sf, sh, imm12, Rn):
+	# sf is 32/64-bit, sh is shift, imm12 is the immediate
+	return struct.pack("<I", (sf << 31) | (0b11100010 << 23) | (imm12 << 10) | (Rn << 5) | 0b11111)
+
+def encode_arm64_ldr(x, imm12, Rn, Rt):
+	# x is 32/64-bit, imm12 is offset, Rn is base register and Rt is dest register
+	return struct.pack("<I", (1 << 31) | (x << 30) | (0b11100101 << 22) | (((imm12 >> 3) if x else (imm12 >> 2)) << 10) | (Rn << 5) | Rt)
+
+def encode_arm64_str(x, imm12, Rn, Rt):
+	return struct.pack("<I", (1 << 31) | (x << 30) | (0b111000100 << 22) | (((imm12 >> 3) if x else (imm12 >> 2)) << 10) | (Rn << 5) | Rt)
+
+def encode_arm64_add(sf, sh, imm12, Rn, Rd):
+	return struct.pack("<I", (sf << 31) | (0b00100010 << 23) | (sh << 22) | (imm12 << 10) | (Rn << 5) | Rd)
+
+def _patch_v142_v143_arm64_checkpoints(patcher, params):
+	"""
+	Patch for having more than 13 checkpoints (yes, there are 13, the Wikipedia
+	article is wrong and sadly it will stay that way). Due to restrictions of
+	the ARM architecture, the max amount of possible checkpoints is 1182.
+	"""
+	
+	value = int(params[0]) if len(params) > 0 else 13
+	adjustArrays = value > 13
+	
+	if adjustArrays:
+		print("Warning!!! Setting CP > 13 is fucking with structures, this MIGHT break things in weird ways.")
+	
+	# This seems to be the number of rendered segments
+	patcher.patch(0x799e8, encode_arm64_movz(0, 0, value, 7))
+	
+	# Don't exactly know what this is for, but I think it's pointers to the meshes
+	# by default it's 0x98 large (0x98 / 0x8 = 19) so it seems like there are 19 entries
+	# by default
+	# This part also limits the max number of checkpoints to at most 8515
+	patcher.patch(0x78700, encode_arm64_movz(1, 0, (value + 6) * 8, 0))
+	
+	# This is in an unused function but I will patch it anyways.
+	patcher.patch(0x58010, encode_arm64_movz(0, 0, value, 0))
+	
+	# Get the highscores even if the checkpoint is above cp12
+	patcher.patch(0x57c18, AARCH64_NOP)
+	patcher.patch(0x57c44, AARCH64_NOP)
+	
+	# In Player::reportCheckpoint(int index) we need to report regardless...
+	patcher.patch(0x57bb0, AARCH64_NOP)
+	
+	# Nop out the special cases for zen/versus/coop meshes
+	patcher.patch(0x7865c, AARCH64_NOP)
+	patcher.patch(0x78664, AARCH64_NOP)
+	patcher.patch(0x7866c, AARCH64_NOP)
+	
+	# Force loading progression data if index > 13
+	patcher.patch(0x574d4, AARCH64_NOP)
+	
+	# Force loading level if the level index isn't zero
+	patcher.patch(0x57c7c, b"\x20\x00\x00\x51")
+	patcher.patch(0x57c84, b"\x1f\x00\x00\x71")
+	patcher.patch(0x57c88, b"\x40\x03\x00\x54")
+	
+	# Save progression data up to cp index targetCheckpoints - 1
+	patcher.patch(0x57ac4, encode_arm64_cmp(0, 0, value, 24))
+	
+	# The above probably works and realistically I prefer not making drastic
+	# changes to Smash Hit's internal data structures in any case I don't have
+	# to.
+	if not adjustArrays:
+		return
+	
+	# Allocate more memory in Player object for checkpoint progression data
+	# This would limit us to 2629 checkpoints (anything greater breaks mov
+	# without hacks)
+	patcher.patch(0x1e6d9c, encode_arm64_movz(1, 0, 0x980 + (2 * 3 * 4 * value), 0))
+	
+	# Offsets that need ldr's adjusted for moved array
+	# Some of these give us our limit of 1182 checkpoints, since the imm12 can
+	# store at most the value 16380 and we need to do
+	# ldr Wn,[x0,#(0x980 + 3 * 4 * ncps)] to access streak in some cases.
+	pBallsArray = 0x980
+	pOffsetFromBallEntryToStreakEntry = (3 * 4 * value)
+	pStreakArray = pBallsArray + pOffsetFromBallEntryToStreakEntry
+	
+	# Load in Player::save()
+	patcher.patch(0x57a7c, encode_arm64_ldr(0, pOffsetFromBallEntryToStreakEntry, 22, 1))
+	
+	# A thing to get the address of balls in Player::save(QiOutputStream *)
+	patcher.patch(0x57868, encode_arm64_add(1, 0, pBallsArray, 22, 2))
+	
+	# Loads and stores in Player::load(QiInputStream *)
+	patcher.patch(0x57580, encode_arm64_ldr(0, pBallsArray, 1, 4))
+	patcher.patch(0x57584, encode_arm64_ldr(0, pStreakArray, 1, 0))
+	patcher.patch(0x57598, encode_arm64_str(0, pBallsArray, 1, 3))
+	patcher.patch(0x5759c, encode_arm64_str(0, pStreakArray, 1, 2))
+	
+	# Loads and stores in Player::reportCheckpoint(int)
+	patcher.patch(0x57bd0, encode_arm64_ldr(0, pBallsArray, 1, 3))
+	patcher.patch(0x57bd4, encode_arm64_ldr(0, pStreakArray, 1, 2))
+	patcher.patch(0x57be0, encode_arm64_str(0, pBallsArray, 1, 3))
+	patcher.patch(0x57bf0, encode_arm64_str(0, pStreakArray, 1, 2))
+	
+	# Loads in Player::loadCheckpoint(int)
+	patcher.patch(0x57cac, encode_arm64_ldr(0, pBallsArray, 1, 0))
+	patcher.patch(0x57cb4, encode_arm64_ldr(0, pStreakArray, 1, 0))
+	
+	# Player::getHighScore(int) which is just fucking cursed assembly tbh
+	patcher.patch(0x57c2c, encode_arm64_add(1, 0, (pBallsArray >> 2), 1, 1))
+	
+	# Player::getHighScoreStreak(int) also sucks just a bit less so
+	patcher.patch(0x57c5c, encode_arm64_ldr(0, pStreakArray, 0, 2))
+
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
 	"premium": _patch_v142_v143_arm64_premium,
@@ -365,6 +478,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"noclip": _patch_v142_v143_arm64_noclip,
 	"powerupsfx": _patch_v142_v143_arm64_powerupsfx,
 	"timestep": _patch_v142_v143_arm64_timestep,
+	"checkpoints": _patch_v142_v143_arm64_checkpoints,
 }
 
 def _patch_v142_v143_arm32_antitamper(patcher, params):
