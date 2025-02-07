@@ -163,6 +163,26 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = 60.0,
 	)
 	
+	do_timestep: BoolProperty(
+		name = "Change target frame rate",
+		description = "Updates the maximum framerate Smash Hit is allowed to run at and adjusts the physics time step to compensate. A side effect of the way this patch works will lead to slow-motion-like gameplay on devices which update their screen at a rate less than the target framerate. For example, Smash Hit usually targets 60 FPS, and runs normally on 60 FPS devices, but setting it to 120 FPS here will allow you to play the game at 120 FPS on a 120 Hz device, though the physics will be strange on a 60 Hz device",
+		default = False,
+	)
+	
+	checkpoints: IntProperty(
+		name = "Checkpoints",
+		description = "",
+		default = 13,
+		min = 3,
+		max = 1182,
+	)
+	
+	do_checkpoints: BoolProperty(
+		name = "Set checkpoint count",
+		description = "Set the number of checkpoints that appear in-game and are saved",
+		default = False,
+	)
+	
 	all_patches = [
 		"premium",
 		"encryption",
@@ -180,6 +200,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		"noclip",
 		"powerupsfx",
 		"timestep",
+		"checkpoints",
 	]
 	
 	def drawItem(self, ui, name, pl = []):
