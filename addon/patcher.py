@@ -361,7 +361,7 @@ def encode_arm64_ldr(x, imm12, Rn, Rt):
 	return struct.pack("<I", (1 << 31) | (x << 30) | (0b11100101 << 22) | (((imm12 >> 3) if x else (imm12 >> 2)) << 10) | (Rn << 5) | Rt)
 
 def encode_arm64_str(x, imm12, Rn, Rt):
-	return struct.pack("<I", (1 << 31) | (x << 30) | (0b111000100 << 22) | (((imm12 >> 3) if x else (imm12 >> 2)) << 10) | (Rn << 5) | Rt)
+	return struct.pack("<I", (1 << 31) | (x << 30) | (0b11100100 << 22) | (((imm12 >> 3) if x else (imm12 >> 2)) << 10) | (Rn << 5) | Rt)
 
 def encode_arm64_add(sf, sh, imm12, Rn, Rd):
 	return struct.pack("<I", (sf << 31) | (0b00100010 << 23) | (sh << 22) | (imm12 << 10) | (Rn << 5) | Rd)
