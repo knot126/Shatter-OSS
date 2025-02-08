@@ -242,6 +242,17 @@ def server_manager_update(_self = None, _context = None):
 		util.log(f"*** Exception in server manager!!! ***")
 		util.log(traceback.format_exc())
 
+class ForceServerManagerUpdate(Operator):
+	"""Forces a server manager update"""
+	
+	bl_idname = "shatter.force_server_manager_update"
+	bl_label = "Force server manager update"
+	
+	def execute(self, context):
+		server_manager_update()
+		
+		return {"FINISHED"}
+
 def get_test_level_list(self, context):
 	level_list = assets.levels.get()
 	
@@ -1144,10 +1155,13 @@ class ShatterPreferences(AddonPreferences):
 		if not butil.stay_offline():
 			server_type = ui.prop("quick_test_server")
 			if server_type != 'none':
+				ui.beginSplit(0.7, True)
 				if (gServerManager.running()):
 					ui.label("The server is currently running", "CHECKMARK")
 				else:
 					ui.label("The server is not running", "CANCEL")
+				ui.op("shatter.force_server_manager_update", text="Restart", icon="FILE_REFRESH")
+				ui.end()
 			
 			ui.region("SHADERFX", "Quick test checkup", new=False)
 			if (gQuickPortTest == False):
@@ -1616,6 +1630,7 @@ classes = (
 	OpenObstaclesTextFile,
 	OpenCurrentAssetFolder,
 	QuickTestCheckup,
+	ForceServerManagerUpdate,
 	level_pack_ui.ExportLevelPackage,
 	patcher_ui.PatchLibsmashhit,
 	progression_crypto_ui.ProgressionCryptoEncrypt,

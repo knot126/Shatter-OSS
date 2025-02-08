@@ -169,8 +169,8 @@ class UIDrawingHelper():
 		self.prop(chooser_symbol or f"{symbol}_chooser", text = "", text_compact = "")
 		self.end()
 	
-	def op(self, opname):
-		self.layout[-1].operator(opname)
+	def op(self, opname, **kwargs):
+		self.layout[-1].operator(opname, **kwargs)
 		
 		return self
 	
