@@ -773,6 +773,14 @@ _LIBSMASHHIT_V159_ARM64_PATCH_TABLE = {
 	"noenshittification": _patch_v159_arm64_noenshittification,
 }
 
+def _patch_v1510_arm64_premium(patcher, params):
+	"""
+	Force always premium patch for v1.5.9
+	"""
+	
+	# The same Player::tick() hack...
+	patcher.patch(0x12a9a4, b"\x68\xc2\x22\x39")
+
 def _patch_v1510_force_out_of_balls_ads_to_show(patcher, params):
 	patcher.patch(0x1204dc, AARCH64_NOP)
 	patcher.patch(0x1204e0, AARCH64_NOP)
@@ -781,6 +789,7 @@ def _patch_v1510_force_out_of_balls_ads_to_show(patcher, params):
 	patcher.patch(0x1204f0, AARCH64_NOP)
 
 _LIBSMASHHIT_V1510_ARM64_PATCH_TABLE = {
+	"premium": _patch_v1510_arm64_premium,
 	"forceoutofballsadstoshow": _patch_v1510_force_out_of_balls_ads_to_show,
 }
 
