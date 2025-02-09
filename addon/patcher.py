@@ -59,6 +59,9 @@ class Patcher:
 AARCH64_NOP = b"\x1f\x20\x03\xd5"
 AARCH64_RET = b"\xc0\x03\x5f\xd6"
 
+AARCH32_NOP = b"\x00\xf0\x20\xe3"
+AARCH32_RET = b"\x1e\xff\x2f\xe1"
+
 def _patch_const_mov_instruction_arm64(old, value):
 	"""
 	Patch something like mov r0, #0x10 to mov r0, #value
@@ -583,6 +586,39 @@ def _patch_v142_v143_arm32_savekey(patcher, params):
 	
 	return _patch_savekey(patcher, params, 0x1c7960, 16)
 
+def encode_arm32_mov(Rd, imm12):
+	return struct.pack("<I", (0b1110001110100000 << 16) | (Rd << 12) | (imm12 & 0xfff))
+
+def _patch_v142_v143_arm32_balls(patcher, params):
+	amount = int(params[0]) if len(params) > 0 else 25
+	
+	patcher.patch(0x46504, encode_arm32_mov(2, amount))
+	patcher.patch(0x462fc, encode_arm32_mov(2, amount))
+	patcher.patch(0x61be0, encode_arm32_mov(12, amount))
+
+def encode_arm32_movt(Rd, imm16):
+	return struct.pack("<I", (0b111000110100 << 20) | (((imm16 >> 12) & 0xf) << 16) | (Rd << 12) | (imm16 & 0xfff))
+
+def _patch_v142_v143_arm32_fov(patcher, params):
+	fov = float(params[0]) if len(params) > 0 else 60.0
+	
+	topfov = struct.unpack(">I", struct.pack(">f", fov))[0] >> 16
+	
+	patcher.patch(0x195da0, encode_arm32_movt(2, topfov))
+
+def _patch_v142_v143_arm32_trainingballs(patcher, params):
+	patcher.patch(0x59874, AARCH32_NOP)
+
+def _patch_v142_v143_arm32_mglength(patcher, params):
+	# Make the first move unconditional
+	patcher.patch(0x5d030, "\x3c\x30\x96\xe5")
+	
+	# Replace the other two with nops
+	patcher.patch(0x5d034, 2 * AARCH32_NOP)
+
+def _patch_v142_v143_arm32_noclip(patcher, params):
+	patcher.patch(0x5b8a0, AARCH32_RET)
+
 def _patch_v142_v143_arm32_powerupsfx(patcher, params):
 	patcher.patch(0x1301e0, b"\x8a\x00\x00\xea")
 
@@ -593,6 +629,11 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"encryption": _patch_v142_v143_arm32_encryption,
 	"offline": _patch_v142_v143_arm32_offline,
 	"savekey": _patch_v142_v143_arm32_savekey,
+	"balls": _patch_v142_v143_arm32_balls,
+	"fov": _patch_v142_v143_arm32_fov,
+	"trainingballs": _patch_v142_v143_arm32_trainingballs,
+	"mglength": _patch_v142_v143_arm32_mglength,
+	"noclip": _patch_v142_v143_arm32_noclip,
 	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
 }
 
