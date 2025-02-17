@@ -15,7 +15,7 @@ import tomllib
 
 YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.8/"
 ASSET_SERVER_URL = 'https://codeberg.org/yorshex/sh-asset-server/raw/branch/main/asset_server.py'
-MTXCONV_BASE_URL = 'https://github.com/SamusAranX/mtxconv/releases/download/v1.0/'
+# MTXCONV_BASE_URL = 'https://github.com/SamusAranX/mtxconv/releases/download/v1.0/'
 
 SHATTER_BINDIR = "addon/bin"
 BLENDER = "blender"
@@ -62,8 +62,8 @@ def update_meshbake():
 	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-win32-amd64.exe", f'{SHATTER_BINDIR}/yorshex_mesh_baker.win32.amd64.exe')
 	
 	# Download mtxconv
-	save_file(f"{MTXCONV_BASE_URL}mtxconv-linux-x64", f'{SHATTER_BINDIR}/mtxconv.linux.x86_64')
-	save_file(f"{MTXCONV_BASE_URL}mtxconv-windows-x64.exe", f'{SHATTER_BINDIR}/mtxconv.win32.amd64.exe')
+	# save_file(f"{MTXCONV_BASE_URL}mtxconv-linux-x64", f'{SHATTER_BINDIR}/mtxconv.linux.x86_64')
+	# save_file(f"{MTXCONV_BASE_URL}mtxconv-windows-x64.exe", f'{SHATTER_BINDIR}/mtxconv.win32.amd64.exe')
 
 def update_asset_server():
 	save_file(ASSET_SERVER_URL, "addon/asset_server.py")
