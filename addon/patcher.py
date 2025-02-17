@@ -369,6 +369,16 @@ def encode_arm64_str(x, imm12, Rn, Rt):
 def encode_arm64_add(sf, sh, imm12, Rn, Rd):
 	return struct.pack("<I", (sf << 31) | (0b00100010 << 23) | (sh << 22) | (imm12 << 10) | (Rn << 5) | Rd)
 
+def _patch_v142_v143_arm64_use_calloc(patcher, params):
+	"""
+	Really slick hack to use calloc() instead of malloc() for a few structures
+	and fixing uninitalised memory with the CP patch.
+	"""
+	
+	# x0 is size for both QiAlloc and QiStdCAlloc (effectively)
+	patcher.patch(0x15a9fc, b"\x21\x00\x80\xd2") # mov x1,#0x1
+	patcher.patch(0x15aa00, b"\x97\xff\xff\x17") # b QiStdCAlloc
+
 def _patch_v142_v143_arm64_checkpoints(patcher, params):
 	"""
 	Patch for having more than 13 checkpoints (yes, there are 13, the Wikipedia
@@ -379,8 +389,7 @@ def _patch_v142_v143_arm64_checkpoints(patcher, params):
 	value = int(params[0]) if len(params) > 0 else 13
 	adjustArrays = value > 13
 	
-	if adjustArrays:
-		print("Warning!!! Setting CP > 13 is fucking with structures, this MIGHT break things in weird ways.")
+	_patch_v142_v143_arm64_use_calloc(patcher, params)
 	
 	# This seems to be the number of rendered segments
 	patcher.patch(0x799e8, encode_arm64_movz(0, 0, value, 7))
