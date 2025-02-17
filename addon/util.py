@@ -383,7 +383,16 @@ def run_native(cmd, args):
 	except:
 		pass
 	
-	log(f"Running command: {cmd} {' '.join(args)}")
+	log(f"Command (builtin): {cmd} {' '.join(args)}")
+	
+	return subprocess.run([cmd] + args).returncode
+
+def run(cmd, args):
+	"""
+	Run the command.
+	"""
+	
+	log(f"Command (user): {cmd} {' '.join(args)}")
 	
 	return subprocess.run([cmd] + args).returncode
 

@@ -1,6 +1,7 @@
 import bpy
 import bpy_extras.io_utils
 from . import util
+from . import butil
 
 from bpy.props import (
 	StringProperty,
@@ -19,6 +20,23 @@ from bpy.types import (
 	Operator,
 )
 
+def find_mtxconv():
+	import shutil
+	
+	path = butil.get_setting("mtxconv_path")
+	
+	if path:
+		return path
+	
+	path = shutil.which("mtxconv")
+	
+	if path:
+		return path
+	
+	print(f"no mtxconv path")
+	
+	return None
+
 class MtxconvExtract(bpy_extras.io_utils.ImportHelper, Operator):
 	"""Extract all textures from an MTX file using mtxconv"""
 	
@@ -28,7 +46,13 @@ class MtxconvExtract(bpy_extras.io_utils.ImportHelper, Operator):
 	filename_ext = ".mtx.mp3"
 	
 	def execute(self, context):
-		rc = util.run_native("mtxconv", ["extract", self.filepath])
+		mtxconv = find_mtxconv()
+		
+		if not mtxconv:
+			self.report({'ERROR'}, f"You have not specified the path to mtxconv in Shatter preferences.")
+			return {"FINISHED"}
+		
+		rc = util.run(mtxconv, ["extract", self.filepath])
 		
 		if not rc:
 			self.report({'INFO'}, "Successfully extracted images from MTX file")
@@ -66,6 +90,12 @@ class MtxconvBake(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	def execute(self, context):
+		mtxconv = find_mtxconv()
+		
+		if not mtxconv:
+			self.report({'ERROR'}, f"You have not specified the path to mtxconv in Shatter preferences.")
+			return {"FINISHED"}
+		
 		args = ["bake", "-q", str(self.quality)]
 		
 		if self.version != 'auto':
@@ -73,7 +103,7 @@ class MtxconvBake(bpy_extras.io_utils.ImportHelper, Operator):
 		
 		args += [self.filepath]
 		
-		rc = util.run_native("mtxconv", args)
+		rc = util.run(mtxconv, args)
 		
 		if not rc:
 			self.report({'INFO'}, "Successfully baked images to MTX file")

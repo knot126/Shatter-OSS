@@ -1122,6 +1122,13 @@ class ShatterPreferences(AddonPreferences):
 		default = "",
 	)
 	
+	mtxconv_path: StringProperty(
+		name = "MTXConv path",
+		description = "Path to the mtxconv executable",
+		subtype = "FILE_PATH",
+		default = "",
+	)
+	
 	def draw(self, context):
 		main = self.layout
 		
@@ -1189,6 +1196,10 @@ class ShatterPreferences(AddonPreferences):
 			ui.label("Adjustments")
 			ui.prop("ymb_tiles")
 		
+		ui.end()
+		
+		ui.region("TOOL_SETTINGS", "Tools")
+		ui.prop("mtxconv_path")
 		ui.end()
 		
 		ui.region("INFO", "Other information")
