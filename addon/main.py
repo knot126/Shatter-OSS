@@ -78,10 +78,12 @@ class ShatterExportCommon(bpy.types.Operator, ExportHelper2):
 		subtype = "FILE_PATH",
 	)
 	
-	def __init__(self):
+	def __init__(self, *args, **kwargs):
 		"""
 		Automatic templates.xml detection
 		"""
+		
+		super().__init__(*args, **kwargs)
 		
 		if (not self.sh_meshbake_template):
 			self.sh_meshbake_template = segment_export.tryTemplatesPath()
