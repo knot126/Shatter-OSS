@@ -4,8 +4,10 @@ from urllib.parse import urlparse, parse_qs
 import re
 import traceback
 import json
+import zipfile
+import io
 
-SERVER_VERSION = (1, 1, 1)
+SERVER_VERSION = (1, 2, 0)
 QUICK_PORT = 8000
 
 """
@@ -148,7 +150,7 @@ routes = NXRoutes()
 
 class NXRequestHandler(BaseHTTPRequestHandler):
 	def version_string(self):
-		return "NXQuick/1.0"
+		return f"NXQuick/{SERVER_VERSION[0]}.{SERVER_VERSION[1]}"
 	
 	def do_GET(self):
 		self.do_response()
@@ -274,20 +276,44 @@ class AssetManager:
 		
 		return paths[0]
 	
-	def read(self, f, is_text=True, gzipped=False):
+	def _read_prot(self, f):
 		"""
-		Read a (text or binary) file and return its contents
+		Read an asset and return its contents (hopefully(tm) protected against
+		bullshittery)
 		"""
 		
-		path = Path(self.fullpath(f))
+		for root in [self.overlay(), self.path()]:
+			if root:
+				if not os.path.normpath(os.path.join(root, f)).startswith(root):
+					return None
 		
-		if not gzipped:
-			return path.read_text() if is_text else path.read_bytes()
-		else:
-			g = gzip.open(path, "r" if is_text else "rb")
-			data = g.read()
-			g.close()
-			return data
+		try:
+			return Path(os.path.join(self.overlay(), f)).read_bytes()
+		except:
+			try:
+				return Path(os.path.join(self.path(), f)).read_bytes()
+			except:
+				return None
+	
+	def read(self, f, as_text=True):
+		data = self._read_prot(f)
+		
+		if not data:
+			data = self._read_prot(f + ".mp3")
+			
+			if not data:
+				data = self._read_prot(f + ".gz.mp3")
+				
+				if data:
+					data = gzip.decompress(data)
+		
+		if data and as_text:
+			data = data.decode('utf-8')
+		
+		if not data:
+			raise FileNotFoundError(f"Could not find asset: {f}")
+		
+		return data
 	
 	def exists(self, f):
 		"""
@@ -327,8 +353,8 @@ class AssetManager:
 		
 		return list(set(files))
 	
-	def readXml(self, f, gzipped=False):
-		return et.fromstring(self.read(f, gzipped=gzipped))
+	def readXml(self, f):
+		return et.fromstring(self.read(f))
 	
 	def readTemplatesXml(self, name = "templates.xml"):
 		"""
@@ -350,7 +376,7 @@ class AssetManager:
 		
 		return templates
 	
-	def readLevelXml(self, name, deps = None):
+	def readLevelXml(self, name, deps = None, rewrite=True):
 		"""
 		Read a level XML. Optionally, if `deps` is a set, add the original
 		name of every room used in this XML to this list.
@@ -361,11 +387,13 @@ class AssetManager:
 		for sub in root:
 			if "type" in sub.attrib:
 				if type(deps) == set: deps.add(sub.attrib["type"])
-				sub.attrib["type"] = "user://rooms/" + sub.attrib["type"]
+				
+				if rewrite:
+					sub.attrib["type"] = "user://rooms/" + sub.attrib["type"]
 		
 		return et.tostring(root, 'unicode')
 	
-	def readRoomLua(self, name, deps = None):
+	def readRoomLua(self, name, deps=None, rewrite=True, music_deps=None):
 		"""
 		Read a room lua file. If deps is a set, add the name of every segment
 		type found to it.
@@ -392,6 +420,11 @@ class AssetManager:
 				if self.hasSegment(match):
 					deps.add(match)
 		
+		# Same kind of shit for music
+		if type(music_deps) == set:
+			for match in re.findall(r"""mgMusic\(\s*['"]([^'"]+)['"]\s*\)""", room):
+				music_deps.add(match)
+		
 		# As a workaround for users doing bullshit, we do also check if the
 		# segment folder associated with this room contains anything, and if so
 		# we add those segments too. Then this kind of thing:
@@ -406,9 +439,10 @@ class AssetManager:
 			for segment in self.listDir(f"segments/{name}", (".xml", ".xml.gz", ".xml.mp3", ".xml.gz.mp3"), True):
 				deps.add(f"{name}/{segment}")
 		
-		room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
+		if rewrite:
+			room = room.replace("mgSegment(", "__mgSegment_dYXNmdzkzdDlna2Ewd__(")
 		
-		return ROOM_SCRIPT_INJECTION + room
+		return (ROOM_SCRIPT_INJECTION if rewrite else "") + room
 	
 	def hasObstacle(self, obs):
 		return self.exists(f"obstacles/{obs}.lua")
@@ -416,7 +450,7 @@ class AssetManager:
 	def hasSegment(self, seg):
 		return self.exists(f"segments/{seg}.xml") or self.exists(f"segments/{seg}.xml.gz")
 	
-	def readSegmentXml(self, name, solve = True, deps = None):
+	def readSegmentXml(self, name, solve = True, deps = None, rewrite=True):
 		"""
 		Read a segment's XML file. Optionally, if `deps` is a set, add the
 		original name of every obstacle type found.
@@ -432,12 +466,13 @@ class AssetManager:
 				if type(deps) == set:
 					deps.add(sub.attrib["type"])
 				
-				# If we don't have the obstacle, assume it's one built in to the
-				# client.
-				if not self.hasObstacle(sub.attrib["type"]):
-					sub.attrib["type"] = "obstacles/" + sub.attrib["type"]
-				else:
-					sub.attrib["type"] = "user://obstacles/" + sub.attrib["type"]
+				if rewrite:
+					# If we don't have the obstacle, assume it's one built in to the
+					# client.
+					if not self.hasObstacle(sub.attrib["type"]):
+						sub.attrib["type"] = "obstacles/" + sub.attrib["type"]
+					else:
+						sub.attrib["type"] = "user://obstacles/" + sub.attrib["type"]
 		
 		if solve:
 			templates = self.readTemplatesXml()
@@ -462,6 +497,18 @@ class AssetManager:
 		"""
 		
 		return self.read(f"obstacles/{name}.lua")
+	
+	def readMusic(self, name):
+		"""
+		Read ogg or wav music data
+		"""
+		
+		data, fmt = (self.read(f"music/{name}.ogg", False), "ogg")
+		
+		if not data:
+			data, fmt = (self.read(f"music/{name}.wav", False), "wav")
+		
+		return data, fmt
 	
 	def write(self, f, data):
 		"""
@@ -670,6 +717,81 @@ def v6_mega(request):
 	package += CMD_END
 	
 	return NXResponse(200, package)
+
+
+@routes.add("GET", r"/v7/packed")
+def v7_full(request):
+	"""
+	Get the entire assets directory as a zip file
+	"""
+	
+	if "levels" not in request.query:
+		return NXResponse(400, "Parameter 'levels' is required!")
+	
+	# Start writing zip file
+	f = io.BytesIO(b"")
+	z = zipfile.ZipFile(f, 'w')
+	
+	try:
+		z.writestr(f'templates.xml', assets.read("templates.xml"), zipfile.ZIP_DEFLATED)
+	except FileNotFoundError:
+		print(f"Warning: cannot find templates")
+	
+	wanted_levels = {x for x in request.query["levels"].split(";")}
+	
+	# Level XMLs and getting wanted room types
+	wanted_rooms = set()
+	
+	for item in wanted_levels:
+		try:
+			data = assets.readLevelXml(item, wanted_rooms, False)
+			z.writestr(f'levels/{item}.xml', data, zipfile.ZIP_DEFLATED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find level '{item}'")
+	
+	# Room lua's and getting wanted segments
+	wanted_segments = set()
+	wanted_music = set()
+	
+	for item in wanted_rooms:
+		try:
+			data = assets.readRoomLua(item, wanted_segments, False, music_deps=wanted_music)
+			z.writestr(f'rooms/{item}.lua', data, zipfile.ZIP_DEFLATED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find room '{item}'")
+	
+	# Segment xmls and meshes, and wanted obstacles
+	wanted_obstacles = set()
+	
+	for item in wanted_segments:
+		try:
+			data = assets.readSegmentXml(item, False, wanted_obstacles, False)
+			z.writestr(f'segments/{item}.xml', data, zipfile.ZIP_DEFLATED)
+			
+			data = assets.readSegmentMesh(item)
+			z.writestr(f'segments/{item}.mesh', data, zipfile.ZIP_STORED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find segment or mesh '{item}'")
+	
+	# Obstacle luas
+	for item in wanted_obstacles:
+		try:
+			data = assets.readObstacleLua(item)
+			z.writestr(f'obstacles/{item}.lua', data, zipfile.ZIP_DEFLATED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find obstacle '{item}'")
+	
+	# Wanted music tracks
+	for item in wanted_music:
+		try:
+			data, fmt = assets.readMusic(item)
+			z.writestr(f'music/{item}.{fmt}', data, zipfile.ZIP_DEFLATED if fmt == 'wav' else zipfile.ZIP_STORED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find music '{item}'")
+	
+	z.close()
+	
+	return NXResponse(200, f.getbuffer(), {"Content-Type": "application/zip"})
 
 
 @routes.add("GET", r"/v6/ping")
