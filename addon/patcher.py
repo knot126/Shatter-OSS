@@ -351,6 +351,14 @@ def _patch_v142_v143_arm64_timestep(patcher, params):
 	# android_main() where the main loop usleep()s for any remaining time
 	patcher.patch(0x4791c, struct.pack("<f", time_step))
 
+def _patch_v142_v143_arm64_nowidewide(patcher, params):
+	"""
+	Tries to evade Smash Hit detecting screens with aspect ratios > 2:1 and
+	limiting the viewbox
+	"""
+	
+	patcher.patch(0x1c8024, AARCH64_NOP)
+
 def encode_arm64_movz(sf, hw, imm16, Rd):
 	# sf = 0 is 32 and 1 is 64-bit, hw = shift/16
 	return struct.pack("<I", (sf << 31) | (0b10100101 << 23) | ((hw >> 4) << 21) | (imm16 << 5) | (Rd))
@@ -490,6 +498,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"noclip": _patch_v142_v143_arm64_noclip,
 	"powerupsfx": _patch_v142_v143_arm64_powerupsfx,
 	"timestep": _patch_v142_v143_arm64_timestep,
+	"nowidewide": _patch_v142_v143_arm64_nowidewide,
 	"checkpoints": _patch_v142_v143_arm64_checkpoints,
 }
 
@@ -631,6 +640,9 @@ def _patch_v142_v143_arm32_noclip(patcher, params):
 def _patch_v142_v143_arm32_powerupsfx(patcher, params):
 	patcher.patch(0x1301e0, b"\x8a\x00\x00\xea")
 
+def _patch_v142_v143_arm32_nowidewide(patcher, params):
+	patcher.patch(0x195344, AARCH32_NOP)
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
@@ -644,6 +656,7 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"mglength": _patch_v142_v143_arm32_mglength,
 	"noclip": _patch_v142_v143_arm32_noclip,
 	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
+	"nowidewide": _patch_v142_v143_arm32_nowidewide,
 }
 
 def _patch_v142_x86_antitamper(patcher, params):

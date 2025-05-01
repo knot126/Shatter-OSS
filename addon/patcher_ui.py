@@ -169,6 +169,12 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_nowidewide: BoolProperty(
+		name = "Support ultra-wide screens",
+		description = "Disables Smash Hit's limits on ultra-wide (> 2:1) screens",
+		default = False,
+	)
+	
 	checkpoints: IntProperty(
 		name = "Checkpoints",
 		description = "",
@@ -200,6 +206,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		"noclip",
 		"powerupsfx",
 		"timestep",
+		"nowidewide",
 		"checkpoints",
 	]
 	

@@ -131,9 +131,6 @@ def pack(assets, outpath, level, info = {}, extras = []):
 	# Write the package info file
 	z.writestr("package.json", json.dumps(info, sort_keys = True, indent = 4))
 	
-	# Write install info file
-	# z.writestr("install.json", json.dumps(make_install_json(files), indent = 4))
-	
 	# Finalise the zip file
 	z.close()
 
@@ -146,7 +143,18 @@ def main():
 	args.add_argument("--hud", action="store_true", help="Enable HUD packing")
 	args = args.parse_args()
 	
-	pack(args.assets, args.outpath, args.level, extras = ["hud", "fonts"] if args.hud else [])
+	pack(args.assets, args.outpath, args.level, {
+		"name": args.level,
+		"creator": "Somebody",
+		"verid": 10000,
+		"version": "1.0.0",
+		"org.knot126.smashhit.tulip": {
+			"level": args.level,
+			"balls": 100,
+			"streak": 20,
+		}
+	}, 
+	["hud", "fonts"] if args.hud else [])
 
 if __name__ == "__main__":
 	main()
