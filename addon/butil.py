@@ -124,7 +124,7 @@ class UIDrawingHelper():
 		
 		self.layout[-1].label(text = text, icon = icon)
 	
-	def prop(self, symbol, *, icon = None, text = None, text_compact = None, use_button = False, disabled = False, use_tabs = False):
+	def prop(self, symbol, *, icon = None, text = None, text_compact = None, placeholder = None, use_button = False, disabled = False, use_tabs = False):
 		"""
 		Draw the property with the given options
 		
@@ -139,6 +139,9 @@ class UIDrawingHelper():
 		
 		if (self.compact and text_compact != None):
 			args["text"] = text_compact
+		
+		if (placeholder):
+			args["placeholder"] = placeholder
 		
 		if (icon):
 			args["icon"] = icon
@@ -163,9 +166,9 @@ class UIDrawingHelper():
 		
 		return self.get(symbol)
 	
-	def combo(self, symbol, chooser_symbol = None, *, icon = None, text = None, text_compact = None, disabled = False):
+	def combo(self, symbol, chooser_symbol = None, *, icon = None, text = None, text_compact = None, placeholder = None, disabled = False):
 		self.beginSplit(0.92, True)
-		self.prop(symbol, icon = icon, text = text, text_compact = text_compact, disabled = disabled)
+		self.prop(symbol, icon = icon, text = text, text_compact = text_compact, placeholder = placeholder, disabled = disabled)
 		self.prop(chooser_symbol or f"{symbol}_chooser", text = "", text_compact = "")
 		self.end()
 	

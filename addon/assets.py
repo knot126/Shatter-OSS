@@ -6,6 +6,7 @@ from . import butil
 from . import util
 import os
 from time import time
+import xml.etree.ElementTree as ET
 
 class AssetLister:
 	"""
@@ -66,7 +67,7 @@ class TemplateLister(AssetLister):
 		# This is really a hack, but should be fast and should work most of the
 		# time.
 		try:
-			with open(f"{butil.find_apk()}/templates.xml.mp3", "r") as f:
+			with util.shopen(f"{butil.find_apk()}/templates.xml", "r") as f:
 				for line in f:
 					item = line.partition('<template name="')[2].partition('"')[0]
 					
@@ -78,6 +79,63 @@ class TemplateLister(AssetLister):
 		return items
 
 templates = TemplateLister(None)
+
+def parse_templates(data):
+	"""
+	Yet another function to parse template data.
+	"""
+	
+	templates = {}
+	
+	root = ET.fromstring(data)
+	
+	if root.tag != 'templates':
+		raise ValueError('Not a templates xml')
+	
+	for template in root:
+		if template.tag == 'template':
+			template_name = template.attrib["name"]
+			properties = template[0]
+			
+			if properties.tag == 'properties':
+				templates[template_name] = properties.attrib
+	
+	return templates
+
+class FullTemplateLister(AssetLister):
+	"""
+	Like TemplateLister but fully parses and lists all templates
+	"""
+	
+	def _list(self):
+		items = {}
+		
+		try:
+			items = parse_templates(util.shload(f"{butil.find_apk()}/templates.xml"))
+		except:
+			pass
+		
+		return items
+	
+	def get_param_placeholder_data(self, template_name):
+		properties = self.get().get(template_name, {})
+		
+		data = []
+		
+		for i in range(0, 12):
+			if f"param{i}" in properties:
+				x = properties[f"param{i}"].split('=', 1)
+				
+				if len(x) == 2:
+					data.append(x)
+				else:
+					data.append([x[0], ''])
+			else:
+				data.append(['', ''])
+		
+		return data
+
+full_templates = FullTemplateLister(None, 5.0)
 
 def between(string, start, end):
 	return string.partition(start)[2].partition(end)[0]
@@ -91,7 +149,7 @@ class ObstacleParameterLister(AssetLister):
 		items = []
 		
 		try:
-			with open(f"{butil.find_apk()}/obstacles/{self.category}.lua.mp3", "r") as f:
+			with util.shopen(f"{butil.find_apk()}/obstacles/{self.category}.lua", "r") as f:
 				for line in f:
 					type = between(line, "mgGet", "(")
 					
@@ -102,6 +160,9 @@ class ObstacleParameterLister(AssetLister):
 							item = between(line, "'", "'")
 						
 						default = between(between(line, "mgGet", "\n"), ",", ")").strip(" \"\'").replace(", ", " ")
+						
+						if type == "Bool":
+							default = "0" if default == "false" else "1"
 						
 						if item:
 							items.append((item, type.lower(), default))

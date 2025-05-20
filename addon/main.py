@@ -346,7 +346,7 @@ set_default_template = make_set_chooser_enum("sh_default_template", get_template
 set_obstacle = make_set_chooser_enum("sh_obstacle", get_obstacle_list)
 
 def get_use_old_chooser(self):
-	return self["sh_use_chooser"]
+	return self["sh_use_chooser"] if "sh_use_chooser" in self else False
 
 def set_use_old_chooser(self, value):
 	# Copy old value to new chooser
@@ -1368,7 +1368,6 @@ class EntityPanel(Panel):
 			ui.prop("sh_reflective")
 		elif (t == "OBS"):
 			ui.region("COPY_ID", "Type")
-			# ui.prop("sh_obstacle_chooser" if ui.get("sh_use_chooser") else "sh_obstacle", text = "", text_compact = "Type")
 			if ui.get("sh_use_chooser"):
 				ui.prop("sh_use_chooser", text="Click to use new chooser", use_button=True)
 				ui.prop("sh_obstacle_chooser")
@@ -1383,13 +1382,22 @@ class EntityPanel(Panel):
 			
 			ui.region("SETTINGS", "Parameters", force = True)
 			
+			# Placeholders (value of the template)
+			placeholders = assets.full_templates.get_param_placeholder_data(ui.get("sh_template"))
+			
 			for i in range(12):
 				if "=" in ui.get(f"sh_param{i}"):
 					ui.prop(f"sh_param{i}")
 				else:
+					# Make sure not to show the placeholder while a key or
+					# value is set, lest it be misleading and I get six thousand
+					# emails from all the angry children who want to murder me.
+					if ui.get(f"sh_param{i}") or ui.get(f"sh_param{i}_value"):
+						placeholders[i] = ['', '']
+					
 					ui.beginSplit(0.65, False)
-					ui.combo(f"sh_param{i}", text = "")
-					ui.prop(f"sh_param{i}_value", text = "")
+					ui.combo(f"sh_param{i}", text = "", placeholder = placeholders[i][0])
+					ui.prop(f"sh_param{i}_value", text = "", placeholder = placeholders[i][1])
 					ui.end()
 			
 			ui.end()

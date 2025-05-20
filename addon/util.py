@@ -4,7 +4,8 @@ Generic utilities
 """
 
 import os
-import os.path as ospath
+import os.path
+ospath = os.path
 import pathlib
 import tempfile
 from multiprocessing import Process
@@ -36,6 +37,15 @@ def log(msg, newline = True):
 	
 	print(LOG_PREFIX + msg.replace("\n", f"\n{LOG_PREFIX}"))
 
+def deprecated(f):
+	"""Deprecated function decorator"""
+	
+	def g(*args, **kwargs):
+		log(f"WARNING: Deprecated function {f.__name__}({', '.join([repr(x) for x in args])}{', ' if args and kwargs else ''}{', '.join([f'{k}={repr(v)}' for k, v in kwargs.items()])}) called!")
+		f(*args, **kwargs)
+	
+	return g
+
 def get_time():
 	"""
 	Get the current UNIX timestamp
@@ -50,6 +60,7 @@ def get_timestamp():
 	
 	return datetime.datetime.utcnow().strftime("%Y-%m-%d %H%M%S")
 
+@deprecated
 def shake256(data, length = 16):
 	"""
 	Compute the SHAKE-256 hash of the given data of the given length
@@ -57,6 +68,7 @@ def shake256(data, length = 16):
 	
 	return hashlib.shake_256(data.encode('utf-8')).hexdigest(length)
 
+@deprecated
 def sha256(data):
 	"""
 	Compute the SHA-256 hash of the given data
@@ -64,6 +76,7 @@ def sha256(data):
 	
 	return hashlib.sha256(data.encode('utf-8') if type(data) == str else data).hexdigest()
 
+@deprecated
 def randpw(bits = 128):
 	"""
 	Generate a random password
@@ -104,6 +117,36 @@ def get_local_ip():
 	
 	return gLocalIPAddressCache
 
+def shopen(basepath, mode):
+	"""
+	Open a file for reading in a way that simulates how Smash Hit's resource
+	manager searches for files; that is, first try basepath, then basepath.mp3,
+	then basepath.gz.mp3 opened as a gzip file.
+	"""
+	
+	if "r" not in mode:
+		raise ValueError("Non-reading modes are not supported with util.shopen()")
+	
+	if os.path.isfile(basepath):
+		return open(basepath, mode)
+	
+	if os.path.isfile(basepath + ".mp3"):
+		return open(basepath + ".mp3", mode)
+	
+	if os.path.isfile(basepath + ".gz.mp3"):
+		return gzip.open(basepath + ".gz.mp3", mode)
+	
+	raise FileNotFoundError(f"File '{basepath}' not found")
+
+def shload(basepath):
+	"""
+	Load an entire file using the same mechanism as shopen().
+	"""
+	
+	with shopen(basepath, "rb") as f:
+		return f.read()
+
+@deprecated
 def get_file(path):
 	"""
 	Get the data in a file if it exists
@@ -121,6 +164,7 @@ def set_file(path, data):
 	
 	pathlib.Path(path).write_text(data)
 
+@deprecated
 def get_file_raw(path):
 	"""
 	Get the data in a file if it exists
@@ -131,6 +175,7 @@ def get_file_raw(path):
 	except FileNotFoundError as e:
 		return None
 
+@deprecated
 def set_file_raw(path, data):
 	"""
 	Put a binary file with the given data at the given path
@@ -138,6 +183,7 @@ def set_file_raw(path, data):
 	
 	pathlib.Path(path).write_bytes(data)
 
+@deprecated
 def get_file_json(path):
 	"""
 	Get a json file's contents
@@ -145,6 +191,7 @@ def get_file_json(path):
 	
 	return json.loads(get_file(path))
 
+@deprecated
 def set_file_json(path, data):
 	"""
 	Set the contents of a json file
@@ -152,6 +199,7 @@ def set_file_json(path, data):
 	
 	set_file(path, json.dumps(data))
 
+@deprecated
 def get_file_gzip(path):
 	"""
 	Read a gzipped file
@@ -163,6 +211,7 @@ def get_file_gzip(path):
 	
 	return data
 
+@deprecated
 def set_file_gzip(path, data):
 	"""
 	Write a gzipped file
@@ -172,6 +221,7 @@ def set_file_gzip(path, data):
 	f.write(data.encode('utf-8'))
 	f.close()
 
+@deprecated
 def check_file_hash(path, filehash):
 	"""
 	Check the hash of the file against "h". True if equal, False otherwise
@@ -312,6 +362,7 @@ def user_edit_file(path):
 	elif "EDITOR" in os.environ:
 		subprocess.call([os.environ["EDITOR"], path])
 
+@deprecated
 def load_templates(path):
 	"""
 	Load templates from a file
