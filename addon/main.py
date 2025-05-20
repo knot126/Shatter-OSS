@@ -1389,14 +1389,19 @@ class EntityPanel(Panel):
 				if "=" in ui.get(f"sh_param{i}"):
 					ui.prop(f"sh_param{i}")
 				else:
+					icon = None
+					
 					# Make sure not to show the placeholder while a key or
 					# value is set, lest it be misleading and I get six thousand
 					# emails from all the angry children who want to murder me.
 					if ui.get(f"sh_param{i}") or ui.get(f"sh_param{i}_value"):
+						if placeholders[i][0]:
+							icon = "GHOST_DISABLED"
+						
 						placeholders[i] = ['', '']
 					
 					ui.beginSplit(0.65, False)
-					ui.combo(f"sh_param{i}", text = "", placeholder = placeholders[i][0])
+					ui.combo(f"sh_param{i}", icon = icon, text = "", placeholder = placeholders[i][0])
 					ui.prop(f"sh_param{i}_value", text = "", placeholder = placeholders[i][1])
 					ui.end()
 			
