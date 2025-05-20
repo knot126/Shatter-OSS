@@ -123,8 +123,6 @@ def main():
 	ap = argparse.ArgumentParser()
 	ap.add_argument("--update-meshbake", help = "Rebuild yorshex's meshbake, bundles it and puts it in the right location (only works on linux)", action = "store_true")
 	ap.add_argument("--update-asset-server", help = "Download the newest version of the asset server and place it in the right location", action = "store_true")
-	ap.add_argument("--build-ext", help = "Build a Blender Extensions (Blender 4.2+) package", action = "store_true")
-	ap.add_argument("--build-legacy", help = "Build a legacy addon (Blender 4.1 and earlier) package", action = "store_true")
 	ap.add_argument("--build-autogen-ext", help = "Build a Blender Extensions (Blender 4.2+) package for the autogen addon", action = "store_true")
 	ap.add_argument("--sign", help = "Enables signing builds using minisign", action = "store_true")
 	ap = ap.parse_args()
@@ -145,28 +143,28 @@ def main():
 		did_anything = True
 		update_asset_server()
 	
-	if (ap.build_ext):
-		did_anything = True
-		make_ext_package()
+	# if (ap.build_ext):
+	# did_anything = True
+	make_ext_package()
 	
-	if (ap.build_legacy):
-		did_anything = True
-		make_legacy_package()
+	# if (ap.build_legacy):
+	# did_anything = True
+	make_legacy_package()
 	
 	if (ap.build_autogen_ext):
 		did_anything = True
 		make_autogen_ext_package()
 	
-	if not did_anything:
-		print(f"""Warning: No action has been preformed! You probably want to run:
-
-  $ {sys.argv[0]} --update-meshbake --update-asset-server # Download mesh baker and asset server
-  $ {sys.argv[0]} --build-ext --build-legacy # Build both extension and legacy package
-
-... instead of invoking with no arguments.
-
-Also, if you wish to create a build for general release, use --sign with the
-first command.""")
+# 	if not did_anything:
+# 		print(f"""Warning: No action has been preformed! You probably want to run:
+# 
+#   $ {sys.argv[0]} --update-meshbake --update-asset-server # Download mesh baker and asset server
+#   $ {sys.argv[0]} --build-ext --build-legacy # Build both extension and legacy package
+# 
+# ... instead of invoking with no arguments.
+# 
+# Also, if you wish to create a build for general release, use --sign with the
+# first command.""")
 
 if (__name__ == "__main__"):
 	main()
