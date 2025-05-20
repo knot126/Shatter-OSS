@@ -42,7 +42,7 @@ def deprecated(f):
 	
 	def g(*args, **kwargs):
 		log(f"WARNING: Deprecated function {f.__name__}({', '.join([repr(x) for x in args])}{', ' if args and kwargs else ''}{', '.join([f'{k}={repr(v)}' for k, v in kwargs.items()])}) called!")
-		f(*args, **kwargs)
+		return f(*args, **kwargs)
 	
 	return g
 
@@ -146,7 +146,6 @@ def shload(basepath):
 	with shopen(basepath, "rb") as f:
 		return f.read()
 
-@deprecated
 def get_file(path):
 	"""
 	Get the data in a file if it exists
