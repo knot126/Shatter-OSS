@@ -609,6 +609,9 @@ class SegmentProperties(PropertyGroup):
 		default = 100,
 		min = 0,
 	)
+	
+	def get_template(self):
+		return self.sh_template if self.sh_template else (f"{self.sh_default_template}_s" if self.sh_default_template else "")
 
 class EntityProperties(PropertyGroup):
 	
@@ -941,7 +944,31 @@ class EntityProperties(PropertyGroup):
 		max = 1000.0,
 	)
 	
-	
+	def get_template(self, sh_properties=None):
+		"""
+		Get the finalised template of the object
+		"""
+		
+		default_template = (sh_properties or bpy.context.scene.sh_properties).sh_default_template
+		
+		if self.sh_template:
+			return self.sh_template
+		elif default_template:
+			if self.sh_type == "BOX":
+				return default_template
+			elif self.sh_type == "OBS":
+				if self.sh_obstacle.startswith("score"):
+					return f"{default_template}_st"
+				else:
+					return f"{default_template}_glass"
+			elif self.sh_type == "DEC":
+				return f"{default_template}_decal"
+			elif self.sh_type == "POW":
+				return f"{default_template}_pu"
+			elif self.sh_type == "WAT":
+				return f"{default_template}_water"
+		
+		return ""
 
 def init_obstacle_params():
 	for i in range(0, 12):
@@ -1240,7 +1267,7 @@ class SegmentPanel(Panel):
 		if (not ui.prop("sh_auto_length", use_button=True)):
 			ui.prop("sh_len")
 		
-		ui.combo("sh_template")
+		ui.combo("sh_template", placeholder=sh_properties.get_template())
 		ui.combo("sh_default_template")
 		ui.prop("sh_softshadow")
 		ui.prop("sh_vrmultiply")
@@ -1312,7 +1339,7 @@ class EntityPanel(Panel):
 		t = ui.prop("sh_type", text = "")
 		
 		ui.region("NODE_COMPOSITING", "Template")
-		ui.combo("sh_template", text="", text_compact="Template")
+		ui.combo("sh_template", text="", text_compact="Template", placeholder=sh_properties.get_template())
 		ui.end()
 		
 		if (t == "BOX"):
@@ -1383,7 +1410,7 @@ class EntityPanel(Panel):
 			ui.region("SETTINGS", "Parameters", force = True)
 			
 			# Placeholders (value of the template)
-			placeholders = assets.full_templates.get_param_placeholder_data(ui.get("sh_template"))
+			placeholders = assets.full_templates.get_param_placeholder_data(sh_properties.get_template())
 			
 			for i in range(12):
 				if "=" in ui.get(f"sh_param{i}"):

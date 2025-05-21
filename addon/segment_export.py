@@ -288,32 +288,10 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 			properties["rot"] = exportPointList(obj.rotation_euler)
 	
 	# Add template
-	if (obj.sh_properties.sh_template):
-		properties["template"] = obj.sh_properties.sh_template
-	# Use default template from scene if we don't have one
-	elif (getCombo(scene, 'sh_default_template')):
-		default_template = getCombo(scene, 'sh_default_template')
-		
-		# We use the standard naming convention from most Smash Hit templates
-		# for these:
-		#   Box -> {basename}
-		#   Crystal obstacle -> {basename}_st
-		#   Non-crystal Obstacle -> {basename}_glass
-		#   Segment -> {basename}_s
-		if (default_template):
-			if (sh_type == "BOX"):
-				properties["template"] = default_template
-			elif (sh_type == "OBS"):
-				if (properties["type"].startswith("score")):
-					properties["template"] = f"{default_template}_st"
-				else:
-					properties["template"] = f"{default_template}_glass"
-			elif (sh_type == "DEC"):
-				properties["template"] = f"{default_template}_decal"
-			elif (sh_type == "POW"):
-				properties["template"] = f"{default_template}_pu"
-			elif (sh_type == "WAT"):
-				properties["template"] = f"{default_template}_water"
+	tmpl = obj.sh_properties.get_template(scene)
+	
+	if tmpl:
+		properties["template"] = tmpl
 	
 	# Add mode appearance tag
 	if (sh_type == "OBS"):
