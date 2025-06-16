@@ -856,6 +856,21 @@ _LIBSMASHHIT_V1510_ARM64_PATCH_TABLE = {
 	"forceoutofballsadstoshow": _patch_v1510_force_out_of_balls_ads_to_show,
 }
 
+def _patch_v1512_arm64_premium(patcher, params):
+	"""
+	Premium patch for 1.5.12
+	"""
+	
+	# This time it's a little different but they clearly didn't try to make it
+	# much harder.
+	patcher.patch(0x13ab90, b"\x1f\x20\x03\xd5")
+	patcher.patch(0x13ab94, b"\x28\x20\x80\x52")
+	patcher.patch(0x13ab98, b"\x68\x02\x13\x79")
+
+_LIBSMASHHIT_V1512_ARM64_PATCH_TABLE = {
+	"premium": _patch_v1512_arm64_premium,
+}
+
 PATCHES_LIST = {
 	"arm32": {
 		"1.0.0": _LIBSMASHHIT_V100_ARM32_PATCH_TABLE,
@@ -870,6 +885,7 @@ PATCHES_LIST = {
 		"1.5.5": _LIBSMASHHIT_V154_V155_ARM64_PATCH_TABLE,
 		"1.5.9": _LIBSMASHHIT_V159_ARM64_PATCH_TABLE,
 		"1.5.10": _LIBSMASHHIT_V1510_ARM64_PATCH_TABLE,
+		"1.5.12": _LIBSMASHHIT_V1512_ARM64_PATCH_TABLE,
 	},
 	"x86": {
 		"1.4.2": _LIBSMASHHIT_V142_X86_PATCH_TABLE,
@@ -960,9 +976,14 @@ def determine_version(p):
 	if (cand == b"1.5.9"):
 		return ("arm64", "1.5.9")
 	
+	# 1.5.10
 	cand = p.peek(0x8eba8, 6)
 	if (cand == b"1.5.10"):
 		return ("arm64", "1.5.10")
+	
+	# 1.5.12
+	if (p.peek(0xa0d76, 6) == b"1.5.12"):
+		return ("arm64", "1.5.12")
 	
 	return NotImplemented
 
