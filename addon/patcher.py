@@ -481,6 +481,25 @@ def _patch_v142_v143_arm64_checkpoints(patcher, params):
 	# Player::getHighScoreStreak(int) also sucks just a bit less so
 	patcher.patch(0x57c5c, encode_arm64_ldr(0, pStreakArray, 0, 2))
 
+def _patch_v142_v143_arm64_fillbufferfix(patcher, params):
+	"""
+	Workaround for the audio thread crashing in QiAudioChannel::fillBuffer()
+	while trying to process a single channel, non streaming track.
+	
+	The bug seems to be caused by either floating point imprecision or an off by
+	one error letting the index go beyond 0x3ff into 0x400, which then tries to
+	read from a unmapped page, leading to a segfault. Yes, audio sample data is
+	indexed by a float representing the number of seconds into the track. I'm
+	not sure I want to know why.
+	
+	Thankfully, this occurs in what seems to be an optimised implementation for
+	when there is enough sample data to fill the entire buffer, so we can just
+	force the game to use the slower bounds checked one instead which doesn't
+	seem (?) to suffer from this issue.
+	"""
+	
+	patcher.patch(0xb2038, b"\x21\x00\x00\x14")
+
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
 	"premium": _patch_v142_v143_arm64_premium,
@@ -500,6 +519,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"timestep": _patch_v142_v143_arm64_timestep,
 	"nowidewide": _patch_v142_v143_arm64_nowidewide,
 	"checkpoints": _patch_v142_v143_arm64_checkpoints,
+	"fillbufferfix": _patch_v142_v143_arm64_fillbufferfix,
 }
 
 def _patch_v142_v143_arm32_antitamper(patcher, params):
@@ -643,6 +663,9 @@ def _patch_v142_v143_arm32_powerupsfx(patcher, params):
 def _patch_v142_v143_arm32_nowidewide(patcher, params):
 	patcher.patch(0x195344, AARCH32_NOP)
 
+def _patch_v142_v143_arm32_fillbufferfix(patcher, params):
+	patcher.patch(0x9b8ac, b"\x20\x00\x00\xea")
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
@@ -657,6 +680,7 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"noclip": _patch_v142_v143_arm32_noclip,
 	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
 	"nowidewide": _patch_v142_v143_arm32_nowidewide,
+	"fillbufferfix": _patch_v142_v143_arm32_fillbufferfix,
 }
 
 def _patch_v142_x86_antitamper(patcher, params):
@@ -676,9 +700,18 @@ def _patch_v142_x86_premium(patcher, params):
 	
 	patcher.patch(0x4f337, b'\x66\xc6\x84\x21\xe8\x07\x00\x00\x01\x90')
 
+def _patch_v142_x86_fillbufferfix(patcher, params):
+	"""
+	AS-IS fix for the crash in QiAudioChannel::fillBuffer() on x86 - just
+	because fully testing this crap takes forever and I'm bored enough to care.
+	"""
+	
+	patcher.patch(0xb65b8, b"\x66\xe9\xbc\x00")
+
 _LIBSMASHHIT_V142_X86_PATCH_TABLE = {
 	"antitamper": _patch_v142_x86_antitamper,
 	"premium": _patch_v142_x86_premium,
+	"fillbufferfix": _patch_v142_x86_fillbufferfix,
 }
 
 def _patch_v152_arm64_premium(patcher, params):
