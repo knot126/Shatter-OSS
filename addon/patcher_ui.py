@@ -189,6 +189,12 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
+	do_fillbufferfix: BoolProperty(
+		name = "Fix crash while upading audio buffers",
+		description = "This applies a workaround to a crash that sometimes occurs in QiAudioChannel::fillBuffer() while trying to process non-streaming, mono channel audio with the APK's target SDK set to >= 31",
+		default = False,
+	)
+	
 	all_patches = [
 		"premium",
 		"encryption",
@@ -208,6 +214,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		"timestep",
 		"nowidewide",
 		"checkpoints",
+		"fillbufferfix",
 	]
 	
 	def drawItem(self, ui, name, pl = []):
