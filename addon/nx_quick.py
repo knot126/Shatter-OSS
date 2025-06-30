@@ -7,7 +7,7 @@ import json
 import zipfile
 import io
 
-SERVER_VERSION = (1, 2, 0)
+SERVER_VERSION = (1, 2, 1)
 QUICK_PORT = 8000
 
 """
@@ -796,7 +796,7 @@ def v7_full(request):
 
 @routes.add("GET", r"/v6/ping")
 def v6_ping(request):
-	return NXResponse(200, "Connected")
+	return NXResponse(200, "Connected", {"X-Features": "user overlay"})
 
 
 @routes.add("GET", r"/v6/config")
