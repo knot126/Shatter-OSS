@@ -49,6 +49,8 @@ def export_room(path, scene=None):
 		--l = l + mgSegment("put your start segment here!", -l)
 	end
 	
+	l = 0
+	
 	local targetLen = {s.sh_room_length} 
 	while l < targetLen do
 		s = nextSegment()
@@ -58,6 +60,8 @@ def export_room(path, scene=None):
 	if pEnd then 
 		--l = l + mgSegment("put your end segment here!", -l)
 	end
+	
+	mgLength(l)
 end
 
 function tick()
