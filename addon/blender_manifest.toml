@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "shatter"
-version = "1.5.13"
+version = "1.6.0"
 name = "Shatter OSS"
 tagline = "Shatter allows easily creating and exporting Smash Hit segments"
 maintainer = "Knot126 <cddepppp256@gmail.com>"
@@ -23,12 +23,12 @@ license = [
 
 # Optional: required by some licenses.
 copyright = [
-  "2020-2024 Knot126",
-  "2023-2024 Yorshex",
+  "2020-2025 Knot126",
+  "2023-2025 Yorshex",
 ]
 
-# platforms = ["windows-x64", "macos-arm64", "linux-x64"]
-# Other supported platforms: "windows-arm64", "macos-x64"
+# platforms = ["windows-x64", "linux-x64"]
+# Other possible platforms: "windows-arm64", "macos-arm64", "macos-x64"
 
 # # Optional: add-ons can list which resources they will require:
 # # * files (for access of any filesystem operations)

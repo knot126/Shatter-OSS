@@ -11,6 +11,7 @@ import tempfile
 import bpy
 import re
 import traceback
+from . import assets
 
 from bpy.props import (
 	StringProperty,
@@ -303,20 +304,63 @@ def find_assets_paths(*, search_default = True, search_apk = True):
 	
 	return paths
 
+def list_apks():
+	try:
+		apk_studio_dir = tempfile.gettempdir() + "/apk-editor-studio/apk"
+		open_apks = [os.path.join(apk_studio_dir, uuid) for uuid in os.listdir(apk_studio_dir)]
+		
+		apks = []
+		
+		for p in open_apks:
+			apks.append(assets.APKInfo(p))
+		
+		return apks
+	except:
+		return []
+
+def list_extra_asset_dirs():
+	override = bpy.context.preferences.addons[__package__].preferences.default_assets_path
+	
+	if override and os.path.exists(override):
+		return [assets.ExtraAssetDirInfo(override)]
+	else:
+		return []
+
+def list_asset_dirs():
+	return list_extra_asset_dirs() + list_apks()
+
+current_index = 0
+
 def find_apk(*, allow_override = True):
 	"""
 	Find the path to an APK
-	
-	DEPRECATED It's better to have more than one path that people can
-	dynamically pick between
 	"""
 	
-	result = find_assets_paths(search_default = allow_override)
+	global current_index
 	
-	if (result):
-		return result[0]
+	result = list_asset_dirs()
+	
+	if result:
+		d = result[min(current_index, len(result) - 1)].assets()
+		print(f"Report asset dir as index:{current_index} dir:{d}")
+		return d
 	else:
 		return ""
+
+def list_apk_for_chooser(self, context):
+	return [x.itemize() for x in list_asset_dirs()]
+
+def get_apk(self):
+	global current_index
+	return current_index # Todo: Should this be limited to max len(apklist)-1 ?
+
+apk_setted_callback = None
+
+def set_apk(self, index):
+	global current_index
+	global apk_setted_callback
+	current_index = index
+	if apk_setted_callback: apk_setted_callback()
 
 def prefs():
 	"""

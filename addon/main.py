@@ -439,12 +439,6 @@ class SegmentProperties(PropertyGroup):
 		max = 1.0
 	)
 	
-	sh_vrmultiply: FloatProperty(
-		name = "Segment strech",
-		description = "This option tries to strech the segment's depth to make more time between obstacles. The intent is to allow it to be played in Smash Hit VR easier and without modifications to the segment",
-		default = 1.0,
-	)
-	
 	sh_light_left: FloatProperty(
 		name = "Left",
 		description = "Light going on to the left side of boxes",
@@ -1065,11 +1059,11 @@ class ShatterPreferences(AddonPreferences):
 		default = False,
 	)
 	
-	show_shards_ads: BoolProperty(
-		name = "Show Shards Community promos",
-		description = "Shows links to join the Shards Community Discord server",
-		default = True,
-	)
+	# show_shards_ads: BoolProperty(
+	# 	name = "Show Shards Community promos",
+	# 	description = "Shows links to join the Shards Community Discord server",
+	# 	default = True,
+	# )
 	
 	show_deprecated_advanced_lights: BoolProperty(
 		name = "Show advanced lights (deprecated)",
@@ -1168,11 +1162,11 @@ class ShatterPreferences(AddonPreferences):
 		ui = butil.UIDrawingHelper(context, self.layout, self)
 		
 		# Shards promo
-		if butil.get_setting("show_shards_ads"):
-			ui.region("MESH_ICOSPHERE", "Shards Community")
-			ui.label("Consider joining the Shards Community on Discord for official Shatter updates!")
-			ui.op("shatter.open_shards_discord")
-			ui.end()
+		# if butil.get_setting("show_shards_ads"):
+		# 	ui.region("MESH_ICOSPHERE", "Shards Community")
+		# 	ui.label("Consider joining the Shards Community on Discord for official Shatter updates!")
+		# 	ui.op("shatter.open_shards_discord")
+		# 	ui.end()
 		
 		ui.region("EXPORT", "Export and import")
 		ui.prop("default_assets_path")
@@ -1183,7 +1177,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.end()
 		
 		ui.region("DESKTOP", "Interface")
-		ui.prop("show_shards_ads")
+		# ui.prop("show_shards_ads")
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
 		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
@@ -1206,6 +1200,8 @@ class ShatterPreferences(AddonPreferences):
 			ui.region("SHADERFX", "Quick test checkup", new=False)
 			if (gQuickPortTest == False):
 				ui.label("Could not open port 8000", "CANCEL")
+				ui.label("Make sure no other apps are using port 8000", "ERROR")
+				ui.label("If Blender crashed, you may need to restart your PC", "ERROR")
 			elif (gQuickPortTest == True):
 				ui.label("Port 8000 can be opened", "CHECKMARK")
 			ui.op("shatter.quick_test_checkup")
@@ -1274,7 +1270,6 @@ class SegmentPanel(Panel):
 		ui.combo("sh_template", placeholder=sh_properties.get_template())
 		ui.combo("sh_default_template")
 		ui.prop("sh_softshadow")
-		ui.prop("sh_vrmultiply")
 		ui.end()
 		
 		ui.region("LIGHT", "Lighting")
@@ -1628,6 +1623,29 @@ class QuickTestCheckup(Operator):
 		
 		return {"FINISHED"}
 
+class SelectAssetDir(Operator):
+	"""Select the currently active assets directory where segments are exported to and the test server runs from"""
+	
+	bl_idname = "shatter.select_asset_dir"
+	bl_label = "Set active asset directory"
+	
+	apk_path: EnumProperty(
+		name = "Package",
+		description = "Select the active assets directory",
+		items = butil.list_apk_for_chooser,
+		get = butil.get_apk,
+		set = butil.set_apk,
+		update = server_manager_update,
+		default = 0,
+	)
+	
+	def execute(self, context):
+		return {'FINISHED'}
+	
+	def invoke(self, context, event):
+		context.window_manager.invoke_props_dialog(self)
+		return {'RUNNING_MODAL'}
+
 ################################################################################
 # Shatter menu
 ################################################################################
@@ -1675,12 +1693,13 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.operator("shatter.rebake_all_meshes")
 		self.layout.separator()
 		self.layout.label(text = "Actions")
+		self.layout.operator("shatter.select_asset_dir")
 		self.layout.operator("shatter.open_current_asset_folder")
 		self.layout.operator("shatter.open_obstacles_txt")
-		if butil.get_setting("show_shards_ads"):
-			self.layout.separator()
-			self.layout.label(text = "Promotion")
-			self.layout.operator("shatter.open_shards_discord", text="Join Shards Discord")
+		# if butil.get_setting("show_shards_ads"):
+		# 	self.layout.separator()
+		# 	self.layout.label(text = "Promotion")
+		# 	self.layout.operator("shatter.open_shards_discord", text="Join Shards Discord")
 
 ###############################################################################
 
@@ -1719,6 +1738,7 @@ classes = (
 	rebake_ui.RebakeAllMeshes,
 	mtxconv_ui.MtxconvExtract,
 	mtxconv_ui.MtxconvBake,
+	SelectAssetDir,
 )
 
 keymaps = {

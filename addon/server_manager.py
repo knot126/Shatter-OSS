@@ -80,18 +80,6 @@ class LevelServerManager():
 		return self.server_process.poll() == None
 
 
-def cb_builtin(tempdir):
-	"""
-	Run the builtin level server
-	"""
-	
-	python_path = os.path.realpath(sys.executable)
-	script_path = str(Path(__file__).parent) + "/quick_test.py"
-	
-	proc = Popen([python_path, script_path, tempdir])
-	
-	return proc
-
 def cb_yorshex(asset_dir, level):
 	"""
 	Run yorshex's level server
@@ -116,25 +104,11 @@ def cb_nx(overlay, assets, token):
 	
 	return proc
 
-def cb_knot(assets):
-	"""
-	Run Knot's Asset Server
-	"""
-	
-	python_path = os.path.realpath(sys.executable)
-	script_path = str(Path(__file__).parent) + "/knot_asset_server.py"
-	
-	proc = Popen([python_path, script_path, '--enable-setpath', assets])
-	
-	return proc
-
 
 SERVER_CALLBACKS = {
 	"none": None,
-	"builtin": cb_builtin,
 	"yorshex": cb_yorshex,
 	"nx": cb_nx,
-	"knot": cb_knot,
 }
 
 

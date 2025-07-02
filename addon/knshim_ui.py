@@ -25,13 +25,7 @@ from bpy.types import (
 )
 
 def get_candidate_apks(self, context):
-	apks = []
-	
-	for ad in butil.find_assets_paths(search_default=False):
-		ad = str(Path(ad).parent)
-		apks.append((ad, ad, ad))
-	
-	return apks
+	return [apk.itemize() for apk in butil.list_apks()]
 
 class InstallKnShim(Operator):
 	"""Installs KnShim to an extracted Smash Hit APK"""
@@ -40,7 +34,7 @@ class InstallKnShim(Operator):
 	bl_label = "Install KnShim"
 	
 	apk_path: EnumProperty(
-		name = "APK Path",
+		name = "Package",
 		description = "Select the APK to install KnShim into",
 		items = get_candidate_apks,
 		default = 0,

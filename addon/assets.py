@@ -5,6 +5,7 @@ Some stuff related to managing the assets folder.
 from . import butil
 from . import util
 import os
+import re
 from time import time
 import xml.etree.ElementTree as ET
 
@@ -183,3 +184,54 @@ class MultiObstacleParameterLister:
 		return self.lists[name].get()
 
 obs_params = MultiObstacleParameterLister(10.0)
+
+class APKInfo:
+	"""
+	Retrieve metadata about an APK
+	"""
+	
+	def __init__(self, path):
+		self.path = path
+		self.title = None
+		
+		try:
+			# Example: ddb99a48-3841-443f-8e3f-40799c9222ea
+			match = re.search(r"{([0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12})}", path)
+			self.uuid = match[1]
+		except:
+			self.uuid = None
+		
+		try:
+			strings = ET.parse(os.path.join(path, 'res/values/strings.xml')).getroot()
+			
+			for string in strings:
+				if string.attrib["name"] == "app_name":
+					self.title = string.text
+		except:
+			pass
+		
+		try:
+			manifest = ET.parse(os.path.join(path, 'AndroidManifest.xml')).getroot()
+			self.package = manifest.attrib["package"]
+		except:
+			self.package = None
+	
+	def assets(self):
+		return self.path + "/assets"
+	
+	def itemize(self):
+		return (self.path, f"{self.title} ({self.package})", f"Opened with UUID: {self.uuid}")
+
+class ExtraAssetDirInfo():
+	"""
+	Bare asset directory
+	"""
+	
+	def __init__(self, path):
+		self.path = path
+	
+	def assets(self):
+		return self.path
+	
+	def itemize(self):
+		return (self.path, "Directory: " + self.path, "Bare asset directory")

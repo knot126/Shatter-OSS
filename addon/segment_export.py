@@ -167,12 +167,6 @@ def sh_create_root(scene, params):
 		size[1] = 10.0
 		size[2] = -sizeZ
 	
-	# VR Multiply setting
-	sh_vrmultiply = params.get("sh_vrmultiply", 1.0)
-	
-	if (sh_vrmultiply != 1.0):
-		size[2] = size[2] * sh_vrmultiply
-	
 	# Segment size warning
 	if (size[2] <= 0.0):
 		params["warnings"].add("the segment length is zero or less which may behave weirdly")
@@ -236,12 +230,6 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	# These positions are swapped
 	position = {"X": obj.location[1], "Y": obj.location[2], "Z": obj.location[0]}
 	
-	# VR Multiply setting
-	sh_vrmultiply = params.get("sh_vrmultiply", 1.0)
-	
-	if (sh_vrmultiply != 1.0):
-		position["Z"] = position["Z"] * sh_vrmultiply
-	
 	# The only gaurrented to exsist is pos
 	properties = {
 		"pos": str(position["X"]) + " " + str(position["Y"]) + " " + str(position["Z"]),
@@ -273,10 +261,6 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	
 	# Add size for boxes
 	if (sh_type == "BOX"):
-		# VR Multiply setting
-		if (sh_vrmultiply != 1.0):
-			size["Z"] = size["Z"] * sh_vrmultiply
-		
 		properties["size"] = str(size["X"]) + " " + str(size["Y"]) + " " + str(size["Z"])
 		
 		if (params.get("ignore_small_boxes", False)):
@@ -338,7 +322,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 	if (sh_type == "WAT"):
 		size = {"X": obj.dimensions[1] / 2, "Z": obj.dimensions[0] / 2}
 		
-		properties["size"] = str(size["X"]) + " " + str(size["Z"] * sh_vrmultiply)
+		properties["size"] = str(size["X"]) + " " + str(size["Z"])
 		
 		if (not isIndexableEqual(obj.sh_properties.sh_resolution, [32.0, 32.0])):
 			properties["resolution"] = exportList(obj.sh_properties.sh_resolution)
@@ -750,7 +734,6 @@ def sh_export_all_segments(context, compress = True, aotype = '1'):
 		sh_properties = s.sh_properties
 		
 		sh_export_segment_ext(None, context, s, compress, params = {
-				"sh_vrmultiply": sh_properties.sh_vrmultiply,
 				"sh_meshbake_template": tryTemplatesPath(),
 				"bake_menu_segment": sh_properties.sh_menu_segment,
 				"bake_vertex_light": sh_properties.sh_ambient_occlusion,
@@ -763,7 +746,6 @@ def sh_export_segment(filepath, context, compress = False, testserver = False, n
 	sh_properties = context.scene.sh_properties
 	
 	params = {
-		"sh_vrmultiply": sh_properties.sh_vrmultiply,
 		"bake_menu_segment": sh_properties.sh_menu_segment,
 		"bake_vertex_light": sh_properties.sh_ambient_occlusion,
 		"lighting_enabled": sh_properties.sh_lighting,
