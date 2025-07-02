@@ -118,23 +118,18 @@ def main():
 	
 	os.makedirs("build", exist_ok = True)
 	
-	did_anything = False
-	
 	if ap.update_meshbake:
-		did_anything = True
 		update_meshbake()
 	
 	if ap.update_yas:
-		did_anything = True
 		update_asset_server()
-	
-	make_ext_package()
 	
 	if ap.legacy:
 		make_legacy_package()
+	else:
+		make_ext_package()
 	
 	if ap.autogen:
-		did_anything = True
 		make_autogen_ext_package()
 
 if (__name__ == "__main__"):
