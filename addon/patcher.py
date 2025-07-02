@@ -500,6 +500,13 @@ def _patch_v142_v143_arm64_fillbufferfix(patcher, params):
 	
 	patcher.patch(0xb2038, b"\x21\x00\x00\x14")
 
+def _patch_v142_v143_arm64_noquicksave(patcher, params):
+	"""
+	Disables quick saves, a good idea for Shatter Client.
+	"""
+	
+	patcher.patch(0x592a4, AARCH64_RET)
+
 _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm64_antitamper,
 	"premium": _patch_v142_v143_arm64_premium,
@@ -520,6 +527,7 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"nowidewide": _patch_v142_v143_arm64_nowidewide,
 	"checkpoints": _patch_v142_v143_arm64_checkpoints,
 	"fillbufferfix": _patch_v142_v143_arm64_fillbufferfix,
+	"noquicksave": _patch_v142_v143_arm64_noquicksave,
 }
 
 def _patch_v142_v143_arm32_antitamper(patcher, params):
@@ -666,6 +674,9 @@ def _patch_v142_v143_arm32_nowidewide(patcher, params):
 def _patch_v142_v143_arm32_fillbufferfix(patcher, params):
 	patcher.patch(0x9b8ac, b"\x20\x00\x00\xea")
 
+def _patch_v142_v143_arm32_noquicksave(patcher, params):
+	patcher.patch(0x47910, AARCH32_RET)
+
 _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"antitamper": _patch_v142_v143_arm32_antitamper,
 	"premium": _patch_v142_v143_arm32_premium,
@@ -681,6 +692,7 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
 	"nowidewide": _patch_v142_v143_arm32_nowidewide,
 	"fillbufferfix": _patch_v142_v143_arm32_fillbufferfix,
+	"noquicksave": _patch_v142_v143_arm32_noquicksave,
 }
 
 def _patch_v142_x86_antitamper(patcher, params):
