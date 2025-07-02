@@ -7,7 +7,7 @@ import json
 import zipfile
 import io
 
-SERVER_VERSION = (1, 2, 1)
+SERVER_VERSION = (1, 3, 0)
 QUICK_PORT = 8000
 
 """
@@ -450,6 +450,9 @@ class AssetManager:
 	def hasSegment(self, seg):
 		return self.exists(f"segments/{seg}.xml") or self.exists(f"segments/{seg}.xml.gz")
 	
+	def hasMesh(self, mesh):
+		return self.exists(f"meshes/{mesh}.xml")
+	
 	def readSegmentXml(self, name, solve = True, deps = None, rewrite=True):
 		"""
 		Read a segment's XML file. Optionally, if `deps` is a set, add the
@@ -491,12 +494,29 @@ class AssetManager:
 		
 		return self.read(f"segments/{name}.mesh", False)
 	
-	def readObstacleLua(self, name):
+	def readObstacleLua(self, name, wanted_meshes=None, wanted_snds=None):
 		"""
 		Read an obstacle's lua file
 		"""
 		
-		return self.read(f"obstacles/{name}.lua")
+		data = self.read(f"obstacles/{name}.lua")
+		
+		if type(wanted_meshes) == set and type(wanted_snds) == set:
+			for match in re.findall(r'''["']([^"']+)["']''', data):
+				if self.hasMesh(match):
+					wanted_meshes.add(match)
+				
+				if match.lower().endswith((".ogg", ".wav")) and self.exists(match):
+					wanted_snds.add(match)
+		
+		return data
+	
+	def readConvexMesh(self, name):
+		"""
+		Read a convex mesh file
+		"""
+		
+		return self.read(f"meshes/{name}.xml", False)
 	
 	def readMusic(self, name):
 		"""
@@ -732,8 +752,27 @@ def v7_full(request):
 	f = io.BytesIO(b"")
 	z = zipfile.ZipFile(f, 'w')
 	
+	# templates.xml
 	try:
 		z.writestr(f'templates.xml', assets.read("templates.xml"), zipfile.ZIP_DEFLATED)
+	except FileNotFoundError:
+		print(f"Warning: cannot find templates")
+	
+	# game.xml
+	try:
+		levels = request.query["levels"].split(";")
+		
+		while len(levels) < 15:
+			levels.append(levels[-1])
+		
+		game_xml = "<game>\n\t<levels>\n"
+		
+		for level in levels:
+			game_xml += f"\t\t<level name=\"{level}\"/>\n"
+		
+		game_xml += "\t</levels>\n</game>"
+		
+		z.writestr(f'game.xml', game_xml, zipfile.ZIP_DEFLATED)
 	except FileNotFoundError:
 		print(f"Warning: cannot find templates")
 	
@@ -760,6 +799,13 @@ def v7_full(request):
 		except FileNotFoundError:
 			print(f"Warning: cannot find room '{item}'")
 	
+	if "boss_in" in wanted_music:
+		wanted_music.add("boss_loop0")
+		wanted_music.add("boss_loop1")
+		wanted_music.add("boss_loop2")
+		wanted_music.add("boss_loop3")
+		wanted_music.add("boss_end")
+	
 	# Segment xmls and meshes, and wanted obstacles
 	wanted_obstacles = set()
 	
@@ -774,12 +820,31 @@ def v7_full(request):
 			print(f"Warning: cannot find segment or mesh '{item}'")
 	
 	# Obstacle luas
+	wanted_meshes = set()
+	wanted_snds = set()
+	
 	for item in wanted_obstacles:
 		try:
-			data = assets.readObstacleLua(item)
+			data = assets.readObstacleLua(item, wanted_meshes, wanted_snds)
 			z.writestr(f'obstacles/{item}.lua', data, zipfile.ZIP_DEFLATED)
 		except FileNotFoundError:
 			print(f"Warning: cannot find obstacle '{item}'")
+	
+	# Convex meshes
+	for item in wanted_meshes:
+		try:
+			data = assets.readConvexMesh(item)
+			z.writestr(f'meshes/{item}.xml', data, zipfile.ZIP_DEFLATED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find convex mesh '{item}'")
+	
+	# Sound effects
+	for item in wanted_snds:
+		try:
+			data = assets.read(item, False)
+			z.writestr(item, data, zipfile.ZIP_DEFLATED if item.lower().endswith(".wav") else zipfile.ZIP_STORED)
+		except FileNotFoundError:
+			print(f"Warning: cannot find sound effect '{item}'")
 	
 	# Wanted music tracks
 	for item in wanted_music:

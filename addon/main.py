@@ -1090,8 +1090,6 @@ class ShatterPreferences(AddonPreferences):
 			('none', "None", "Don't use any quick test server"),
 			('nx', "NxQuick", "The most modern server supporting Shatter Client v4 to the fullest. It is faster and more reliable, and despite supporting classic Quick Test export also supports loading entire levels. Does not support older clients"),
 			('yorshex', "Yorshex's Asset Server", "An advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients. It has been written by Yorshex"),
-			('knot', "Knot's Asset Server (beta)", ""),
-			('builtin', "SegServ (deprecated)", "The classic quick test server integrated with Shatter. Of the old servers, it is the simplest and fastest to use but only loads one segment at a time"),
 		],
 		update = server_manager_update,
 		default = "nx",
