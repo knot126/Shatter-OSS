@@ -859,9 +859,27 @@ def v7_full(request):
 	return NXResponse(200, f.getbuffer(), {"Content-Type": "application/zip"})
 
 
+@routes.add("GET", r"/v7/packed/all")
+def v7_packed_all(request):
+	# Start writing zip file
+	f = io.BytesIO(b"")
+	z = zipfile.ZipFile(f, 'w')
+	
+	asset_list = assets.listDir('')
+	
+	for item in asset_list:
+		item = item.removesuffix('.gz.mp3').removesuffix('.mp3')
+		data = assets.read(item, False)
+		z.writestr(item, data)
+	
+	z.close()
+	
+	return NXResponse(200, f.getbuffer(), {"Content-Type": "application/zip"})
+
+
 @routes.add("GET", r"/v6/ping")
 def v6_ping(request):
-	return NXResponse(200, "Connected", {"X-Features": "user overlay"})
+	return NXResponse(200, "Connected", {"X-Features": "user overlay mega"})
 
 
 @routes.add("GET", r"/v6/config")
