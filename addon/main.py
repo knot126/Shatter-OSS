@@ -1150,12 +1150,6 @@ class ShatterPreferences(AddonPreferences):
 		default = "",
 	)
 	
-	last_stat_time: IntProperty(
-		name = "last stat time",
-		description = "last time since stats were submitted",
-		default = 0,
-	)
-	
 	def draw(self, context):
 		main = self.layout
 		
@@ -1459,28 +1453,6 @@ class EntityPanel(Panel):
 			ui.prop("sh_resolution")
 		
 		ui.prop("sh_export")
-
-##
-## Stats collecting stuff
-## 
-
-STAT_TIME = 60 * 60 * 24 * 14
-
-def do_stats():
-	import os, sys, platform
-	
-	if butil.prefs().last_stat_time + STAT_TIME < util.get_time():
-		util.do_async_json_post("https://knot126.pythonanywhere.com/collect?product=shatter", {
-			"version": butil.ext_version(),
-			"platform": sys.platform,
-			"arch": platform.machine().lower(),
-			"processor": platform.processor(),
-			"blender": bpy.app.version_string,
-			"python": platform.python_version(),
-			"cpucount": str(os.cpu_count()),
-		})
-		
-		butil.prefs().last_stat_time = util.get_time()
 
 ################################################################################
 # Operators for creating entities
@@ -1800,11 +1772,6 @@ def register():
 	global gServerManager
 	gServerManager = server_manager.LevelServerManager()
 	server_manager_update()
-	
-	try:
-		do_stats()
-	except:
-		util.log(traceback.format_exc())
 
 def unregister():
 	from bpy.utils import unregister_class
