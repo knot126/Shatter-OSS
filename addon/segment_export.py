@@ -141,6 +141,50 @@ def isIndexableEqual(a, b):
 def getCombo(obj, basename):
 	return getattr(obj, basename)
 
+def evalExpression(obj, sh_properties, expr):
+	from mathutils import Vector
+	
+	if expr.strip().startswith("^"):
+		if expr.startswith("^^"):
+			return expr[1:]
+		
+		expr = expr.strip()[1:].lstrip()
+		
+		# TODO: smarter
+		if expr == "location[x]": return str(obj.location[0])
+		if expr == "location[y]": return str(obj.location[1])
+		if expr == "location[z]": return str(obj.location[2])
+		if expr == "scale[x]": return str(obj.scale[0])
+		if expr == "scale[y]": return str(obj.scale[1])
+		if expr == "scale[z]": return str(obj.scale[2])
+		if expr == "dimensions[x]": return str(obj.dimensions[0])
+		if expr == "dimensions[y]": return str(obj.dimensions[1])
+		if expr == "dimensions[z]": return str(obj.dimensions[2])
+		if expr == "rotation[x]": return str(obj.rotation_euler[0])
+		if expr == "rotation[y]": return str(obj.rotation_euler[1])
+		if expr == "rotation[z]": return str(obj.rotation_euler[2])
+		
+		if expr.startswith("scene["):
+			try:
+				val = getattr(sh_properties, "sh_" + expr[6:-1].removesuffix("][x").removesuffix("][y").removesuffix("][z"))
+				
+				if type(val) == Vector:
+					# TODO: again, smarter
+					if expr.endswith("[x]"): return str(val[0])
+					elif expr.endswith("[y]"): return str(val[1])
+					elif expr.endswith("[z]"): return str(val[2])
+					else: return exportList(val)
+				elif type(val) == bool:
+					return "1" if val else "0"
+				else:
+					return str(val)
+			except Exception as e:
+				return "<" + str(e) + ">"
+		
+		return expr
+	else:
+		return expr
+
 ## Segment Export
 ## All of the following is related to exporting segments.
 
@@ -336,7 +380,7 @@ def make_subelement_from_entity(level_root, scene, obj, params):
 				if "=" in val:
 					properties[f"param{i}"] = val
 				else:
-					properties[f"param{i}"] = f'{val}={getattr(obj.sh_properties, f"sh_param{i}_value")}'
+					properties[f"param{i}"] = f'{val}={evalExpression(obj, scene, getattr(obj.sh_properties, f"sh_param{i}_value"))}'
 	
 	# Warning for param0 and template being set
 	if (sh_type == "OBS" and obj.sh_properties.sh_param0 and obj.sh_properties.sh_template):
