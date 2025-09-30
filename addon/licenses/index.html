@@ -18,16 +18,16 @@
       }
       
       .license-window {
-        border: 1px solid #888;
+        border: 1px solid #aaa;
         width: 100%;
         height: 500px;
-        background: #f8f8f8;
-        box-shadow: 0 1px 3px #bbb;
+        box-shadow: 0 2px 3px #ddd;
         border-radius: 3px;
+        background: #fafafa;
+        margin: 5px 0 5px 0;
       }
       
       summary {
-        font-size: 140%;
         font-weight: bold;
       }
       
@@ -38,60 +38,68 @@
   </head>
   <body>
     <div class="main">
-    <h1>Shatter OSS release component licenses</h1>
-    <p>Shatter OSS makes use of or includes the following projects, which are copyright their authors. Click on the name of a project to reveal its license.</p>
-    <details>
-      <summary>Yorshex's asset server</summary>
-      <div>
-        <object class="license-window" data="./yorshex_asset_server_license.txt"></object>
-      </div>
-    </details>
-    <details>
-      <summary>Yorshex's mesh bake</summary>
-      <div>
-        <object class="license-window" data="./yorshex_mesh_bake_license.txt"></object>
-      </div>
-    </details>
-    <details>
-      <summary>Expat (YMB)</summary>
-      <div>
-        <p>Windows builds of Yorshex's mesh baker have expat built in statically.</p>
-        <object class="license-window" data="./Expat_COPYING.txt"></object>
-      </div>
-    </details>
-    <details>
-      <summary>Zlib (YMB)</summary>
-      <div>
-        <p>Windows builds of Yorshex's mesh baker have zlib built in statically.</p>
-        <object class="license-window" data="./Zlib_LICENSE.txt"></object>
-      </div>
-    </details>
-    <details>
-      <summary>mtxconv</summary>
-      <div>
-        <p>Copyright (C) 2021 - 2023 SamusAranX. All rights reserved.</p>
-      </div>
-    </details>
-    <p>You can also view the main Shatter license below:</p>
-    <details>
-      <summary>Shatter license</summary>
-      <div>
-        <object class="license-window" data="./shatter_license.txt"></object>
-      </div>
-    </details>
-    <p>Some first-party components also have licenses:</p>
-    <details>
-      <summary>NxServer license</summary>
-      <div>
-        <object class="license-window" data="./nxserver_license.txt"></object>
-      </div>
-    </details>
-    <details>
-      <summary>BakeMesh license</summary>
-      <div>
-        <object class="license-window" data="./bakemesh_license.txt"></object>
-      </div>
-    </details>
+      <h1>Shatter Open Source Notices</h1>
+      <p>Shatter OSS makes use of or includes the following open source projects, which are copyright their authors. Click on the name of a project to reveal its license.</p>
+      
+      <details>
+        <summary>Expat (in Meshbake)</summary>
+        <div>
+          <p>Windows builds of Yorshex's mesh baker have expat built in statically.</p>
+          <p>Source code: <a href="https://github.com/libexpat/libexpat">https://github.com/libexpat/libexpat</a></p>
+          <object class="license-window" data="./Expat_COPYING.txt"></object>
+        </div>
+      </details>
+      
+      <details>
+        <summary>KnShim</summary>
+        <p>Source code: <a href="https://codeberg.org/knot126/KnShim">https://codeberg.org/knot126/KnShim</a></p>
+        <div>
+          <object class="license-window" data="./knshim_license.txt"></object>
+        </div>
+      </details>
+      
+      <details>
+        <summary>Meshbake</summary>
+        <p>Source code: <a href="https://codeberg.org/yorshex/sh-meshbake">https://codeberg.org/yorshex/sh-meshbake</a></p>
+        <div>
+          <object class="license-window" data="./yorshex_mesh_bake_license.txt"></object>
+        </div>
+      </details>
+      
+      <details>
+        <summary>NxServer</summary>
+        <div>
+          <object class="license-window" data="./nxserver_license.txt"></object>
+        </div>
+      </details>
+      
+      <details>
+        <summary>Yorshex's Asset Server</summary>
+        <p>Source code: <a href="https://codeberg.org/yorshex/sh-asset-server">https://codeberg.org/yorshex/sh-asset-server</a></p>
+        <div>
+          <object class="license-window" data="./yorshex_asset_server_license.txt"></object>
+        </div>
+      </details>
+      
+      <details>
+        <summary>Zlib (in Meshbake)</summary>
+        <div>
+          <p>Windows builds of Yorshex's mesh baker have zlib built in statically.</p>
+          <p>Website: <a href="https://zlib.net/">https://zlib.net/</a></p>
+          <object class="license-window" data="./Zlib_LICENSE.txt"></object>
+        </div>
+      </details>
+      
+      <p>You can also view the main Shatter license below:</p>
+      
+      <details>
+        <summary>Shatter license</summary>
+        <p>Source code: <a href="https://codeberg.org/knot126/Shatter-OSS">https://codeberg.org/knot126/Shatter-OSS</a></p>
+        <div>
+          <object class="license-window" data="./shatter_license.txt"></object>
+        </div>
+      </details>
+      
     </div>
   </body>
 </html>

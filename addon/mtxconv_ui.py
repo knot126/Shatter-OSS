@@ -33,8 +33,6 @@ def find_mtxconv():
 	if path:
 		return path
 	
-	print(f"no mtxconv path")
-	
 	return None
 
 class MtxconvExtract(bpy_extras.io_utils.ImportHelper, Operator):

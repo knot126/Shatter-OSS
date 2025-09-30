@@ -342,7 +342,6 @@ def find_apk(*, allow_override = True):
 	
 	if result:
 		d = result[min(current_index, len(result) - 1)].assets()
-		print(f"Report asset dir as index:{current_index} dir:{d}")
 		return d
 	else:
 		return ""

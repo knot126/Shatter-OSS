@@ -58,6 +58,8 @@ def cb_stonehack(fin, fout, templates, params):
 	stonehack.cook(fin)
 
 def cb_yorshex(fin, fout, templates, params):
+	from . import butil
+	
 	args = [fin, fout]
 	
 	if templates: args.append(templates)
@@ -69,7 +71,12 @@ def cb_yorshex(fin, fout, templates, params):
 	if "ymb_tiles" in params:
 		args += ["-T", str(params['ymb_tiles'][0]), str(params['ymb_tiles'][1])]
 	
-	return util.run_native("yorshex_mesh_baker", args)
+	custom_ymb_path = butil.get_setting("meshbake_path")
+	
+	if custom_ymb_path:
+		return util.run(custom_ymb_path, args)
+	else:
+		return util.run_native("meshbake", args)
 
 def cb_command(fin, fout, templates, params):
 	cmdline = params["cmd"]

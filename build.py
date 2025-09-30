@@ -54,8 +54,8 @@ def update_meshbake():
 	os.makedirs(SHATTER_BINDIR)
 	
 	# Download mesh bake
-	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-linux-amd64", f'{SHATTER_BINDIR}/yorshex_mesh_baker.linux.x86_64')
-	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-win32-amd64.exe", f'{SHATTER_BINDIR}/yorshex_mesh_baker.win32.amd64.exe')
+	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-linux-amd64", f'{SHATTER_BINDIR}/meshbake.linux.x86_64')
+	save_file(f"{YORSHEX_MESHBAKE_BASE_URL}meshbake-win32-amd64.exe", f'{SHATTER_BINDIR}/meshbake.win32.amd64.exe')
 
 def update_asset_server():
 	save_file(ASSET_SERVER_URL, "addon/asset_server.py")

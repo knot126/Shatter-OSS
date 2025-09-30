@@ -1143,6 +1143,13 @@ class ShatterPreferences(AddonPreferences):
 		default = "",
 	)
 	
+	meshbake_path: StringProperty(
+		name = "Meshbake path",
+		description = "Path to the executable for yorshex's Meshbake. If not specified, a built-in (but possibly outdated) version is used",
+		subtype = "FILE_PATH",
+		default = "",
+	)
+	
 	mtxconv_path: StringProperty(
 		name = "MTXConv path",
 		description = "Path to the mtxconv executable",
@@ -1155,13 +1162,6 @@ class ShatterPreferences(AddonPreferences):
 		
 		ui = butil.UIDrawingHelper(context, self.layout, self)
 		
-		# Shards promo
-		# if butil.get_setting("show_shards_ads"):
-		# 	ui.region("MESH_ICOSPHERE", "Shards Community")
-		# 	ui.label("Consider joining the Shards Community on Discord for official Shatter updates!")
-		# 	ui.op("shatter.open_shards_discord")
-		# 	ui.end()
-		
 		ui.region("EXPORT", "Export and import")
 		ui.prop("default_assets_path")
 		ui.prop("create_nonexistant_assets")
@@ -1171,7 +1171,6 @@ class ShatterPreferences(AddonPreferences):
 		ui.end()
 		
 		ui.region("DESKTOP", "Interface")
-		# ui.prop("show_shards_ads")
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
 		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
@@ -1222,6 +1221,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.end()
 		
 		ui.region("TOOL_SETTINGS", "Tools")
+		ui.prop("meshbake_path")
 		ui.prop("mtxconv_path")
 		ui.end()
 		

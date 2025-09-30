@@ -444,6 +444,12 @@ def run(cmd, args):
 	
 	log(f"Command (user): {cmd} {' '.join(args)}")
 	
+	try:
+		if (sys.platform != "win32"):
+			os.chmod(cmd, 0o755)
+	except:
+		pass
+	
 	return subprocess.run([cmd] + args).returncode
 
 def get_platform():
