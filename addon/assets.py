@@ -37,7 +37,8 @@ class AssetLister:
 							if item.endswith(ext):
 								item = item[:-len(ext)]
 						
-						items.append(item)
+						# HACK: Windows paths force my hand...
+						items.append(item.replace("\\", "/"))
 			except:
 				pass
 		

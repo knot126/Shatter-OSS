@@ -3,7 +3,7 @@ schema_version = "1.0.0"
 id = "shatter"
 version = "1.6.2"
 name = "Shatter OSS"
-tagline = "Shatter allows easily creating and exporting Smash Hit segments"
+tagline = "Create, export, and test Smash Hit segments"
 maintainer = "Knot126 <cddepppp256@gmail.com>"
 type = "add-on"
 website = "https://codeberg.org/knot126/Shatter-OSS/wiki"
@@ -11,28 +11,22 @@ tags = ["Import-Export", "Scene", "User Interface"]
 
 blender_version_min = "4.2.0"
 
-# License conforming to https://spdx.org/licenses/ (use "SPDX: prefix)
-# https://docs.blender.org/manual/en/dev/advanced/extensions/licenses.html
 license = [
   "SPDX:MIT",
   "SPDX:Zlib",
 ]
 
-# Optional: required by some licenses.
 copyright = [
   "2020-2025 Knot126",
-  "2023-2025 Yorshex",
+  "2023-2025 Maxim \"yorshex\" Ershov",
 ]
 
-# platforms = ["windows-x64", "linux-x64"]
-# Other possible platforms: "windows-arm64", "macos-arm64", "macos-x64"
+platforms = ["windows-arm64", "windows-x64", "linux-x64"]
 
 [permissions]
 network = "Run the Quick Test server"
 files = "Various read and write operations with segments"
 
-# Optional: build settings.
-# https://docs.blender.org/manual/en/dev/advanced/extensions/command_line_arguments.html#command-line-args-extension-build
 [build]
 paths_exclude_pattern = [
   "__pycache__/",
