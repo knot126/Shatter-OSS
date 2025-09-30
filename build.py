@@ -13,7 +13,7 @@ import json
 import urllib.request
 import tomllib
 
-YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.1.9/"
+YORSHEX_MESHBAKE_BASE_URL = "https://codeberg.org/yorshex/sh-meshbake/releases/download/1.2.0/"
 ASSET_SERVER_URL = 'https://codeberg.org/yorshex/sh-asset-server/raw/branch/main/asset_server.py'
 
 SHATTER_BINDIR = "addon/bin"
@@ -47,7 +47,7 @@ def get_zip_path(build_type = "ext", ext = ".zip", forAddon = "addon"):
 	return f'./build/{id}-{version}-{build_type}{ext}'
 
 def update_meshbake():
-	print("Update meshbake and mtxconv binaries")
+	print("Update meshbake binaries")
 	
 	# Remove old bin folder if there is one, make new one
 	shutil.rmtree(SHATTER_BINDIR, True)
