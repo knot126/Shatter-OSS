@@ -1173,8 +1173,8 @@ class ShatterPreferences(AddonPreferences):
 		ui.region("DESKTOP", "Interface")
 		ui.prop("compact_ui")
 		ui.prop("purist_mode")
-		ui.prop("show_deprecated_advanced_lights", disabled = (ui.get("purist_mode") == True))
-		ui.prop("show_deprecated_gradients", disabled = (ui.get("purist_mode") == True))
+		ui.prop("show_deprecated_advanced_lights", disabled=ui.get("purist_mode") or not ui.get("show_deprecated_advanced_lights"))
+		ui.prop("show_deprecated_gradients", disabled=ui.get("purist_mode") or not ui.get("show_deprecated_gradients"))
 		ui.end()
 		
 		ui.region("AUTO", "Quick test")
