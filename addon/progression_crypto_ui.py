@@ -27,7 +27,7 @@ class ProgressionCryptoEncrypt(bpy_extras.io_utils.ImportHelper, Operator):
 	"""Encrypts a progression.xml (save file) from any Mediocre game, filled with the key for Smash Hit by default"""
 	
 	bl_idname = "shatter.progression_crypto_encrypt"
-	bl_label = "Encrypt user data file"
+	bl_label = "Encrypt User Data File"
 	
 	filename_ext = ".xml"
 	
@@ -49,7 +49,7 @@ class ProgressionCryptoDecrypt(bpy_extras.io_utils.ImportHelper, Operator):
 	"""Encrypts a progression.xml (save file) from any Mediocre game, filled with the key for Smash Hit by default"""
 	
 	bl_idname = "shatter.progression_crypto_decrypt"
-	bl_label = "Decrypt user data file"
+	bl_label = "Decrypt User Data File"
 	
 	filename_ext = ".xml"
 	

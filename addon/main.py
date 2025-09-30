@@ -64,7 +64,7 @@ YORSHEX_MESHBAKER_AO_TYPES = [
 ]
 
 YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL = YORSHEX_MESHBAKER_AO_TYPES.copy()
-YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL.insert(0, ('-1', 'No override', "Does not override the export type's ambient occlusion quality"))
+YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL.insert(0, ('-1', 'Don\'t Override', "Does not override the export type's ambient occlusion quality"))
 
 class ShatterExportCommon(bpy.types.Operator, ExportHelper2):
 	"""
@@ -137,7 +137,7 @@ class SegmentExportAllAuto(bpy.types.Operator):
 	"""Automatically find an asset path and export every segment in this file to the proper locations"""
 	
 	bl_idname = "shatter.export_all_auto"
-	bl_label = "Export all to APK"
+	bl_label = "Export All Scenes to APK"
 	
 	def execute(self, context):
 		segment_export.sh_export_all_segments(context, get_prefs().auto_export_compressed, aotype=get_prefs().ymb_ao_auto_export)
@@ -148,14 +148,14 @@ class SegmentExportTest(Operator):
 	"""Export a segment to the quick test server"""
 	
 	bl_idname = "shatter.export_test_server"
-	bl_label = "Export segment to quick test"
+	bl_label = "Export Segment to Quick Test"
 	
 	def execute(self, context):
 		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
 			update_if_yas()
 			segment_export.sh_export_segment(None, context, False, True, aotype=get_prefs().ymb_ao_quick_test, nx_token=gNxToken)
 		else:
-			butil.show_message("Quick test not running", "The quick test server is currently disabled or you are using a level server that isn't compatible with Quick Test.")
+			butil.show_message("Quick Test Server is Not Running", "The quick test server is currently disabled or you are using a level server that isn't compatible with Quick Test.")
 		
 		return {"FINISHED"}
 
@@ -259,8 +259,8 @@ def get_test_level_list(self, context):
 	level_list = assets.levels.get()
 	
 	levels = [
-		("test", "Test level", "The default testing level"),
-		("/", "Level of segment", "Use the segment's level attribute to determine the level, or if not available use Shatter's builtin test level"),
+		("test", "Test Level", "The default testing level"),
+		("/", "Level of Segment", "Use the segment's level attribute to determine the level, or if not available use Shatter's builtin test level"),
 		None,
 	]
 	
@@ -364,38 +364,38 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_level: StringProperty(
 		name = "Level",
-		description = "The name of the checkpoint that this segment belongs to.",
+		description = "Level name used when automatically exporting",
 		default = "",
 		update = server_manager_update,
 	)
 	
 	sh_room: StringProperty(
 		name = "Room",
-		description = "The name of the room that this segment belongs to.",
+		description = "Room name used when automatically exporting",
 		default = "",
 	)
 	
 	sh_segment: StringProperty(
 		name = "Segment",
-		description = "The name of this segment",
+		description = "Segment name used when automatically exporting",
 		default = "",
 	)
 	
 	sh_len: FloatVectorProperty(
 		name = "Size",
-		description = "Segment size in the order Width, Height, Depth. Last paramater changes the length (depth) of the segment",
+		description = "Segment size in the order Width, then Height, then Depth. Last paramater changes the length (depth) of the segment",
 		subtype = "XYZ",
 		default = (12.0, 10.0, 8.0), 
 	)
 	
 	sh_auto_length: BoolProperty(
-		name = "Auto length",
-		description = "Automatically determine the length of the segment based on the furthest object from the origin.",
+		name = "Auto Length",
+		description = "Automatically determine the size of the segment based on the furthest object from the origin",
 		default = False,
 	)
 	
 	ambient_occlusion_quality: EnumProperty(
-		name = "Ambient occlusion quality",
+		name = "Ambient Occlusion Quality",
 		description = "Controls the quality of ambient occlusion (shadows near corners) in this segment's mesh",
 		items = YORSHEX_MESHBAKER_AO_TYPES_WITHEXCL,
 		default = "-1",
@@ -417,7 +417,7 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_default_template: StringProperty(
-		name = "Default template",
+		name = "Default Template",
 		description = "The base name of the template to use when no template is specified for an entity. Format: boxes 🡒 '{basename}', obstacles 🡒 '{basename}_glass', obstacles starting with 'score' 🡒 '{basename}_st', segment 🡒 '{basename}_s'",
 		default = "",
 	)
@@ -432,7 +432,7 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_softshadow: FloatProperty(
-		name = "Soft shadow",
+		name = "Soft Shadow",
 		description = "Opacity of soft shadow on dynamic objects",
 		default = 0.6,
 		min = 0.0,
@@ -441,7 +441,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_left: FloatProperty(
 		name = "Left",
-		description = "Light going on to the left side of boxes",
+		description = "Intensity of sunlight on the left side of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -449,7 +449,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_right: FloatProperty(
 		name = "Right",
-		description = "Light going on to the right side of boxes",
+		description = "Intensity of sunlight on the right side of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -457,7 +457,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_top: FloatProperty(
 		name = "Top",
-		description = "Light going on to the top side of boxes",
+		description = "Intensity of sunlight on top of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -465,7 +465,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_bottom: FloatProperty(
 		name = "Bottom",
-		description = "Light going on to the bottom side of boxes",
+		description = "Intensity of sunlight on the bottom of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -473,7 +473,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_front: FloatProperty(
 		name = "Front",
-		description = "Light going on to the front side of boxes",
+		description = "Intensity of sunlight on the front side of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -481,20 +481,20 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_light_back: FloatProperty(
 		name = "Back",
-		description = "Light going on to the back side of boxes",
+		description = "Intensity of sunlight on the back side of boxes",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
 	)
 	
 	sh_menu_segment: BoolProperty(
-		name = "Menu segment mode",
-		description = "Treats the segment like it will appear on the main menu. Bakes faces that cannot be seen by the player",
+		name = "Menu Segment Mode",
+		description = "Cull the faces of the segment's mesh as if it were viewed from the side, as they are on the main menu",
 		default = False
 	)
 	
 	sh_ambient_occlusion: BoolProperty(
-		name = "Ambient occlusion",
+		name = "Ambient Occlusion",
 		description = "Enables ambient occlusion (per-vertex lighting)",
 		default = True
 	)
@@ -507,7 +507,7 @@ class SegmentProperties(PropertyGroup):
 	
 	sh_lighting_ambient: FloatVectorProperty(
 		name = "Ambient",
-		description = "Colour and intensity of the ambient light",
+		description = "Color and intensity of the ambient light",
 		subtype = "COLOR_GAMMA",
 		default = (0.0, 0.0, 0.0), 
 		soft_min = 0.0,
@@ -515,8 +515,8 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_fog_colour_top: FloatVectorProperty(
-		name = "Top fog",
-		description = "Fog colour for quick test",
+		name = "Top Fog Color",
+		description = "Fog color for quick test",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0), 
 		soft_min = 0.0,
@@ -524,8 +524,8 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_fog_colour_bottom: FloatVectorProperty(
-		name = "Bottom fog",
-		description = "Fog colour for quick test",
+		name = "Bottom Fog Color",
+		description = "Fog color for quick test",
 		subtype = "COLOR_GAMMA",
 		default = (0.0, 0.0, 0.0),
 		soft_min = 0.0,
@@ -533,7 +533,7 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_music: StringProperty(
-		name = "Music track",
+		name = "Music",
 		description = "Name of the music file to play in quick test. The track must be in the apk. Default is to choose a random track. Warning: Using \\ in the name will break it :-)",
 		default = "",
 	)
@@ -592,13 +592,13 @@ class SegmentProperties(PropertyGroup):
 	)
 	
 	sh_extra_code: StringProperty(
-		name = "Extra code",
+		name = "Extra Code",
 		description = "Extra code to include the in room file. Multipule statements can be seperated by ';'.",
 		default = "",
 	)
 	
 	sh_room_length: IntProperty(
-		name = "Room length",
+		name = "Room Length",
 		description = "The length of the room in quick test",
 		default = 100,
 		min = 0,
@@ -616,7 +616,7 @@ class EntityProperties(PropertyGroup):
 			('BOX', "Box", "", "MESH_CUBE", 0),
 			('OBS', "Obstacle", "", "NODE_MATERIAL", 1),
 			('DEC', "Decal", "", "TEXTURE", 2),
-			('POW', "Power-up", "", "LIGHT_SUN", 3),
+			('POW', "Powerup", "", "LIGHT_SUN", 3),
 			('WAT', "Water", "", "MATFLUID", 4),
 		],
 		default = "BOX"
@@ -625,7 +625,7 @@ class EntityProperties(PropertyGroup):
 	# # TEMPLATES # #
 	sh_template: StringProperty(
 		name = "Template",
-		description = "The template for the obstacle/box (see templates.xml), remember that this can be easily overridden per obstacle/box",
+		description = "Template for the box or obstacle. Values left to their defaults will use the values specified in this template",
 		default = "",
 	)
 	
@@ -649,7 +649,7 @@ class EntityProperties(PropertyGroup):
 	
 	sh_obstacle: StringProperty(
 		name = "Obstacle",
-		description = "Type of obstacle to be used (as a file name string)",
+		description = "File name of the obstacle to be used, excluding any extensions",
 		default = "",
 	)
 	
@@ -670,8 +670,8 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_powerup: EnumProperty(
-		name = "Power-up",
-		description = "The type of power-up that will appear",
+		name = "Powerup",
+		description = "The type of powerup that will appear",
 		items = [
 			('ballfrenzy', "Ball Frenzy", "Allows the player infinite balls for some time", "LIGHTPROBE_GRID", 0),
 			('slowmotion', "Slow Motion", "Slows down the game", "MOD_TIME", 1),
@@ -692,13 +692,13 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_export: BoolProperty(
-		name = "Export object",
-		description = "If the object should be exported to the XML at all. Change \"hidden\" if you'd like it to be hidden but still present in the exported file",
+		name = "Export",
+		description = "Export this object to the final segment",
 		default = True,
 	)
 	
 	sh_mode: EnumProperty(
-		name = "Mode",
+		name = "Game Modes",
 		options = {"ENUM_FLAG"},
 		description = "The game modes in which this obstacle should appear",
 		items = [
@@ -713,7 +713,7 @@ class EntityProperties(PropertyGroup):
 	
 	sh_difficulty: FloatVectorProperty(
 		name = "Difficulty",
-		description = "The range of difficulty values for which this entity will appear. Difficulty is different than game modes, and is mainly used in Endless Mode to include or exclude obstacle based on a value set per room (using mgSetDifficulty) indicating how hard the room should be. As an example, this is used to exclude crystals in later levels in the Endless mode without creating entirely new segments",
+		description = "The range of difficulty values for which this obstacle, decal, or powerup will appear. Difficulty is different from the player's game mode, and is mainly used in Endless Mode to include or exclude obstacles in later rooms. For example, this is used to exclude crystals in later levels in the Endless mode without creating entirely new segments",
 		default = (0.0, 1.0),
 		min = 0.0,
 		max = 1.0,
@@ -722,59 +722,59 @@ class EntityProperties(PropertyGroup):
 	
 	sh_visible: BoolProperty(
 		name = "Visible",
-		description = "If the box will appear in the exported mesh",
+		description = "When not selected, this box won't be baked as part of the mesh and thus will appear to be completely transparent, though balls and obstacles can still collide into it",
 		default = True
 	)
 	
 	sh_use_multitile: BoolProperty(
-		name = "Tile per-side",
-		description = "Specifiy a colour for each parallel pair of faces on the box",
+		name = "Tile Per-Side",
+		description = "Specifiy a different tile ID for each parallel pair of box faces",
 		default = False,
 	)
 	
 	sh_tile: IntProperty(
 		name = "Tile",
-		description = "The texture that will appear on the surface of the box or decal",
+		description = "Index of the texture that will appear on the surface of the box or decal",
 		default = 0,
 		min = 0,
 		max = 63, # TODO: Dynamically adjust this based on ymb_tiles setting
 	)
 	
 	sh_tile1: IntProperty(
-		name = "Right Left",
-		description = "The texture that will appear on the surface of the box or decal",
+		name = "Left and Right",
+		description = "Index of the texture that will appear on the left and right surfaces of the box",
 		default = 0,
 		min = 0,
 		max = 63
 	)
 	
 	sh_tile2: IntProperty(
-		name = "Top Bottom",
-		description = "The texture that will appear on the surface of the box or decal",
+		name = "Top and Bottom",
+		description = "Index of the texture that will appear on the top and bottom surfaces of the box",
 		default = 0,
 		min = 0,
 		max = 63
 	)
 	
 	sh_tile3: IntProperty(
-		name = "Front Back",
-		description = "The texture that will appear on the surface of the box or decal",
+		name = "Front and Back",
+		description = "Index of the texture that will appear on the front and back surfaces of the box",
 		default = 0,
 		min = 0,
 		max = 63
 	)
 	
 	sh_tilerot: IntVectorProperty(
-		name = "Tile orientation",
-		description = "Orientation of the tile, where 0 is facing up",
+		name = "Tile Orientation",
+		description = "Orientation of tiles on the box",
 		default = (0, 0, 0), 
 		min = 0,
 		max = 3,
 	) 
 	
 	sh_tilesize: FloatVectorProperty(
-		name = "Tile size",
-		description = "The appearing size of the tiles on the box when exported. In RightLeft, TopBottom, FrontBack",
+		name = "Tile Size",
+		description = "Size of tiles on the box",
 		default = (1.0, 1.0, 1.0), 
 		soft_min = 0.0,
 		soft_max = 128.0,
@@ -783,7 +783,7 @@ class EntityProperties(PropertyGroup):
 	
 	sh_decal: IntProperty(
 		name = "Decal",
-		description = "The image ID for the decal (negitive numbers are doors)",
+		description = "The image ID for the decal (negitive numbers are door frames)",
 		default = 1,
 		min = -4,
 		max = 63
@@ -791,27 +791,25 @@ class EntityProperties(PropertyGroup):
 	
 	sh_reflective: BoolProperty(
 		name = "Reflective",
-		description = "If this box should show reflections",
+		description = "Show reflections of other boxes in the scene on this box",
 		default = False
 	)
 	
-	
-	
 	sh_havetint: BoolProperty(
-		name = "Decal colourisation",
-		description = "Changes the tint (colourisation) of the decal",
+		name = "Use Decal Blending",
+		description = "Blend the decal with a specific color",
 		default = False
 	)
 	
 	sh_use_multitint: BoolProperty(
-		name = "Colour per-side",
-		description = "Specifiy a colour for each parallel pair of faces on the box",
+		name = "Color Per-Side",
+		description = "Specifiy a different color for each parallel pair of box faces",
 		default = False,
 	)
 	
 	sh_tint: FloatVectorProperty(
-		name = "Colour",
-		description = "The colour to be used for tinting, colouring and mesh data",
+		name = "Color",
+		description = "Color to be used on this box or decal",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0, 1.0), 
 		size = 4,
@@ -820,8 +818,8 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_tint1: FloatVectorProperty(
-		name = "Right Left",
-		description = "The colour to be used for tinting, colouring and mesh data",
+		name = "Left and Right",
+		description = "Left and right color to be used on this box",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0, 1.0), 
 		size = 4,
@@ -830,8 +828,8 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_tint2: FloatVectorProperty(
-		name = "Top Bottom",
-		description = "The colour to be used for tinting, colouring and mesh data",
+		name = "Top and Bottom",
+		description = "Top and bottom color to be used on this box",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0, 1.0), 
 		size = 4,
@@ -840,8 +838,8 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_tint3: FloatVectorProperty(
-		name = "Front Back",
-		description = "The colour to be used for tinting, colouring and mesh data",
+		name = "Front and Back",
+		description = "Front and back color to be used on this box",
 		subtype = "COLOR_GAMMA",
 		default = (1.0, 1.0, 1.0, 1.0), 
 		size = 4,
@@ -859,7 +857,7 @@ class EntityProperties(PropertyGroup):
 		name = "Direction",
 		description = "The game modes in which this obstacle should appear",
 		items = [
-			('none', "None", "The regular box colour will be used"),
+			('none', "None", "The regular box color will be used"),
 			('relative', "Relative points", "Pick two points for each axis that are in [-1, 1] and scale with the box"),
 			('absolute', "Absolute points", "Pick two points that are relative to the scene"),
 			('right', "To right", ""),
@@ -907,8 +905,8 @@ class EntityProperties(PropertyGroup):
 	)
 	
 	sh_blend: FloatProperty(
-		name = "Blend mode",
-		description = "How the colour of the decal and the existing colour will be blended. 1 = normal, 0 = added or numbers in between",
+		name = "Blending",
+		description = "How the color of the decal and the color behind it will be blended. 1 = normal, 0 = additive, between = hybrid",
 		default = 1.0,
 		min = 0.0,
 		max = 1.0,
@@ -1002,14 +1000,14 @@ YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS = ["win32", "linux"]
 
 def list_mesh_bakers(self, context):
 	mesh_bakers = [
-		('bakemesh', "BakeMesh", "Shatter's default mesh baker, written in Python. Slow in some cases and also completely mangles tile rotations, but supports some extras like gradients. Kept for compatibility with older segments"),
 		('stonehack', "Stonehack", "Does not actually bake meshes, but instead adds an obstacle named 'stone' which look like meshes. This is probably only desirable if you want to create segments which look like those from 2020-2021 since stone hack was used then"),
+		('bakemesh', "BakeMesh (deprecated)", "Very deprecated, don't use it! Only for very old segments"),
 		('command', "Custom command (advanced)", "Run a custom command to bake the mesh"),
-		('none', "None", "Don't bake any meshes"),
+		('none', "None", "Don't bake meshes"),
 	]
 	
 	if util.get_platform() in YORSHEX_MESHBAKER_SUPPORTED_PLATFORMS:
-		mesh_bakers.insert(0, ('yorshex', "Yorshex's mesh baker", "Currently the most correct mesh baker, and recommended when available."))
+		mesh_bakers.insert(0, ('yorshex', "Meshbake", "Currently the most correct mesh baker, and recommended when available"))
 	
 	return mesh_bakers
 
@@ -1017,44 +1015,44 @@ class ShatterPreferences(AddonPreferences):
 	bl_idname = __package__
 	
 	default_assets_path: StringProperty(
-		name = "Default assets path",
-		description = "The path to your Smash Hit assets folder, if you want to override the default automatic APK finding",
+		name = "Default Asset Path",
+		description = "The path to your Smash Hit assets folder, if you want to override the automatic APK path finding",
 		subtype = "DIR_PATH",
 		default = "",
 	)
 	
 	enable_segment_warnings: BoolProperty(
-		name = "Enable export and import warnings",
+		name = "Enable Export and Import Warnings",
 		description = "Export and import warnings can warn you about possible issues that might result in odd or unexpected behaviour in Smash Hit",
 		default = True,
 	)
 	
 	auto_export_compressed: BoolProperty(
-		name = "Compress exported segments in auto export",
-		description = "Enables segment compression when using the 'Export to Assets' option. Smash Hit does not compress segments by default in 1.5.x and later",
+		name = "Compress Exported Segments in Auto Export",
+		description = "Enables gzip-based segment compression when using the 'Export to Assets' option. Smash Hit no longer supports compressed segments in 1.5.2 and later",
 		default = True,
 	)
 	
 	resolve_templates: BoolProperty(
-		name = "Resolve templates at export time",
-		description = "Solves templates when a segment is exported. This avoids the need for adding used templates to templates.xml, but makes the filesize larger and the XML file less readable",
+		name = "Apply Templates at Export Time",
+		description = "Resolves templates when a segment is exported, instead of relying on the templates to exist in-game. This avoids the need for adding used templates to templates.xml, but makes the filesize larger and the XML file less readable",
 		default = False,
 	)
 	
 	create_nonexistant_assets: BoolProperty(
-		name = "Automatically create levels and rooms",
-		description = "When automatically exporting a segment, create assocaited level and room files if they don't yet exist",
+		name = "Automatically Create Levels and Rooms",
+		description = "When automatically exporting a segment, create the assocaited level and room files if they don't yet exist",
 		default = True,
 	)
 	
 	purist_mode: BoolProperty(
-		name = "Limit UI to classic Smash Hit features",
+		name = "Limit UI to Classic Smash Hit Features",
 		description = "Removes shatter extended features from the UI, for example gradients and advanced lighting",
 		default = True,
 	)
 	
 	compact_ui: BoolProperty(
-		name = "Compact UI mode",
+		name = "Compact UI Mode",
 		description = "Avoids drawing any excessive UI elements that would make the UI larger than needed",
 		default = False,
 	)
@@ -1066,70 +1064,62 @@ class ShatterPreferences(AddonPreferences):
 	# )
 	
 	show_deprecated_advanced_lights: BoolProperty(
-		name = "Show advanced lights (deprecated)",
+		name = "Show Advanced Lights (deprecated)",
 		description = "Shows the advanced lights panel when not relevant. Note that advanced lights is *deprecated* meaning it could be removed at any time",
 		default = False,
 	)
 	
 	show_deprecated_gradients: BoolProperty(
-		name = "Show gradients (deprecated)",
+		name = "Show Gradients (deprecated)",
 		description = "Shows the gradients panel even when there are no gradients. Note that gradients are *deprecated* meaning they could be removed at any time",
 		default = False,
 	)
 	
 	quick_test_server: EnumProperty(
-		name = "Level test server",
-		description = "Selects which, if any, level test server will be used. This will create a local HTTP server, which might pose a security risk",
+		name = "Level Test Server",
+		description = "Select which level testing server will be used. Note that this will open a local HTTP server, which might pose a security risk",
 		items = [
 			('none', "None", "Don't use any quick test server"),
-			('nx', "NxQuick", "The most modern server supporting Shatter Client v4 to the fullest. It is faster and more reliable, and despite supporting classic Quick Test export also supports loading entire levels. Does not support older clients"),
-			('yorshex', "Yorshex's Asset Server", "An advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients. It has been written by Yorshex"),
+			('nx', "NxQuick", "Modern server supporting Shatter Client v4 and v5 to their fullest. It is faster and more reliable. Does not support older clients"),
+			('yorshex', "Yorshex's Asset Server", "Advanced test server that allows loading an entire level from a Smash Hit assets folder for old quick test clients"),
 		],
 		update = server_manager_update,
 		default = "nx",
 	)
 	
-	# test_level: EnumProperty(
-	# 	name = "Test level",
-	# 	description = "The name of the level to test",
-	# 	# items = get_test_level_list,
-	# 	update = server_manager_update,
-	# 	default = 0,
-	# )
-	
 	####################
 	## Advanced settings
 	####################
 	mesh_baker: EnumProperty(
-		name = "Mesh baker",
+		name = "Mesh Baker",
 		description = "Selects which mesh baker to use",
 		items = list_mesh_bakers,
 		default = 0,
 	)
 	
 	ymb_ao_quick_test: EnumProperty(
-		name = "Quick test",
+		name = "Quick Test",
 		description = "Selects the default ambient occlusion bake quality for quick test",
 		items = YORSHEX_MESHBAKER_AO_TYPES,
 		default = "1",
 	)
 	
 	ymb_ao_auto_export: EnumProperty(
-		name = "Auto export",
+		name = "Auto Export",
 		description = "Selects the default ambient occlusion bake quality for automatic export",
 		items = YORSHEX_MESHBAKER_AO_TYPES,
 		default = "2",
 	)
 	
 	ymb_ao_manual: EnumProperty(
-		name = "Manual export",
+		name = "Manual Export",
 		description = "Selects the default ambient occlusion bake quality for manual export",
 		items = YORSHEX_MESHBAKER_AO_TYPES,
 		default = "2",
 	)
 	
 	ymb_tiles: IntVectorProperty(
-		name = "Tile grid size",
+		name = "Tile Grid Size",
 		description = "Controls the number of tiles per row and column in the tiles texture, as the mesh baker considers it",
 		default = (8, 8),
 		size = 2,
@@ -1138,20 +1128,20 @@ class ShatterPreferences(AddonPreferences):
 	)
 	
 	mesh_command: StringProperty(
-		name = "External mesh bake command",
+		name = "External Mesh Bake Command",
 		description = "If specified, this command is run instead of the built-in mesh baker",
 		default = "",
 	)
 	
 	meshbake_path: StringProperty(
-		name = "Meshbake path",
+		name = "Meshbake Path",
 		description = "Path to the executable for yorshex's Meshbake. If not specified, a built-in (but possibly outdated) version is used",
 		subtype = "FILE_PATH",
 		default = "",
 	)
 	
 	mtxconv_path: StringProperty(
-		name = "MTXConv path",
+		name = "MTXConv Path",
 		description = "Path to the mtxconv executable",
 		subtype = "FILE_PATH",
 		default = "",
@@ -1233,7 +1223,7 @@ class ShatterPreferences(AddonPreferences):
 		ui.end()
 
 class SegmentPanel(Panel):
-	bl_label = "Smash Hit Scene"
+	bl_label = "Smash Hit Segment"
 	bl_idname = "OBJECT_PT_segment_panel"
 	bl_space_type = "VIEW_3D"
 	bl_region_type = "UI"
@@ -1256,7 +1246,7 @@ class SegmentPanel(Panel):
 		ui.prop("sh_segment")
 		ui.end()
 		
-		ui.region("SCENE_DATA", "Segment data")
+		ui.region("SCENE_DATA", "Basic Properties")
 		
 		if (not ui.prop("sh_auto_length", use_button=True)):
 			ui.prop("sh_len")
@@ -1294,7 +1284,7 @@ class SegmentPanel(Panel):
 		server_type = "none" if butil.stay_offline() else get_prefs().quick_test_server
 		
 		if (server_type in ["builtin", "nx", "yorshex"]):
-			ui.region("AUTO", "Quick test")
+			ui.region("AUTO", "Quick Test")
 			ui.prop("sh_fog_colour_top")
 			ui.prop("sh_fog_colour_bottom")
 			ui.prop("sh_room_length")
@@ -1309,7 +1299,7 @@ class SegmentPanel(Panel):
 			ui.end()
 
 class EntityPanel(Panel):
-	bl_label = "Smash Hit Item"
+	bl_label = "Smash Hit Entity"
 	bl_idname = "OBJECT_PT_obstacle_panel"
 	bl_space_type = "VIEW_3D"   
 	bl_region_type = "UI"
@@ -1340,7 +1330,7 @@ class EntityPanel(Panel):
 			
 			# silly little loop wrapper :-3
 			for x in ["tint", "tile"]:
-				word = {"tint": "Colour", "tile": "Tile"}[x]
+				word = {"tint": "Color", "tile": "Tile"}[x]
 				
 				ui.region(
 					{"tint": "COLOR", "tile": "TEXTURE"}[x],
@@ -1380,7 +1370,7 @@ class EntityPanel(Panel):
 				ui.prop("sh_glow")
 				ui.end()
 			
-			ui.region("GRAPH", "Tile transforms")
+			ui.region("GRAPH", "Tile Transforms")
 			ui.prop("sh_tilesize")
 			ui.prop("sh_tilerot")
 			ui.end()
@@ -1431,7 +1421,7 @@ class EntityPanel(Panel):
 			ui.prop("sh_decal")
 			ui.end()
 			
-			ui.region("COLOR", "Colour")
+			ui.region("COLOR", "Color")
 			ui.prop("sh_havetint", use_button = True, icon = "COLOR")
 			if (ui.get("sh_havetint")):
 				ui.prop("sh_tint")
@@ -1462,7 +1452,7 @@ class CreateBox(Operator):
 	"""Creates a new box"""
 	
 	bl_idname = "shatter.create_box"
-	bl_label = "Create box"
+	bl_label = "Create Box"
 	
 	def execute(self, context):
 		o = butil.add_box((0,0,0), (1,1,1))
@@ -1473,7 +1463,7 @@ class CreateObstacle(Operator):
 	"""Creates a new obstacle"""
 	
 	bl_idname = "shatter.create_obstacle"
-	bl_label = "Create obstacle"
+	bl_label = "Create Obstacle"
 	
 	def execute(self, context):
 		o = butil.add_empty()
@@ -1485,7 +1475,7 @@ class CreateDecal(Operator):
 	"""Creates a new decal"""
 	
 	bl_idname = "shatter.create_decal"
-	bl_label = "Create decal"
+	bl_label = "Create Decal"
 	
 	def execute(self, context):
 		o = butil.add_empty()
@@ -1497,7 +1487,7 @@ class CreatePowerup(Operator):
 	"""Creates a new powerup"""
 	
 	bl_idname = "shatter.create_powerup"
-	bl_label = "Create powerup"
+	bl_label = "Create Powerup"
 	
 	def execute(self, context):
 		o = butil.add_empty()
@@ -1509,7 +1499,7 @@ class CreateWater(Operator):
 	"""Creates a new water plane"""
 	
 	bl_idname = "shatter.create_water"
-	bl_label = "Create water"
+	bl_label = "Create Water"
 	
 	def execute(self, context):
 		o = butil.add_box((0,0,0), (1,1,0))
@@ -1523,7 +1513,7 @@ class CreateWater(Operator):
 
 class OpenLicensesIndex(Operator):
 	bl_idname = "shatter.licenses_index"
-	bl_label = "Show all licenses"
+	bl_label = "View Licenses"
 	
 	def execute(self, context):
 		webbrowser.open(f"file://{util.codedir()}/licenses/index.html")
@@ -1542,7 +1532,7 @@ class OpenObstaclesTextFile(Operator):
 	"""Open the obstacles.txt file"""
 	
 	bl_idname = "shatter.open_obstacles_txt"
-	bl_label = "Edit custom obstacles"
+	bl_label = "Edit Custom Obstacles"
 	
 	def execute(self, context):
 		util.user_edit_file(butil.storage_path() + "/obstacles.txt")
@@ -1552,7 +1542,7 @@ class OpenCurrentAssetFolder(Operator):
 	"""Open the currently used asset folder"""
 	
 	bl_idname = "shatter.open_current_asset_folder"
-	bl_label = "Open current asset folder"
+	bl_label = "Open Current Asset Folder"
 	
 	def execute(self, context):
 		folder = butil.find_apk()
@@ -1568,7 +1558,7 @@ class QuickTestCheckup(Operator):
 	"""Check for possible quick test problems"""
 	
 	bl_idname = "shatter.quick_test_checkup"
-	bl_label = "Check for possible quick test problems"
+	bl_label = "Check for Possible Quick Test Problems"
 	
 	def execute(self, context):
 		global gQuickPortTest
@@ -1599,7 +1589,7 @@ class SelectAssetDir(Operator):
 	"""Select the currently active assets directory where segments are exported to and the test server runs from"""
 	
 	bl_idname = "shatter.select_asset_dir"
-	bl_label = "Set active asset directory"
+	bl_label = "Set Active Asset Directory"
 	
 	apk_path: EnumProperty(
 		name = "Package",
@@ -1653,9 +1643,7 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.separator()
 		self.layout.label(text = "Export")
 		self.layout.operator("shatter.export_all_auto")
-		if (get_prefs().quick_test_server in ["builtin", "nx", "yorshex"]):
-			self.layout.operator("shatter.export_room")
-		self.layout.operator("shatter.export_level_package")
+		self.layout.operator("shatter.export_room")
 		self.layout.separator()
 		self.layout.label(text = "Utilities")
 		self.layout.operator("shatter.extract_mtx")
@@ -1668,10 +1656,6 @@ class SHATTER_MT_3DViewportMenuExtras(Menu):
 		self.layout.operator("shatter.select_asset_dir")
 		self.layout.operator("shatter.open_current_asset_folder")
 		self.layout.operator("shatter.open_obstacles_txt")
-		# if butil.get_setting("show_shards_ads"):
-		# 	self.layout.separator()
-		# 	self.layout.label(text = "Promotion")
-		# 	self.layout.operator("shatter.open_shards_discord", text="Join Shards Discord")
 
 ###############################################################################
 
@@ -1735,7 +1719,7 @@ keymaps_registered = []
 def register():
 	util.log(f"Shatter OSS {butil.ext_version()} starting up!")
 	util.log("""    "With the power of the prism, there's nothing I can't do."
-         - Tails Nine 2024""")
+         - Tails Nine, 2024""")
 	
 	from bpy.utils import register_class
 	

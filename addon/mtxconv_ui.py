@@ -39,7 +39,7 @@ class MtxconvExtract(bpy_extras.io_utils.ImportHelper, Operator):
 	"""Extract all textures from an MTX file using mtxconv"""
 	
 	bl_idname = "shatter.extract_mtx"
-	bl_label = "Extract MTX textures"
+	bl_label = "Extract MTX Textures"
 	
 	filename_ext = ".mtx.mp3"
 	
@@ -63,7 +63,7 @@ class MtxconvBake(bpy_extras.io_utils.ImportHelper, Operator):
 	"""Bake a texture into an MTX file using mtxconv"""
 	
 	bl_idname = "shatter.bake_mtx"
-	bl_label = "Bake MTX texture"
+	bl_label = "Bake MTX Texture"
 	
 	filename_ext = ""
 	

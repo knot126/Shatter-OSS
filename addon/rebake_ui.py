@@ -30,10 +30,10 @@ class RebakeAllMeshes(Operator, butil.FolderSelectHelper):
 	"""Rebakes many meshes in a selected folder"""
 	
 	bl_idname = "shatter.rebake_all_meshes"
-	bl_label = "Rebake many meshes"
+	bl_label = "Rebake Many Meshes"
 	
 	baker: EnumProperty(
-		name = "Mesh baker",
+		name = "Mesh Baker",
 		description = "Mesh baker to use with mass rebaking",
 		items = [
 			("yorshex", "Yorshex's Mesh Baker", "High quality, faithful to Smash Hit, and generally recommended"),
@@ -43,7 +43,7 @@ class RebakeAllMeshes(Operator, butil.FolderSelectHelper):
 	)
 	
 	ambient_occlusion_quality: EnumProperty(
-		name = "Ambient occlusion quality",
+		name = "Ambient Occlusion Quality",
 		description = "Higher quality ambient occlusion will look better at the expense of time taken to rebake meshes",
 		items = [
 			("0", "Disabled", "Ambient occlusion is disabled, very fast to export"),
@@ -54,7 +54,7 @@ class RebakeAllMeshes(Operator, butil.FolderSelectHelper):
 	)
 	
 	menu_mode: EnumProperty(
-		name = "Menu mode",
+		name = "Menu Mode",
 		description = "Changes culling behaviour so that menu segments look normal",
 		items = [
 			("auto", "Automatic", "Automatically detect if the segment should be baked in menu mode by the segment's path name"),

@@ -24,45 +24,45 @@ from bpy.types import (
 )
 
 class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
-	"""Patches libsmashhit.so, allowing you to make various tweaks to the gameplay and fix problems or add features. This will not work on all versions and architectures, please refer to the wiki for more information"""
+	"""Apply patches to libsmashhit.so, allowing you to make various tweaks to the gameplay, fix problems, and add features. This will not work on all versions and architectures, please refer to the wiki for more information"""
 	
 	bl_idname = "shatter.patch_libsmashhit"
-	bl_label = "Patch libsmashhit.so"
+	bl_label = "Smash Hit Patcher"
 	
 	filename_ext = ".so"
 	
 	do_premium: BoolProperty(
-		name = "Force enable premium",
+		name = "Crack Premium",
 		description = "Forces premium to always be enabled",
 		default = False,
 	)
 	
 	do_encryption: BoolProperty(
-		name = "Disable save encryption",
+		name = "Disable Save Encryption",
 		description = "Disable save file encryption",
 		default = False,
 	)
 	
 	do_lualib: BoolProperty(
-		name = "Reenable io, os, package modules",
+		name = "Re-Enable io, os, and package Modules",
 		description = "Reenables the io, os and package modules",
 		default = False,
 	)
 	
 	do_offline: BoolProperty(
-		name = "Remove tracking and banners",
+		name = "Remove Tracking and Banners",
 		description = "Nops out the HttpThread::checkBanners and HttpThread::reportStats functions. NOTE: This only applies for PRE-COFFEE STAIN tracking and does not fully remove tracking from 1.5.x and later",
 		default = False,
 	)
 	
 	do_noenshittification: BoolProperty(
-		name = "Denshittify",
-		description = "Disable or remove consumer unfriendly features, like tracking and ads",
+		name = "De-Enshittify",
+		description = "Disable or remove consumer unfriendly features, like tracking and ads, from POST-COFFEE STAIN versions of the game",
 		default = False,
 	)
 	
 	do_balls: BoolProperty(
-		name = "Change starting ball count",
+		name = "Change Starting Ball Count",
 		description = "Change the number of balls the player has at the beginning of the game",
 		default = False,
 	)
@@ -74,7 +74,7 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_savekey: BoolProperty(
-		name = "Change save key",
+		name = "Change Save Key",
 		description = "Change the encryption key used with save files. Make you you've not also disabled them",
 		default = False,
 	)
@@ -86,20 +86,20 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_fov: BoolProperty(
-		name = "Change FoV",
+		name = "Change Field of View",
 		description = "Change the feild of view for all cameras in smash hit",
 		default = False,
 	)
 	
 	fov: FloatProperty(
-		name = "Angle (degrees)",
+		name = "Angle (in degrees)",
 		description = "",
 		default = 60.0,
 	)
 	
 	do_dropballs: BoolProperty(
-		name = "Change dropped balls",
-		description = "Allows you to change how many balls are dropped when the player is hit with an obstacle. Please remember to use this wisely and feel free to make any joke you want about the name of this tickbox OwO",
+		name = "Change Dropped Balls",
+		description = "Allows you to change how many balls are dropped when the player is hit by an obstacle. Remember to keep things fair for the player. Please make jokes about the name of this tickbox wisely",
 		default = False,
 	)
 	
@@ -110,67 +110,61 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_roomtime: BoolProperty(
-		name = "Change room time",
-		description = "Change the amount of time spent in each room, in seconds",
+		name = "Change Room Time",
+		description = "Change the number of seconds spent in each room",
 		default = False,
 	)
 	
 	roomtime: FloatProperty(
-		name = "Time (seconds)",
+		name = "Time (in seconds)",
 		description = "",
 		default = 32.0,
 	)
 	
 	do_trainingballs: BoolProperty(
-		name = "Unlimit training balls",
+		name = "Unlimit Training Balls",
 		description = "Remove the limit of 500 balls in training mode",
 		default = False,
 	)
 	
 	do_mglength: BoolProperty(
-		name = "Respect mgLength in mutliplayer",
+		name = "Respect mgLength in Mutliplayer Modes",
 		description = "Normally all rooms in mutliplayer have distance 200, this unlocks that and uses the given mgLength-given value instead",
 		default = False,
 	)
 	
 	do_vertical: BoolProperty(
-		name = "Allow portrait mode",
+		name = "Allow Portrait Mode",
 		description = "Allows running the game in vertical-tall resolutions like the Shorts mod",
 		default = False,
 	)
 	
 	do_noclip: BoolProperty(
-		name = "Enable no clip",
+		name = "Enable No-Clip",
 		description = "Allows the player to avoid getting hit by obstacles",
 		default = False,
 	)
 	
 	do_powerupsfx: BoolProperty(
-		name = "Disable powerup audio effects",
+		name = "Disable Powerup Audio Effects",
 		description = "Disables the audio effects when activating a powerup",
 		default = False,
 	)
 	
 	do_timestep: BoolProperty(
-		name = "Change target frame rate",
+		name = "Change Target Frame Rate",
 		description = "Updates the maximum framerate Smash Hit is allowed to run at and adjusts the physics time step to compensate. A side effect of the way this patch works will lead to slow-motion-like gameplay on devices which update their screen at a rate less than the target framerate. For example, Smash Hit usually targets 60 FPS, and runs normally on 60 FPS devices, but setting it to 120 FPS here will allow you to play the game at 120 FPS on a 120 Hz device, though the physics will be strange on a 60 Hz device",
 		default = False,
 	)
 	
 	timestep: FloatProperty(
-		name = "Frame rate",
+		name = "Frame Rate",
 		description = "",
 		default = 60.0,
 	)
 	
-	do_timestep: BoolProperty(
-		name = "Change target frame rate",
-		description = "Updates the maximum framerate Smash Hit is allowed to run at and adjusts the physics time step to compensate. A side effect of the way this patch works will lead to slow-motion-like gameplay on devices which update their screen at a rate less than the target framerate. For example, Smash Hit usually targets 60 FPS, and runs normally on 60 FPS devices, but setting it to 120 FPS here will allow you to play the game at 120 FPS on a 120 Hz device, though the physics will be strange on a 60 Hz device",
-		default = False,
-	)
-	
 	do_nowidewide: BoolProperty(
-		name = "Support ultra-wide screens",
+		name = "Re-Enable Ultra-Wide Screen Support",
 		description = "Disables Smash Hit's limits on ultra-wide (> 2:1) screens",
 		default = False,
 	)
@@ -184,13 +178,13 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 	)
 	
 	do_checkpoints: BoolProperty(
-		name = "Set checkpoint count",
+		name = "Change Checkpoint Count",
 		description = "Set the number of checkpoints that appear in-game and are saved",
 		default = False,
 	)
 	
 	do_fillbufferfix: BoolProperty(
-		name = "Fix crash while upading audio buffers",
+		name = "Fix Crash While Upading Audio Buffers",
 		description = "This applies a workaround to a crash that sometimes occurs in QiAudioChannel::fillBuffer() while trying to process non-streaming, mono channel audio with the APK's target SDK set to >= 31",
 		default = False,
 	)
