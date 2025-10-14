@@ -6,9 +6,11 @@ import traceback
 import json
 import zipfile
 import io
+import ssl
 
-SERVER_VERSION = (1, 3, 0)
+SERVER_VERSION = (1, 4, 0)
 QUICK_PORT = 8000
+QUICK_PORT_TLS = 8433
 
 """
 Very small framework written for the test server
@@ -201,11 +203,8 @@ quick_config = {}
 # When there is no key with config update attempt we throw this exception
 class SecurityException(Exception): pass
 
-# Assert that either (a) there is no token required or (b) it exists and matches
+# Assert that a quick test token exists and matches the current one
 def assert_key(request_body):
-	if "token" not in quick_config:
-		return
-	
 	if "token" in request_body:
 		try:
 			if not compare_digest(request_body["token"], quick_config["token"]):
@@ -898,9 +897,15 @@ def v6_update_config(request):
 	return NXResponse(200, {"success": True})
 
 
-def run_server():
+def run_server(use_tls=False):
 	global server
-	server = ThreadingHTTPServer(('0.0.0.0', QUICK_PORT), NXRequestHandler)
+	server = ThreadingHTTPServer(('0.0.0.0', QUICK_PORT if not use_tls else QUICK_PORT_TLS), NXRequestHandler)
+	
+	if use_tls:
+		tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+		tls.minimum_version = ssl.TLSVersion.TLSv1_2
+		tls.load_cert_chain('data/dummy_cert.pem', 'data/dummy_key.pem')
+		server.socket = tls.wrap_socket(server.socket, server_side=True)
 	
 	try:
 		server.serve_forever()
@@ -912,8 +917,9 @@ def run_server():
 APP_DESC = "Serves assets to Shatter Quick Test clients using protocol v6 or later"
 ASSETS_HELP = "Set the directory where the server looks for assets from"
 ASSETS_OVERLAY_HELP = "Set the asset overlay directory where the server looks for files before going to the asset directory"
-TOKEN_HELP = "Set the security token required to communicate with Shatter"
-INSECURE_HELP = "Allow the server to run without a security token"
+TOKEN_HELP = "Set the authentication token required to communicate with Shatter on the local computer"
+INSECURE_HELP = "Allow the server to run without an authentication token"
+TLS_HELP = "Use HTTP over TLS (HTTPS) to secure the connection between the test client and server"
 
 def main():
 	import argparse
@@ -922,23 +928,24 @@ def main():
 		prog = "Quick Test server",
 		description = APP_DESC,
 	)
-	args.add_argument("-a", "--assets", required = False, help = ASSETS_HELP)
-	args.add_argument("-o", "--assets-overlay", required = False, help = ASSETS_OVERLAY_HELP)
-	args.add_argument("-t", "--token", required = False, help = TOKEN_HELP)
-	args.add_argument("-i", "--insecure", action = "store_true", help = INSECURE_HELP)
+	args.add_argument("-a", "--assets", required=False, help=ASSETS_HELP)
+	args.add_argument("-o", "--assets-overlay", required=False, help=ASSETS_OVERLAY_HELP)
+	args.add_argument("-t", "--token", required=False, help=TOKEN_HELP)
+	args.add_argument("-i", "--insecure", action="store_true", help=INSECURE_HELP)
+	args.add_argument("-s", "--tls", action="store_true", help=TLS_HELP)
 	args = args.parse_args()
 	
 	quick_config["assets"] = args.assets
 	quick_config["assets_overlay"] = args.assets_overlay
 	
 	if not args.token and not args.insecure:
-		print("Error: No token specified and server in secure mode!")
+		print("Error: No auth token specified and flag not passed to disable it!")
 		return
 	
 	if not args.insecure:
 		quick_config["token"] = args.token
 	
-	run_server()
+	run_server(args.tls)
 
 if __name__ == "__main__":
 	main()
