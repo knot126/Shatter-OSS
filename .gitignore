@@ -3,3 +3,4 @@ addon/bin/
 addon/asset_server.py
 build/
 __pycache__
+*.pem

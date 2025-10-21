@@ -233,7 +233,7 @@ def server_manager_update(_self = None, _context = None):
 			global gNxToken
 			gNxToken = secrets.token_hex(24)
 			
-			gServerManager.set_params((butil.storage_path("testserver"), butil.find_apk(), gNxToken))
+			gServerManager.set_params((butil.storage_path("testserver"), butil.find_apk(), gNxToken, get_prefs().quick_test_use_tls))
 		elif server_type == "knot":
 			gServerManager.set_params((butil.find_apk(),))
 		else:
@@ -1087,6 +1087,13 @@ class ShatterPreferences(AddonPreferences):
 		default = "nx",
 	)
 	
+	quick_test_use_tls: BoolProperty(
+		name = "Use TLS",
+		description = "Use TLS to encrypt all communications with Shatter Client and run the server on port 8433. Please note that the client doesn't verify certificates, so this is not as secure as HTTPS, especially when there are active attackers sitting on the network. This will default to true in a future version of Shatter",
+		update = server_manager_update,
+		default = False,
+	)
+	
 	####################
 	## Advanced settings
 	####################
@@ -1179,6 +1186,9 @@ class ShatterPreferences(AddonPreferences):
 					ui.label("The server is not running", "CANCEL")
 				ui.op("shatter.force_server_manager_update", text="Restart", icon="FILE_REFRESH")
 				ui.end()
+			
+			if server_type == 'nx':
+				ui.prop('quick_test_use_tls')
 			
 			ui.region("SHADERFX", "Quick test checkup", new=False)
 			if (gQuickPortTest == False):
@@ -1295,7 +1305,7 @@ class SegmentPanel(Panel):
 			ui.prop("sh_rotation")
 			ui.prop("sh_particles")
 			ui.prop("sh_difficulty")
-			ui.label(f"Your IP: {util.get_local_ip()}")
+			ui.label(f"Your IP: {util.get_local_ip()}{':8433' if get_prefs().quick_test_use_tls else ''}")
 			ui.end()
 
 class EntityPanel(Panel):

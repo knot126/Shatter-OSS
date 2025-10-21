@@ -92,7 +92,7 @@ def cb_yorshex(asset_dir, level):
 	
 	return proc
 
-def cb_nx(overlay, assets, token):
+def cb_nx(overlay, assets, token, secure=False):
 	"""
 	Run NxQuick server
 	"""
@@ -100,7 +100,7 @@ def cb_nx(overlay, assets, token):
 	python_path = os.path.realpath(sys.executable)
 	script_path = str(Path(__file__).parent) + "/nx_quick.py"
 	
-	proc = Popen([python_path, script_path, "-o", overlay, "-a", assets, "-t", token])
+	proc = Popen([python_path, script_path, "-o", overlay, "-a", assets, "-t", token] + (["-s"] if secure else []))
 	
 	return proc
 
