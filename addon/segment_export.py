@@ -13,6 +13,7 @@ import pathlib
 import tempfile
 import json
 import pathlib
+import traceback
 from . import mesh_runner
 from . import obstacle_db
 from . import util
@@ -580,7 +581,11 @@ def bake_mesh(input_file, templates, params):
 		"cmd": prefs().mesh_command,
 	}
 	
-	mesh_runner.bake(prefs().mesh_baker, input_file, templates, new_params)
+	try:
+		mesh_runner.bake(prefs().mesh_baker, input_file, templates, new_params)
+	except Exception as e:
+		butil.show_message("Mesh baking error", f"An error occured while trying to bake the mesh: {e.__class__.__name__}: {e}. If you're a developer, you can check the console for more details.")
+		util.log(traceback.format_exc())
 
 def sh_export_segment_ext(filepath, context, scene, compress = False, params = {}):
 	"""
