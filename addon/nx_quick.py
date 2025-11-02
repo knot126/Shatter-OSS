@@ -8,7 +8,7 @@ import zipfile
 import io
 import ssl
 
-SERVER_VERSION = (1, 4, 0)
+SERVER_VERSION = (1, 4, 1)
 QUICK_PORT = 8000
 QUICK_PORT_TLS = 8433
 
@@ -883,7 +883,7 @@ def v7_packed_all(request):
 
 @routes.add("GET", r"/v6/ping")
 def v6_ping(request):
-	return NXResponse(200, "Connected", {"X-Features": "user overlay mega"})
+	return NXResponse(200, "Connected", {"X-Features": "user" if quick_config.get("no_overlay", False) else "user overlay mega"})
 
 
 @routes.add("GET", r"/v6/config")
@@ -937,6 +937,7 @@ ASSETS_OVERLAY_HELP = "Set the asset overlay directory where the server looks fo
 TOKEN_HELP = "Set the authentication token required to communicate with Shatter on the local computer"
 INSECURE_HELP = "Allow the server to run without an authentication token"
 TLS_HELP = "Use HTTP over TLS (HTTPS) to secure the connection between the test client and server"
+NO_OVERLAY_HELP = "Disable advertising support for overlays and mega mode; useful for testing user mode"
 
 def main():
 	import argparse
@@ -950,10 +951,12 @@ def main():
 	args.add_argument("-t", "--token", required=False, help=TOKEN_HELP)
 	args.add_argument("-i", "--insecure", action="store_true", help=INSECURE_HELP)
 	args.add_argument("-s", "--tls", action="store_true", help=TLS_HELP)
+	args.add_argument("-n", "--no-overlay", action="store_true", help=NO_OVERLAY_HELP)
 	args = args.parse_args()
 	
 	quick_config["assets"] = args.assets
 	quick_config["assets_overlay"] = args.assets_overlay
+	quick_config["no_overlay"] = args.no_overlay
 	
 	if not args.token and not args.insecure:
 		print("Error: No auth token specified and flag not passed to disable it!")
