@@ -48,15 +48,26 @@ def get_shim_release_title():
 	except:
 		return "Unknown"
 
+def get_latest_smashhit_asset():
+	for asset in shim_version_info[0]["assets"]:
+		if "smashhit" in asset['name']:
+			util.log(f"Selecting asset with name {asset['name']}")
+			return asset
+	else:
+		util.log(f"Selecting first asset")
+		return shim_version_info[0]["assets"][0]
+
 def get_shim_files():
 	if not shim_version_info:
 		raise Exception("Shim version info not available despite that it should be. Something is really messed up!")
 	
-	dlpath = f"{gettempdir()}/{shim_version_info[0]['assets'][0]['name']}"
+	asset = get_latest_smashhit_asset()
+	
+	dlpath = f"{gettempdir()}/{asset['name']}"
 	
 	try:
 		if not os.path.exists(dlpath):
-			url = shim_version_info[0]["assets"][0]["browser_download_url"]
+			url = asset["browser_download_url"]
 			
 			with urlopen(url) as e:
 				with open(dlpath, "wb") as f:
@@ -88,6 +99,10 @@ class InstallKnShim(Operator):
 	)
 	
 	def execute(self, context):
+		if butil.stay_offline():
+			self.report({'ERROR'}, f"Please enable networking in Blender's Preferences so that the latest version of KnShim can be automatically downloaded from GitHub.")
+			return {'FINISHED'}
+		
 		context.window.cursor_set('WAIT')
 		try:
 			do_install(self.apk_path)
