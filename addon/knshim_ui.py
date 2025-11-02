@@ -49,6 +49,9 @@ def get_shim_release_title():
 		return "Unknown"
 
 def get_shim_files():
+	if not shim_version_info:
+		raise Exception("Shim version info not available despite that it should be. Something is really messed up!")
+	
 	dlpath = f"{gettempdir()}/{shim_version_info[0]['assets'][0]['name']}"
 	
 	try:
@@ -88,7 +91,7 @@ class InstallKnShim(Operator):
 		context.window.cursor_set('WAIT')
 		try:
 			do_install(self.apk_path)
-			self.report({'INFO'}, "KnShim has been installed")
+			self.report({'INFO'}, f"KnShim {get_shim_release_title()} has been installed!")
 		except Exception as e:
 			self.report({'ERROR'}, f"KnShim could not be installed: {e.__class__.__name__}: {e}")
 			util.log(traceback.format_exc())
