@@ -99,7 +99,7 @@ class InstallKnShim(Operator):
 	)
 	
 	def draw(self, context):
-		self.layout.label(text="Select the APK, then press Install KnShim.")
+		self.layout.label(text="Select the APK, then press OK to install.")
 		self.layout.prop(self, "apk_path")
 	
 	def execute(self, context):
