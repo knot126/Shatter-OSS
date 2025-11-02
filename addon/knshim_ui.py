@@ -98,6 +98,10 @@ class InstallKnShim(Operator):
 		default = 0,
 	)
 	
+	def draw(self, context):
+		self.layout.label(text="Select the APK, then press Install KnShim.")
+		self.layout.prop(self, "apk_path")
+	
 	def execute(self, context):
 		if butil.stay_offline():
 			self.report({'ERROR'}, f"Please enable networking in Blender's Preferences so that the latest version of KnShim can be automatically downloaded from GitHub.")
