@@ -85,12 +85,15 @@ class InstallKnShim(Operator):
 	)
 	
 	def execute(self, context):
+		context.window.cursor_set('WAIT')
 		try:
 			do_install(self.apk_path)
 			self.report({'INFO'}, "KnShim has been installed")
 		except Exception as e:
 			self.report({'ERROR'}, f"KnShim could not be installed: {e.__class__.__name__}: {e}")
 			util.log(traceback.format_exc())
+		finally:
+			context.window.cursor_set('DEFAULT')
 		return {'FINISHED'}
 	
 	def invoke(self, context, event):
