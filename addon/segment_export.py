@@ -109,7 +109,7 @@ def tryTemplatesPath():
 	if not path:
 		path = util.codedir() + "/data/templates.xml"
 	
-	util.log(f"Got templates file: \"{path}\"")
+	# util.log(f"Got templates file: \"{path}\"")
 	
 	return path
 
@@ -491,49 +491,6 @@ def createSegmentText(scene, params):
 	
 	return content
 
-def writeQuicktestInfo(tempdir, scene):
-	"""
-	Write the quick test `room.json` file
-	"""
-	
-	fb = scene.sh_fog_colour_bottom
-	ft = scene.sh_fog_colour_top
-	
-	info = {
-		"fog": f"{fb[0]} {fb[1]} {fb[2]} {ft[0]} {ft[1]} {ft[2]}",
-		"length": scene.sh_room_length,
-		"gravity": scene.sh_gravity,
-	}
-	
-	if (scene.sh_music):
-		info["music"] = scene.sh_music
-	
-	if (scene.sh_reverb):
-		info["reverb"] = scene.sh_reverb
-	
-	if (scene.sh_echo):
-		info["echo"] = scene.sh_echo
-	
-	if (scene.sh_rotation):
-		info["rot"] = scene.sh_rotation
-	
-	if (scene.sh_difficulty > 0.0):
-		info["difficulty"] = scene.sh_difficulty
-	
-	if (scene.sh_extra_code):
-		info["code"] = scene.sh_extra_code
-	
-	if (scene.sh_particles != "None"):
-		info["particles"] = scene.sh_particles
-	
-	# Try to find where to load remote obstacles from
-	apk_path = butil.find_apk()
-	
-	if (apk_path):
-		info["assets"] = apk_path
-	
-	pathlib.Path(tempdir + "/room.json").write_text(json.dumps(info))
-
 def get_room_data(scene):
 	scene = scene.sh_properties
 	room = util.get_file(util.codedir() + "/data/quick.lua")
@@ -584,7 +541,7 @@ def bake_mesh(input_file, templates, params):
 	try:
 		mesh_runner.bake(prefs().mesh_baker, input_file, templates, new_params)
 	except Exception as e:
-		butil.show_message("Mesh baking error", f"An error occured while trying to bake the mesh: {e.__class__.__name__}: {e}. If you're a developer, you can check the console for more details.")
+		butil.show_exception_message(e, "Mesh baking error", "bake the mesh", "Make sure your custom mesh command exists and is executable." if prefs().mesh_command else "")
 		util.log(traceback.format_exc())
 
 def sh_export_segment_ext(filepath, context, scene, compress = False, params = {}):
@@ -595,7 +552,6 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	
 	# Set wait cursor
 	context.window.cursor_set('WAIT')
-	context.window_manager.progress_begin(0.0, 1.0)
 	
 	# Warnings related
 	params["warnings"] = ExportWarnings()
@@ -625,22 +581,26 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 		
 		util.prepare_folders(filepath)
 		
-		util.log(f"Real file path will be {filepath}")
+		# util.log(f"Real file path will be {filepath}")
 		
 		# Auto-create levels and rooms
-		if butil.get_setting("create_nonexistant_assets"):
-			level_path = f"{apk_path}/levels/{props.sh_level}.xml.mp3"
-			room_path = f"{apk_path}/rooms/{props.sh_level}/{props.sh_room}.lua.mp3"
-			
-			if (not os.path.exists(level_path)):
-				util.log(f"Write new level to {level_path}")
-				util.set_file(level_path, f'<level>\n\t<room type="{props.sh_level}/{props.sh_room}" length="200"/>\n\t<!-- add more rooms here! -->\n</level>')
-			
-			if (not os.path.exists(room_path)):
-				util.log(f"Write new room to {room_path}")
-				util.prepare_folders(room_path)
-				from . import room_export
-				room_export.export_room(room_path, scene)
+		try:
+			if butil.get_setting("create_nonexistant_assets"):
+				level_path = f"{apk_path}/levels/{props.sh_level}.xml.mp3"
+				room_path = f"{apk_path}/rooms/{props.sh_level}/{props.sh_room}.lua.mp3"
+				
+				if (not os.path.exists(level_path)):
+					util.log(f"Write new level to {level_path}")
+					util.set_file(level_path, f'<level>\n\t<room type="{props.sh_level}/{props.sh_room}" length="200"/>\n\t<!-- add more rooms here! -->\n</level>')
+				
+				if (not os.path.exists(room_path)):
+					util.log(f"Write new room to {room_path}")
+					util.prepare_folders(room_path)
+					from . import room_export
+					room_export.export_room(room_path, scene)
+		except:
+			util.log("Failed to create levels and rooms automatically with an unknown error!")
+			util.log(traceback.format_exc())
 	
 	# Export to xml string
 	content = createSegmentText(scene, params)
@@ -649,93 +609,82 @@ def sh_export_segment_ext(filepath, context, scene, compress = False, params = {
 	templates = params.get("sh_meshbake_template", None)
 	
 	# Do some extra quick test related things
-	if (params.get("sh_test_server", False) == True):
-		server_type = prefs().quick_test_server
-		
-		if (server_type == "builtin"):
-			util.log("Legacy test server export")
+	try:
+		if (params.get("sh_test_server", False) == True):
+			server_type = prefs().quick_test_server
 			
-			# Solve templates if we have them
-			if (templates):
+			if (server_type == "nx"):
+				# util.log("Exporting segment for NxQuick test server")
+				
+				# NxServer uses asset folder overlays which override certian files
+				# in one asset folder with another instead of the simlper but pretty
+				# jank tempdir that the old ('builtin') server uses.
+				# 
+				# Create the overlay structure, if not already created
+				overlay = butil.storage_path("testserver")
+				
+				os.makedirs(f"{overlay}/levels", exist_ok=True)
+				os.makedirs(f"{overlay}/rooms", exist_ok=True)
+				os.makedirs(f"{overlay}/segments", exist_ok=True)
+				
+				util.set_file(f"{overlay}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
+				util.set_file(f"{overlay}/rooms/test.lua.mp3", get_room_data(scene))
+				filepath = f"{overlay}/segments/test.xml.mp3"
+				compress = False
+				
+				# Async POST /v6/config to update config for asset dir if needed
+				util.do_async_json_post(butil.get_quicktest_url("/v6/config"), {
+					"token": params.get("nx_token", "unknown"),
+					"assets": butil.find_apk(),
+				})
+			elif (server_type == "yorshex"):
+				# util.log("Export to yorshex asset server in quick test mode")
+				
+				# YAS exports to whatever the current APK path is, or to a default
+				# assets directory if an asset path isn't found.
+				asset_dir = butil.find_apk() or butil.storage_path("testserver")
+				
+				os.makedirs(f"{asset_dir}/levels", exist_ok=True)
+				os.makedirs(f"{asset_dir}/rooms", exist_ok=True)
+				os.makedirs(f"{asset_dir}/segments", exist_ok=True)
+				
+				util.set_file(f"{asset_dir}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
+				util.set_file(f"{asset_dir}/rooms/test.lua.mp3", get_room_data(scene))
+				filepath = f"{asset_dir}/segments/test.xml.mp3"
+				compress = False
+		else:
+			# Preform template resolution if it is enabled for all segments and not
+			# in quick test mode.
+			if (prefs().resolve_templates and templates):
 				content = util.solve_templates(content, util.load_templates(templates))
-			
-			# Make dirs
-			tempdir = butil.storage_path("testserver")
-			os.makedirs(tempdir, exist_ok = True)
-			
-			# Make XML path
-			filepath = ospath.join(tempdir, "segment.xml")
-			
-			# Write quick test JSON room info file
-			writeQuicktestInfo(tempdir, context.scene.sh_properties)
-		elif (server_type == "nx"):
-			util.log("Exporting segment for NxQuick test server")
-			
-			# NxServer uses asset folder overlays which override certian files
-			# in one asset folder with another instead of the simlper but pretty
-			# jank tempdir that the old ('builtin') server uses.
-			# 
-			# Create the overlay structure, if not already created
-			overlay = butil.storage_path("testserver")
-			
-			os.makedirs(f"{overlay}/levels", exist_ok=True)
-			os.makedirs(f"{overlay}/rooms", exist_ok=True)
-			os.makedirs(f"{overlay}/segments", exist_ok=True)
-			
-			util.set_file(f"{overlay}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
-			util.set_file(f"{overlay}/rooms/test.lua.mp3", get_room_data(scene))
-			filepath = f"{overlay}/segments/test.xml.mp3"
-			compress = False
-			
-			# Async POST /v6/config to update config for asset dir if needed
-			util.do_async_json_post("http://localhost:8000/v6/config", {
-				"token": params.get("nx_token", "unknown"),
-				"assets": butil.find_apk(),
-			})
-		elif (server_type == "yorshex"):
-			util.log("Export to yorshex asset server in quick test mode")
-			
-			# YAS exports to whatever the current APK path is, or to a default
-			# assets directory if an asset path isn't found.
-			asset_dir = butil.find_apk() or butil.storage_path("testserver")
-			
-			os.makedirs(f"{asset_dir}/levels", exist_ok=True)
-			os.makedirs(f"{asset_dir}/rooms", exist_ok=True)
-			os.makedirs(f"{asset_dir}/segments", exist_ok=True)
-			
-			util.set_file(f"{asset_dir}/levels/test.xml.mp3", NX_QUICK_TEST_LEVEL)
-			util.set_file(f"{asset_dir}/rooms/test.lua.mp3", get_room_data(scene))
-			filepath = f"{asset_dir}/segments/test.xml.mp3"
-			compress = False
-	else:
-		# Preform template resolution if it is enabled for all segments and not
-		# in quick test mode.
-		if (prefs().resolve_templates and templates):
-			content = util.solve_templates(content, util.load_templates(templates))
+	except:
+		util.log("Failed to update quick test server state!")
+		util.log(traceback.format_exc())
 	
 	##
 	## Write the file
 	##
 	
 	# Write out file
-	with (gzip.open(filepath, "wb") if compress else open(filepath, "wb")) as f:
-		f.write(content.encode())
+	try:
+		with (gzip.open(filepath, "wb") if compress else open(filepath, "wb")) as f:
+			f.write(content.encode())
+	except Exception as e:
+		util.log("Error while writing file!")
+		util.log(traceback.format_exc())
+		butil.show_exception_message(e, "Segment export error", "writing the segment data", "Make sure you have permission to write to the save directory, that the directory is not read-only, and that the directory you are saving to exists.")
 	
-	# Cook the mesh
+	# Bake the mesh
 	bake_mesh(filepath, templates, params)
 	
 	# Display export warnings, if any and if enabled
 	params["warnings"].display()
 	
 	# Progress display cleanup
-	context.window_manager.progress_update(1.0)
-	context.window_manager.progress_end()
 	context.window.cursor_set('DEFAULT')
 
 def sh_export_all_segments(context, compress = True, aotype = '1'):
 	for s in bpy.data.scenes:
-		# util.log(f"Exporting a scene: {s} ...")
-		
 		sh_properties = s.sh_properties
 		
 		sh_export_segment_ext(None, context, s, compress, params = {
@@ -760,8 +709,6 @@ def sh_export_segment(filepath, context, compress = False, testserver = False, n
 		"auto_find_filepath": not testserver, # HACK to make this work
 		"ymb_ao": aotype,
 	}
-	
-	# util.log(f"Exporting a segment:\n\tfilepath = {filepath}\n\tcompress = {compress}\n\ttestserver = {testserver}\n\tparams = {params}")
 	
 	sh_export_segment_ext(filepath, context, context.scene, compress, params)
 

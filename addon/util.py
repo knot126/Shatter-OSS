@@ -25,7 +25,7 @@ import xml.etree.ElementTree as et
 import subprocess
 import platform
 
-def log(msg, newline = True):
+def log(msg):
 	"""
 	Log a message to the console
 	"""
@@ -296,10 +296,17 @@ def do_http_request(method, url, data = b"", headers = {}):
 	Preform an http request
 	"""
 	
+	import ssl
+	
+	# Required for quick test in SSL mode
+	context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+	context.check_hostname = False
+	context.verify_mode = ssl.CERT_NONE
+	
 	req = urllib.request.Request(url=url, method=method, data=data)
 	for k, v in headers.items():
 		req.add_header(k, v)
-	response = urllib.request.urlopen(req)
+	response = urllib.request.urlopen(req, context=context)
 	output = response.read()
 	response.close()
 	
@@ -459,9 +466,13 @@ def get_homedir():
 	return str(pathlib.Path.home())
 
 if (__name__ == "__main__"):
-	import sys
+	import sys, traceback
 	
 	if (sys.argv[1] == "post"):
-		do_http_request("POST", sys.argv[2], sys.argv[3].encode('utf-8'), headers = {
-			"Content-Type": "application/json"
-		})
+		try:
+			do_http_request("POST", sys.argv[2], sys.argv[3].encode('utf-8'), headers = {
+				"Content-Type": "application/json"
+			})
+		except:
+			log(f"Async HTTP Post to {sys.argv[2]} failed.")
+			log(traceback.format_exc())

@@ -424,6 +424,17 @@ def show_message(title = "Info", message = "", icon = "INFO"):
 	
 	bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
+def show_exception_message(e, title="Error", desc="preform that action", help=""):
+	help = help + " " if help else help
+	show_message(title, f"An error occured while trying to {desc}: {e.__class__.__name__}: {e}. {help}If you're a developer, you can check the console for more details.", "ERROR")
+
+def get_quicktest_port():
+	return 8433 if prefs().quick_test_use_tls else 8000
+
+def get_quicktest_url(route):
+	s = 's' if prefs().quick_test_use_tls else ''
+	return f'http{s}://localhost:{get_quicktest_port()}{route}'
+
 def ui_region(layout, label = None, icon = None):
 	"""
 	Get the next UI region, with respect to compact mode
