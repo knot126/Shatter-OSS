@@ -308,13 +308,6 @@ def _patch_v142_v143_arm64_trainingballs(patcher, params):
 	
 	patcher.patch(0x6ba5c, b"\x06\x00\x00\x14")
 
-def _patch_v142_v143_arm64_mglength(patcher, params):
-	"""
-	Make mgLength count properly in multiplayer mode
-	"""
-	
-	patcher.patch(0x6b6d4, AARCH64_NOP)
-
 def _patch_v142_v143_arm64_noclip(patcher, params):
 	"""
 	Disable collision detection for the player
@@ -520,7 +513,6 @@ _LIBSMASHHIT_V142_V143_ARM64_PATCH_TABLE = {
 	"dropballs": _patch_v142_v143_arm64_dropballs,
 	"roomtime": _patch_v142_v143_arm64_roomtime,
 	"trainingballs": _patch_v142_v143_arm64_trainingballs,
-	"mglength": _patch_v142_v143_arm64_mglength,
 	"noclip": _patch_v142_v143_arm64_noclip,
 	"powerupsfx": _patch_v142_v143_arm64_powerupsfx,
 	"timestep": _patch_v142_v143_arm64_timestep,
@@ -655,13 +647,6 @@ def _patch_v142_v143_arm32_fov(patcher, params):
 def _patch_v142_v143_arm32_trainingballs(patcher, params):
 	patcher.patch(0x59874, AARCH32_NOP)
 
-def _patch_v142_v143_arm32_mglength(patcher, params):
-	# Make the first move unconditional
-	patcher.patch(0x5d030, "\x3c\x30\x96\xe5")
-	
-	# Replace the other two with nops
-	patcher.patch(0x5d034, 2 * AARCH32_NOP)
-
 def _patch_v142_v143_arm32_noclip(patcher, params):
 	patcher.patch(0x5b8a0, AARCH32_RET)
 
@@ -687,7 +672,6 @@ _LIBSMASHHIT_V142_V143_ARM32_PATCH_TABLE = {
 	"balls": _patch_v142_v143_arm32_balls,
 	"fov": _patch_v142_v143_arm32_fov,
 	"trainingballs": _patch_v142_v143_arm32_trainingballs,
-	"mglength": _patch_v142_v143_arm32_mglength,
 	"noclip": _patch_v142_v143_arm32_noclip,
 	"powerupsfx": _patch_v142_v143_arm32_powerupsfx,
 	"nowidewide": _patch_v142_v143_arm32_nowidewide,

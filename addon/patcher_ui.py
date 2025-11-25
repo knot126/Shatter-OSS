@@ -127,12 +127,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		default = False,
 	)
 	
-	do_mglength: BoolProperty(
-		name = "Respect mgLength in Mutliplayer Modes",
-		description = "Normally all rooms in mutliplayer have distance 200, this unlocks that and uses the given mgLength-given value instead",
-		default = False,
-	)
-	
 	do_vertical: BoolProperty(
 		name = "Allow Portrait Mode",
 		description = "Allows running the game in vertical-tall resolutions like the Shorts mod",
@@ -201,7 +195,6 @@ class PatchLibsmashhit(bpy_extras.io_utils.ImportHelper, Operator):
 		"dropballs",
 		"roomtime",
 		"trainingballs",
-		"mglength",
 		"vertical",
 		"noclip",
 		"powerupsfx",
